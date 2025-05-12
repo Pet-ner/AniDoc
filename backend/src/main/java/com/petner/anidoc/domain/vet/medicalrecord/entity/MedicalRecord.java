@@ -58,4 +58,6 @@ public class MedicalRecord extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL)
     private List<Prescription> prescriptions = new ArrayList<>();
+
+    //aaaaaa
 }
