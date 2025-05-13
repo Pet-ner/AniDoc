@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,9 +49,10 @@ public class SseEmitters {
     }
 
     // 모든 연결된 클라이언트들에게 이벤트를 전송하는 메서드
-    public void noti(String eventName, Map<String, Object> data) {
+    public void noti(String eventName, Object data) {
         // 모든 emitter에 대해 반복하며 이벤트 전송
         emitters.forEach((userId, emitterList) -> {
+            List<SseEmitter> deadEmitters = new ArrayList<>();
             for (SseEmitter emitter : emitterList) {
                 try {
                     emitter.send(
@@ -59,11 +61,13 @@ public class SseEmitters {
                                     .data(data)         // 전송할 데이터 설정
                     );
                 } catch (ClientAbortException e) {
+                    deadEmitters.add(emitter);
                     // 클라이언트가 연결을 강제로 종료한 경우 무시
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
+            emitterList.removeAll(deadEmitters);
         });
     }
 
@@ -75,6 +79,7 @@ public class SseEmitters {
 
         //해당하는 리스트의 emitter 에게 SSE방식으로 데이터 전송
         if(userEmitters != null){
+            List<SseEmitter> deadEmitters = new ArrayList<>();
             for(SseEmitter emitter : userEmitters){
                 try{
                     emitter.send(
@@ -83,11 +88,12 @@ public class SseEmitters {
                                     .data(data)
                     );
                 }catch (ClientAbortException e){
-
+                    deadEmitters.add(emitter);
                 }catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
+            userEmitters.removeAll(deadEmitters);
         }
     }
 }
