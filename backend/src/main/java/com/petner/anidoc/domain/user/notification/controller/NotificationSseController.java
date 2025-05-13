@@ -15,7 +15,7 @@ import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/notification")
+@RequestMapping("/api/notifications")
 @Tag(name = "SSE 알림 API", description = "알림기능 API")
 public class NotificationSseController {
     // SSE 연결들을 관리하는 컴포넌트
