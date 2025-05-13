@@ -46,10 +46,13 @@ public class MedicalRecord extends BaseEntity {
     private String treatment;
 
     @Column(name = "is_surgery")
-    private Boolean isSurgery;
+    private Boolean isSurgery=false;
 
     @Column(name = "is_hospitalized")
-    private Boolean isHospitalized;
+    private Boolean isHospitalized=false;
+
+    @Column(name="is_checked_up")
+    private Boolean isCheckedUp=false;
 
     @Builder.Default
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL)
