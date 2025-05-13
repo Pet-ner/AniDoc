@@ -47,4 +47,7 @@ labels: 🧠 merge feature
 
 ✒️
 </br></br>
+### 4️⃣이슈 넘버 기술
+Closes #
+
 
