@@ -1,7 +1,7 @@
 package com.petner.anidoc.domain.vet.surgery.dto;
 
 
-import com.petner.anidoc.domain.vet.surgery.entity.Surgery;
+import com.petner.anidoc.domain.vet.surgery.entity.SurgeryRecord;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,15 +23,15 @@ public class SurgeryResponseDto {
     private String anesthesiaType;
     private String surgeryNote;
 
-    public static SurgeryResponseDto from(Surgery surgery){
+    public static SurgeryResponseDto from(SurgeryRecord surgeryRecord){
         return SurgeryResponseDto.builder()
-                .id(surgery.getId())
-                .medicalRecordId(surgery.getMedicalRecord().getId())
-                .petId(surgery.getPet().getId())
-                .surgeryName(surgery.getSurgeryName())
-                .surgeryDate(surgery.getSurgeryDate())
-                .anesthesiaType(surgery.getAnesthesiaType().name())
-                .surgeryNote(surgery.getSurgeryNote())
+                .id(surgeryRecord.getId())
+                .medicalRecordId(surgeryRecord.getMedicalRecord().getId())
+                .petId(surgeryRecord.getPet().getId())
+                .surgeryName(surgeryRecord.getSurgeryName())
+                .surgeryDate(surgeryRecord.getSurgeryDate())
+                .anesthesiaType(surgeryRecord.getAnesthesiaType().name())
+                .surgeryNote(surgeryRecord.getSurgeryNote())
                 .build();
     }
 }

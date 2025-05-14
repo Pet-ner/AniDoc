@@ -5,9 +5,7 @@ import com.petner.anidoc.domain.user.user.entity.UserRole;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import com.petner.anidoc.domain.vet.checkup.dto.CheckupRequestDto;
 import com.petner.anidoc.domain.vet.checkup.dto.CheckupResponseDto;
-import com.petner.anidoc.domain.vet.checkup.entity.CheckupResult;
-import com.petner.anidoc.domain.vet.checkup.entity.CheckupStatus;
-import com.petner.anidoc.domain.vet.checkup.entity.CheckupType;
+import com.petner.anidoc.domain.vet.checkup.entity.CheckupRecord;
 import com.petner.anidoc.domain.vet.checkup.repository.CheckupRepository;
 import com.petner.anidoc.domain.vet.medicalrecord.entity.MedicalRecord;
 import com.petner.anidoc.domain.vet.medicalrecord.repository.MedicalRecordRepository;
@@ -27,7 +25,7 @@ public class CheckupService {
     private final CheckupRepository checkupRepository;
 
     @Transactional
-    public CheckupResponseDto createCheckup(CheckupRequestDto checkupRequestDto, Long userId, Long medicalRecordId) throws AccessDeniedException {
+    public CheckupResponseDto createCheckupRecord(CheckupRequestDto checkupRequestDto, Long userId, Long medicalRecordId) throws AccessDeniedException {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
@@ -39,7 +37,7 @@ public class CheckupService {
             throw new AccessDeniedException("진료 기록을 작성할 권한이 없습니다.");
         }
 
-        CheckupResult checkupResult = CheckupResult.builder()
+        CheckupRecord checkupResult = CheckupRecord.builder()
                 .medicalRecord(medicalRecord)
                 .checkupType(checkupRequestDto.getCheckupType())
                 .result(checkupRequestDto.getResult())
@@ -48,9 +46,12 @@ public class CheckupService {
                 .status(checkupRequestDto.getStatus())
                 .build();
 
-        CheckupResult savedResult = checkupRepository.save(checkupResult);
+        CheckupRecord savedResult = checkupRepository.save(checkupResult);
 
         return CheckupResponseDto.from(savedResult);
     }
+
+    @Transactional
+    public CheckupResponseDto getCheckup
 
 }

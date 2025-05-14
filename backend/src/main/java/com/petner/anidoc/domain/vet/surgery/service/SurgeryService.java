@@ -7,7 +7,7 @@ import com.petner.anidoc.domain.vet.medicalrecord.entity.MedicalRecord;
 import com.petner.anidoc.domain.vet.medicalrecord.repository.MedicalRecordRepository;
 import com.petner.anidoc.domain.vet.surgery.dto.SurgeryRequestDto;
 import com.petner.anidoc.domain.vet.surgery.dto.SurgeryResponseDto;
-import com.petner.anidoc.domain.vet.surgery.entity.Surgery;
+import com.petner.anidoc.domain.vet.surgery.entity.SurgeryRecord;
 import com.petner.anidoc.domain.vet.surgery.repository.SurgeryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class SurgeryService {
             throw new AccessDeniedException("진료 기록을 작성할 권한이 없습니다.");
         }
 
-        Surgery surgery = Surgery.builder()
+        SurgeryRecord surgery = SurgeryRecord.builder()
                 .medicalRecord(medicalRecord)
                 .pet(medicalRecord.getPet()) // 이미 연관된 pet 사용 가능
                 .surgeryName(surgeryRequestDto.getSurgeryName())
@@ -46,8 +46,8 @@ public class SurgeryService {
                 .surgeryNote(surgeryRequestDto.getSurgeryNote())
                 .build();
 
-        Surgery savedSurgery = surgeryRepository.save(surgery);
+        SurgeryRecord savedSurgeryRecord = surgeryRepository.save(surgery);
 
-        return SurgeryResponseDto.from(savedSurgery);
+        return SurgeryResponseDto.from(savedSurgeryRecord);
     }
 }

@@ -5,11 +5,10 @@ import com.petner.anidoc.domain.user.user.entity.UserRole;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import com.petner.anidoc.domain.vet.hospitalization.dto.HospitalizationRequestDto;
 import com.petner.anidoc.domain.vet.hospitalization.dto.HospitalizationResponseDto;
-import com.petner.anidoc.domain.vet.hospitalization.entity.Hospitalization;
+import com.petner.anidoc.domain.vet.hospitalization.entity.HospitalizationRecord;
 import com.petner.anidoc.domain.vet.hospitalization.repository.HospitalizationRepository;
 import com.petner.anidoc.domain.vet.medicalrecord.entity.MedicalRecord;
 import com.petner.anidoc.domain.vet.medicalrecord.repository.MedicalRecordRepository;
-import com.petner.anidoc.domain.vet.surgery.repository.SurgeryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,7 +37,7 @@ public class HospitalizationService {
             throw new AccessDeniedException("진료 기록을 작성할 권한이 없습니다.");
         }
 
-        Hospitalization hospitalization = Hospitalization.builder()
+        HospitalizationRecord hospitalizationRecord = HospitalizationRecord.builder()
                 .medicalRecord(medicalRecord)
                 .pet(medicalRecord.getPet())
                 .admissionDate(hospitalizationRequestDto.getAdmissionDate())
@@ -47,7 +46,7 @@ public class HospitalizationService {
                 .imageUrl(hospitalizationRequestDto.getImageUrl())
                 .build();
 
-        Hospitalization saved = hospitalizationRepository.save(hospitalization);
+        HospitalizationRecord saved = hospitalizationRepository.save(hospitalizationRecord);
 
         return HospitalizationResponseDto.from(saved);
 

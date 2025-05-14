@@ -4,10 +4,7 @@ import com.petner.anidoc.domain.user.pet.entity.Pet;
 import com.petner.anidoc.domain.vet.medicalrecord.entity.MedicalRecord;
 import com.petner.anidoc.global.jpa.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
@@ -18,8 +15,8 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-@Table(name = "hospitalizations")
-public class Hospitalization extends BaseEntity {
+@Table(name = "hospitalization_records")
+public class HospitalizationRecord extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "record_id", nullable = false)
     private MedicalRecord medicalRecord;
@@ -39,4 +36,8 @@ public class Hospitalization extends BaseEntity {
 
     @Column(name = "image_url")
     private String imageUrl;
+
+    @Builder.Default
+    @Column(name="is_deleted")
+    private Boolean isDeleted = false;
 }

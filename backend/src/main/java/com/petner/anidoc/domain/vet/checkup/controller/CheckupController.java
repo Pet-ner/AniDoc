@@ -21,12 +21,12 @@ public class CheckupController {
 
     @PostMapping
     @Operation(summary = "검사 결과 생성", description = "의료진이 진료기록에 검사 결과를 등록")
-    public ResponseEntity<CheckupResponseDto> createCheckup(
+    public ResponseEntity<CheckupResponseDto> createCheckupRecord(
             @PathVariable Long medicalRecordId,
             @RequestParam Long userId,
             @RequestBody CheckupRequestDto requestDto) throws AccessDeniedException {
 
-        CheckupResponseDto response = checkupService.createCheckup(requestDto, userId, medicalRecordId);
+        CheckupResponseDto response = checkupService.createCheckupRecord(requestDto, userId, medicalRecordId);
         return ResponseEntity.ok(response);
     }
 }

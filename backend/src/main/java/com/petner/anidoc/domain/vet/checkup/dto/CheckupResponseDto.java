@@ -1,6 +1,6 @@
 package com.petner.anidoc.domain.vet.checkup.dto;
 
-import com.petner.anidoc.domain.vet.checkup.entity.CheckupResult;
+import com.petner.anidoc.domain.vet.checkup.entity.CheckupRecord;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,7 +22,7 @@ public class CheckupResponseDto {
     private LocalDate checkupDate;
     private String status;
 
-    public static CheckupResponseDto from(CheckupResult checkupResult) {
+    public static CheckupResponseDto from(CheckupRecord checkupResult) {
         return CheckupResponseDto.builder()
                 .id(checkupResult.getId())
                 .medicalRecordId(checkupResult.getMedicalRecord().getId())

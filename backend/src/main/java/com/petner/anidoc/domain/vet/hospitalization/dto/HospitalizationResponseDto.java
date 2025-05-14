@@ -1,6 +1,6 @@
 package com.petner.anidoc.domain.vet.hospitalization.dto;
 
-import com.petner.anidoc.domain.vet.hospitalization.entity.Hospitalization;
+import com.petner.anidoc.domain.vet.hospitalization.entity.HospitalizationRecord;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,15 +22,15 @@ public class HospitalizationResponseDto {
     private String reason;
     private String imageUrl;
 
-    public static HospitalizationResponseDto from(Hospitalization hospitalization) {
+    public static HospitalizationResponseDto from(HospitalizationRecord hospitalizationRecord) {
         return HospitalizationResponseDto.builder()
-                .id(hospitalization.getId())
-                .medicalRecordId(hospitalization.getMedicalRecord().getId())
-                .petId(hospitalization.getPet().getId())
-                .admissionDate(hospitalization.getAdmissionDate())
-                .dischargeDate(hospitalization.getDischargeDate())
-                .reason(hospitalization.getReason())
-                .imageUrl(hospitalization.getImageUrl())
+                .id(hospitalizationRecord.getId())
+                .medicalRecordId(hospitalizationRecord.getMedicalRecord().getId())
+                .petId(hospitalizationRecord.getPet().getId())
+                .admissionDate(hospitalizationRecord.getAdmissionDate())
+                .dischargeDate(hospitalizationRecord.getDischargeDate())
+                .reason(hospitalizationRecord.getReason())
+                .imageUrl(hospitalizationRecord.getImageUrl())
                 .build();
     }
 }
