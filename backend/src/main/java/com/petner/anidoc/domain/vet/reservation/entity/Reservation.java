@@ -2,6 +2,8 @@ package com.petner.anidoc.domain.vet.reservation.entity;
 
 import com.petner.anidoc.domain.user.pet.entity.Pet;
 import com.petner.anidoc.domain.user.user.entity.User;
+import com.petner.anidoc.domain.vet.reservation.dto.ReservationStatusUpdateRequestDto;
+import com.petner.anidoc.domain.vet.reservation.dto.ReservationUpdateRequestDto;
 import com.petner.anidoc.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -61,5 +63,15 @@ public class Reservation extends BaseEntity {
     // 입력된 시간이 유효한 예약 시간인지 확인
     public static boolean isValidReservationTime(LocalTime time) {
         return RESERVATION_TIMES.contains(time);
+    }
+
+    public void updateReservationFromDto(ReservationUpdateRequestDto dto) {
+        this.reservationDate = dto.getReservationDate();
+        this.reservationTime = dto.getReservationTime();
+        this.symptom = dto.getSymptom();
+    }
+
+    public void updateReservationStatusFromDto(ReservationStatusUpdateRequestDto dto) {
+        this.status = dto.getStatus();
     }
 }

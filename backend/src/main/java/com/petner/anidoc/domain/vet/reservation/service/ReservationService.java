@@ -144,24 +144,11 @@ public class ReservationService {
         }
 
         // 예약 정보 업데이트
-        Reservation updatedReservation = Reservation.builder()
-                .id(reservation.getId())
-                .user(reservation.getUser())
-                .pet(reservation.getPet())
-                .reservationDate(requestDto.getReservationDate() != null ? requestDto.getReservationDate() : reservation.getReservationDate())
-                .reservationTime(requestDto.getReservationTime() != null ? requestDto.getReservationTime() : reservation.getReservationTime())
-                .status(currentUser.isAdmin() ? reservation.getStatus() : ReservationStatus.PENDING)  // 관리자가 아니면 수정 시 다시 대기 상태로
-                .symptom(requestDto.getSymptom() != null ? requestDto.getSymptom() : reservation.getSymptom())
-                .type(reservation.getType())
-                .createdAt(reservation.getCreatedAt())
-                .updatedAt(reservation.getUpdatedAt())
-                .build();
-
-        updatedReservation = reservationRepository.save(updatedReservation);
+        reservation.updateReservationFromDto(requestDto);
 
         // TODO: 알림 기능 추가 (의료진/관리자)
 
-        return ReservationResponseDto.fromEntity(updatedReservation);
+        return ReservationResponseDto.fromEntity(reservation);
     }
 
     // 예약 상태 변경 (관리자/의료진용)
@@ -177,25 +164,12 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
 
-
-        Reservation updatedReservation = Reservation.builder()
-                .id(reservation.getId())
-                .user(reservation.getUser())
-                .pet(reservation.getPet())
-                .reservationDate(reservation.getReservationDate())
-                .reservationTime(reservation.getReservationTime())
-                .status(requestDto.getStatus())
-                .symptom(reservation.getSymptom())
-                .type(reservation.getType())
-                .createdAt(reservation.getCreatedAt())
-                .updatedAt(reservation.getUpdatedAt())
-                .build();
-
-        updatedReservation = reservationRepository.save(updatedReservation);
+        // 예약 상태 업데이트
+        reservation.updateReservationStatusFromDto(requestDto);
 
         // TODO: 알림 기능 추가 (사용자)
 
-        return ReservationResponseDto.fromEntity(updatedReservation);
+        return ReservationResponseDto.fromEntity(reservation);
     }
 
     // 예약 취소
