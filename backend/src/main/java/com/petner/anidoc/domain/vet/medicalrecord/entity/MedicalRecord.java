@@ -65,7 +65,7 @@ public class MedicalRecord extends BaseEntity {
     private Boolean isCheckedUp=false;
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(name="is_deleted")
     private Boolean isDeleted = false;
 
     @Enumerated(EnumType.STRING)
