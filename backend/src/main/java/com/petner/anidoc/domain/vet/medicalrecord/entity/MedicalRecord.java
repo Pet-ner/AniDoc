@@ -2,7 +2,7 @@ package com.petner.anidoc.domain.vet.medicalrecord.entity;
 
 import com.petner.anidoc.domain.user.pet.entity.Pet;
 import com.petner.anidoc.domain.user.user.entity.User;
-import com.petner.anidoc.domain.vet.checkup.entity.CheckupResult;
+import com.petner.anidoc.domain.vet.checkuprecord.entity.CheckupRecord;
 import com.petner.anidoc.domain.vet.prescription.entity.Prescription;
 import com.petner.anidoc.domain.vet.reservation.entity.Reservation;
 import com.petner.anidoc.global.jpa.BaseEntity;
@@ -56,7 +56,7 @@ public class MedicalRecord extends BaseEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL)
-    private List<CheckupResult> checkupResults = new ArrayList<>();
+    private List<CheckupRecord> checkupResults = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL)

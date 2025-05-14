@@ -22,7 +22,7 @@ import java.time.LocalDate;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/notifications")
-@Tag(name = "SSE 알림 API", description = "알림기능 API")
+@Tag(name = "알림", description = "notification 관련 API")
 public class NotificationSseController {
     // SSE 연결들을 관리하는 컴포넌트
     private final SseEmitters sseEmitters;
