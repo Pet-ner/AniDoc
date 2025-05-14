@@ -21,6 +21,7 @@ public class MedicalRecordRequestDto {
     private boolean isSurgery;
     private boolean isHospitalized;
     private boolean isCheckedUp;
+    private boolean isDeleted;
 
 
 }
