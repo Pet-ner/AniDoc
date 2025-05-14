@@ -55,7 +55,6 @@ public class MedicalRecordService {
         return MedicalRecordResponseDto.from(savedRecord);
     }
 
-
     @Transactional
     public MedicalRecordResponseDto getMedicalRecord(Long userId, Long medicalRecordId){
 
@@ -82,7 +81,6 @@ public class MedicalRecordService {
 
         medicalRecord.setIsDeleted(true); //soft delete
         medicalRecordRepository.save(medicalRecord);
-
     }
 
     @Transactional
@@ -97,9 +95,7 @@ public class MedicalRecordService {
         MedicalRecord medicalRecord = medicalRecordRepository.findByIdAndIsDeletedFalse(medicalRecordId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 진료기록이 존재하지 않거나 삭제되었습니다."));
 
-
         medicalRecord.updateFromDto(medicalRecordRequestDto);
-
         return MedicalRecordResponseDto.from(medicalRecord);
 
 

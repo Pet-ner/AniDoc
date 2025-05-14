@@ -10,10 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Long> {
-
-//    @Query("SELECT m FROM MedicalRecord m WHERE m.id = :id AND m.isDeleted = false")
-//    Optional<MedicalRecord> findByIdAndNotDeleted(@Param("id") Long id);
-
     Optional<MedicalRecord> findByIdAndIsDeletedFalse(Long id);
 
 }
