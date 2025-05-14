@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,7 +68,7 @@ public class ReservationService {
 
         // TODO: 알림 기능 추가 (의료진/관리자)
 
-        return mapToResponseDto(savedReservation);
+        return ReservationResponseDto.fromEntity(savedReservation);
     }
 
     // 예약 목록 조회 (사용자별)
@@ -78,7 +77,7 @@ public class ReservationService {
         List<Reservation> reservations = reservationRepository.findByUserOrderByReservationDateDescReservationTimeDesc(user);
 
         return reservations.stream()
-                .map(this::mapToResponseDto)
+                .map(ReservationResponseDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -90,7 +89,7 @@ public class ReservationService {
         List<Reservation> reservations = reservationRepository.findByPetOrderByReservationDateDescReservationTimeDesc(pet);
 
         return reservations.stream()
-                .map(this::mapToResponseDto)
+                .map(ReservationResponseDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -99,7 +98,7 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
 
-        return mapToResponseDto(reservation);
+        return ReservationResponseDto.fromEntity(reservation);
     }
 
     // 예약 수정
@@ -162,7 +161,7 @@ public class ReservationService {
 
         // TODO: 알림 기능 추가 (의료진/관리자)
 
-        return mapToResponseDto(updatedReservation);
+        return ReservationResponseDto.fromEntity(updatedReservation);
     }
 
     // 예약 상태 변경 (관리자/의료진용)
@@ -196,7 +195,7 @@ public class ReservationService {
 
         // TODO: 알림 기능 추가 (사용자)
 
-        return mapToResponseDto(updatedReservation);
+        return ReservationResponseDto.fromEntity(updatedReservation);
     }
 
     // 예약 취소
@@ -226,7 +225,7 @@ public class ReservationService {
         List<Reservation> reservations = reservationRepository.findByReservationDateOrderByReservationTime(date);
 
         return reservations.stream()
-                .map(this::mapToResponseDto)
+                .map(ReservationResponseDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -272,26 +271,6 @@ public class ReservationService {
         result.put("days", calendarDays);
 
         return result;
-    }
-
-    // Reservation 엔티티를 DTO로 변환
-    private ReservationResponseDto mapToResponseDto(Reservation reservation) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-        return ReservationResponseDto.builder()
-                .id(reservation.getId())
-                .userId(reservation.getUser().getId())
-                .userName(reservation.getUser().getName())
-                .petId(reservation.getPet().getId())
-                .petName(reservation.getPet().getName())
-                .reservationDate(reservation.getReservationDate())
-                .reservationTime(reservation.getReservationTime())
-                .status(reservation.getStatus())
-                .symptom(reservation.getSymptom())
-                .type(reservation.getType())
-                .createdAt(reservation.getCreatedAt().format(formatter))
-                .updatedAt(reservation.getUpdatedAt().format(formatter))
-                .build();
     }
 
 }
