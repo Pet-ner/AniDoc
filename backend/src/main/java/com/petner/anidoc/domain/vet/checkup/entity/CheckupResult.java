@@ -23,8 +23,9 @@ public class CheckupResult extends BaseEntity {
     @JoinColumn(name = "record_id", nullable = false)
     private MedicalRecord medicalRecord;
 
-    @Column(length = 100)
-    private String type;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "checkup_type")
+    private CheckupType checkupType;
 
     @Column(columnDefinition = "TEXT")
     private String result;
@@ -36,5 +37,5 @@ public class CheckupResult extends BaseEntity {
     private LocalDate checkupDate;
 
     @Enumerated(EnumType.STRING)
-    private CheckupStatus status;
+    private CheckupStatus status; //검사상태(검사전, 검사중, 검사완료)
 }

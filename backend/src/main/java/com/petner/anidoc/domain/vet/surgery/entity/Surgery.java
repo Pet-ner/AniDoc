@@ -34,8 +34,9 @@ public class Surgery extends BaseEntity {
     @Column(name = "surgery_date")
     private LocalDate surgeryDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "anesthesia_type", length = 100)
-    private String anesthesiaType;
+    private AnesthesiaType anesthesiaType; //마취 종류
 
     @Column(name = "surgery_note", columnDefinition = "TEXT")
     private String surgeryNote;

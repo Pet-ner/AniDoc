@@ -12,6 +12,8 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.List;
 
 @Entity
 @Getter
@@ -44,4 +46,20 @@ public class Reservation extends BaseEntity {
     @Column(nullable = false)
     private ReservationType type;
 
+    // 예약 시간 슬롯
+    public static final List<LocalTime> RESERVATION_TIMES = Arrays.asList(
+            LocalTime.of(9, 0), LocalTime.of(9, 30),
+            LocalTime.of(10, 0), LocalTime.of(10, 30),
+            LocalTime.of(11, 0), LocalTime.of(11, 30),
+            LocalTime.of(13, 0), LocalTime.of(13, 30),
+            LocalTime.of(14, 0), LocalTime.of(14, 30),
+            LocalTime.of(15, 0), LocalTime.of(15, 30),
+            LocalTime.of(16, 0), LocalTime.of(16, 30),
+            LocalTime.of(17, 0), LocalTime.of(17, 30)
+    );
+
+    // 입력된 시간이 유효한 예약 시간인지 확인
+    public static boolean isValidReservationTime(LocalTime time) {
+        return RESERVATION_TIMES.contains(time);
+    }
 }
