@@ -1,10 +1,8 @@
 package com.petner.anidoc.domain.user.pet.entity;
 
 import com.petner.anidoc.domain.user.user.entity.User;
-import com.petner.anidoc.domain.vet.hospitalization.entity.Hospitalization;
 import com.petner.anidoc.domain.vet.medicalrecord.entity.MedicalRecord;
 import com.petner.anidoc.domain.vet.reservation.entity.Reservation;
-import com.petner.anidoc.domain.vet.surgery.entity.Surgery;
 import com.petner.anidoc.domain.vet.vaccination.entity.Vaccination;
 import com.petner.anidoc.global.jpa.BaseEntity;
 import jakarta.persistence.*;
