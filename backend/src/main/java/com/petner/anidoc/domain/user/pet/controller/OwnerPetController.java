@@ -27,7 +27,7 @@ public class OwnerPetController {
     //반려동물 등록
     @PostMapping("/petreg")
     public ResponseEntity<?> registerPet(
-            @RequestParam("owner_Id") Long owner_Id,
+            @RequestParam("ownerId") Long ownerId,
             @Valid @RequestBody OwnerPetRequestDTO ownerPetRequestDTO,
             BindingResult bindingResult) {
 
@@ -41,7 +41,7 @@ public class OwnerPetController {
         if (owner_Id == null) {
             return ResponseEntity.badRequest().body("ownerId는 null일 수 없습니다.");
         }
-        User user = userRepository.findById(owner_Id)
+        User user = userRepository.findById(ownerId)
                 .orElseThrow(() -> new RuntimeException("보호자를 찾을수없어요"));
 
         Pet pet = ownerPetRegistService.registerPet(ownerPetRequestDTO, user);
@@ -53,7 +53,7 @@ public class OwnerPetController {
     @PutMapping("/{petId}")
     public ResponseEntity<?> updatePet(
             @PathVariable Long petId,
-            @RequestParam("owner_Id") Long owner_Id,
+            @RequestParam("ownerId") Long ownerId,
             @Valid @RequestBody OwnerPetRequestDTO ownerPetRequestDTO,
             BindingResult bindingResult) {
 
@@ -68,7 +68,7 @@ public class OwnerPetController {
             return ResponseEntity.badRequest().body("ownerId는 null일 수 없습니다.");
         }
 
-        User user = userRepository.findById(owner_Id)
+        User user = userRepository.findById(ownerId)
                 .orElseThrow(() -> new RuntimeException("보호자를 찾을 수 없습니다."));
 
         Pet pet = ownerPetRegistService.updatePet(petId, ownerPetRequestDTO, user);
