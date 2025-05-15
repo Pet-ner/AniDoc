@@ -1,12 +1,10 @@
 package com.petner.anidoc.domain.vet.checkuprecord.entity;
 
+import com.petner.anidoc.domain.vet.checkuprecord.dto.CheckupRecordRequestDto;
 import com.petner.anidoc.domain.vet.medicalrecord.entity.MedicalRecord;
 import com.petner.anidoc.global.jpa.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
@@ -38,4 +36,21 @@ public class CheckupRecord extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private CheckupStatus status; //검사상태(검사전, 검사중, 검사완료)
+
+    @Builder.Default
+    @Column(name="is_deleted")
+    private Boolean isDeleted = false;
+
+    public void markAsDeleted(){
+        this.isDeleted=true;
+    }
+
+    public void updateFromDto(CheckupRecordRequestDto dto) {
+        this.checkupType = dto.getCheckupType();
+        this.result = dto.getResult();
+        this.resultUrl = dto.getResultUrl();
+        this.checkupDate = dto.getCheckupDate();
+        this.status = dto.getStatus();
+    }
+
 }
