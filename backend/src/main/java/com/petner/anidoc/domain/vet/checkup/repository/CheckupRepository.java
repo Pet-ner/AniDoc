@@ -8,5 +8,4 @@ import java.util.Optional;
 
 public interface CheckupRepository extends JpaRepository<CheckupRecord, Long> {
     List<CheckupRecord> findAllByMedicalRecordId(Long medicalRecordId);
-    Optional<>
 }
