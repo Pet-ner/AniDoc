@@ -41,24 +41,24 @@ public class CheckupRecordController {
         return ResponseEntity.ok(records);
     }
 
-    @PutMapping("/{checkupId}")
+    @PutMapping("/{checkupRecordId}")
     @Operation(summary = "검사 결과 수정", description = "의료진이 진료기록에 검사 결과를 수정")
-    public ResponseEntity<CheckupRecordResponseDto> updateCheckup(
+    public ResponseEntity<CheckupRecordResponseDto> updateCheckupRecord(
             @RequestBody CheckupRecordRequestDto requestDto,
             @RequestParam Long userId,
             @PathVariable Long medicalRecordId,
-            @PathVariable("checkupId") Long checkupRecordId
+            @PathVariable Long checkupRecordId
     ) throws AccessDeniedException {
         CheckupRecordResponseDto updated = checkupRecordService.updateCheckupRecord(requestDto, userId, medicalRecordId, checkupRecordId);
         return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/{checkupId}")
+    @DeleteMapping("/{checkupRecordId}")
     @Operation(summary = "검사 결과 삭제", description = "의료진이 진료기록에 검사 결과를 삭제")
-    public ResponseEntity<Void> deleteCheckup(
+    public ResponseEntity<Void> deleteCheckupRecord(
             @RequestParam Long userId,
             @PathVariable Long medicalRecordId,
-            @PathVariable("checkupId") Long checkupRecordId
+            @PathVariable Long checkupRecordId
     ) throws AccessDeniedException {
         checkupRecordService.deleteCheckupRecord(userId, medicalRecordId, checkupRecordId);
         return ResponseEntity.noContent().build();
