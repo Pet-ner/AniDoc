@@ -25,6 +25,8 @@ import java.util.List;
 @ToString(exclude = "password")
 @Table(name = "users")
 public class User extends BaseEntity implements UserDetails {
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vet_id")
     private VetInfo vetInfo;
@@ -93,4 +95,31 @@ public class User extends BaseEntity implements UserDetails {
     public String getUsername() {
         return this.email;
     }
+
+    @Override
+    public boolean isAccountNonExpired(){
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked(){
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired(){
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled(){
+        return true;
+    }
+
+    //refreshToken 발급
+    public void updateRefreshToken(String refreshToken){
+        this.refreshToken = refreshToken;
+    }
+
+
 }
