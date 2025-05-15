@@ -72,6 +72,21 @@ public class NoticeService {
 
         notice.updateFromDto(noticeRequestDto);
 
+    //수정 알림 트리거
+        NoticeNotificationDto dto = NoticeNotificationDto.builder()
+                .noticeId(notice.getId())
+                .title(notice.getTitle())
+                .content(notificationService.getSummary(notice.getContent()))
+                .writerName(user.getName())
+                .createdAt(notice.getCreatedAt())
+                .build();
+        // 이벤트명 추가(선택), 프론트에 push
+        notificationService.notifyAll(
+                NotificationType.NOTICE,
+                "[수정]공지사항 등록: " + dto.getTitle(),
+                dto
+        );
+
         return NoticeResponseDto.from(notice);
     }
 
