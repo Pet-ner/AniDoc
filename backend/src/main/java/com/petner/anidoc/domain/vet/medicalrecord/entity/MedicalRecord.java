@@ -4,9 +4,12 @@ import com.petner.anidoc.domain.user.pet.entity.Pet;
 import com.petner.anidoc.domain.user.user.entity.User;
 
 import com.petner.anidoc.domain.vet.checkuprecord.entity.CheckupRecord;
+import com.petner.anidoc.domain.vet.hospitalizationrecord.entity.HospitalizationRecord;
+import com.petner.anidoc.domain.vet.medicalrecord.dto.MedicalRecordRequestDto;
 import com.petner.anidoc.domain.vet.prescription.entity.Prescription;
 import com.petner.anidoc.domain.vet.reservation.entity.Reservation;
-import com.petner.anidoc.domain.vet.surgery.entity.Surgery;
+import com.petner.anidoc.domain.vet.surgeryrecord.entity.SurgeryRecord;
+import com.petner.anidoc.domain.vet.surgeryrecord.entity.SurgeryRecord;
 import com.petner.anidoc.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -81,12 +84,16 @@ public class MedicalRecord extends BaseEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<Surgery> surgeries = new ArrayList<>();
+    private List<SurgeryRecord> surgeries = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<Hospitalization> hospitalizations = new ArrayList<>();
+    private List<HospitalizationRecord> hospitalizations = new ArrayList<>();
 
+
+    public void markAsDeleted(){
+        this.isDeleted=true;
+    }
 
     public void updateFromDto(MedicalRecordRequestDto dto) {
         this.age = dto.getAge();
