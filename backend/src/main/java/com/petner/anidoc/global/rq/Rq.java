@@ -1,6 +1,7 @@
 package com.petner.anidoc.global.rq;
 
 import com.petner.anidoc.domain.user.user.entity.User;
+import com.petner.anidoc.domain.user.user.service.AuthTokenService;
 import com.petner.anidoc.domain.user.user.service.UserService;
 import com.petner.anidoc.global.exception.CustomException;
 import com.petner.anidoc.global.exception.ErrorCode;
@@ -8,6 +9,7 @@ import com.petner.anidoc.global.security.SecurityUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -38,6 +40,11 @@ public class Rq {
     private final HttpServletRequest req;
     private final HttpServletResponse resp;
     private final UserService userService;
+    private final AuthTokenService authTokenService;
+
+    @Value("${custom.cookieDomain}")
+    private String cookieDomain;
+
 
     // ✅ SecurityContextHolder에 인증 정보 등록
     public void setLogin(User user){
@@ -102,7 +109,7 @@ public class Rq {
     public void deleteCookie(String name){
         ResponseCookie cookie = ResponseCookie.from(name, null)
                 .path("/")
-                .domain("localhost")
+                .domain(cookieDomain)
                 .sameSite("Strict")
                 .secure(true)
                 .httpOnly(true)
@@ -167,8 +174,9 @@ public class Rq {
     //✅ 인증 후 쿠키 발급
     public String makeAuthCookies(User user){
         String accessToken = userService.genAccessToken(user);
+        String refreshToken = authTokenService.generateRefreshToken(user);
 
-        setCookie("refreshToken", user.getRefreshToken());
+        setCookie("refreshToken", refreshToken);
         setCookie("accessToken", accessToken);
 
         return accessToken;

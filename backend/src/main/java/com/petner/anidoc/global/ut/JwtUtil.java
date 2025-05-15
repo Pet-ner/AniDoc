@@ -69,7 +69,7 @@ public class JwtUtil {
             } else if (payload instanceof Map) {
                 payloadMap = new HashMap<>((Map<String, Object>) payload);
             } else {
-                System.out.println("⚠예상치 못한 payload 타입: " + payload.getClass());
+                System.out.println("예상치 못한 payload 타입: " + payload.getClass());
                 return null;
             }
             return payloadMap;

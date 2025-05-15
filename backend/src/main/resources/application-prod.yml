@@ -4,3 +4,5 @@ custom:
     cookieDomain: "${custom.prod.cookieDomain}"
     frontUrl: "${custom.prod.frontUrl}"
     backUrl: "${custom.prod.backUrl}"
+
+  cookieDomain: NEED_TO_INPUT

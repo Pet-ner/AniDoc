@@ -64,6 +64,8 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    //TODO: 비밀번호 확인 기능
+
     // ✅ 일반 로그인
     @Transactional
     public UserResponseDto login(LoginRequestDto loginDto){
@@ -71,10 +73,11 @@ public class UserService {
         // 사용자 조회(email)
         User user = userRepository.findByEmail(loginDto.getEmail())
                 .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
-        boolean isMatch = passwordEncoder.matches(loginDto.getPassword(), user.getPassword());
 
         // 비밀번호 확인
-        if(!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())){
+        boolean isMatch = passwordEncoder.matches(loginDto.getPassword(), user.getPassword());
+
+        if (!isMatch) {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
         }
 

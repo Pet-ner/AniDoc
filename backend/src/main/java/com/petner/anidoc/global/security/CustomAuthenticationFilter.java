@@ -12,6 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
     // ✅ 요청에서 accessToken or refreshToken 추출
     private AuthTokens getAuthTokensFromRequest(){
-        // 1. Authorization 헤더에서 accessToken 추출
+        // Authorization 헤더에서 accessToken 추출
         String authorization = rq.getHeader("Authorization");
         System.out.println("헤더: " + rq.getHeader("Authorization"));
 
@@ -54,48 +55,24 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // ✅ /api/ 로 시작하지 않는 요청은 필터 거치지 않게 함
-        if (!request.getRequestURI().startsWith("/api/")) {
+        String uri = request.getRequestURI();
+
+        // 필터를 적용하지 않을 조건
+        if (!uri.startsWith("/api/") ||
+                List.of("/api/users/signup", "/api/users/login", "/api/users/register").contains(uri)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // ✅ 인증이 필요 없는 엔드포인트 필터 통과 처리
-        if (List.of(
-                "/api/users/signup",
-                "/api/users/login",
-//                "/api/users/logout",
-                "/api/users/register"
-        ).contains(request.getRequestURI())) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        // 토큰 처리 및 사용자 인증
+        Optional.ofNullable(getAuthTokensFromRequest())
+                .ifPresent(authTokens ->
+                        Optional.ofNullable(rq.getUserByAccessToken(authTokens.accessToken))
+                                .or(() -> Optional.ofNullable(refreshAccessTokenByRefreshToken(authTokens.refreshToken)))
+                                .ifPresent(rq::setLogin)
+                );
 
-        // ✅ 요청에서 토큰 추출
-        AuthTokens authTokens = getAuthTokensFromRequest();
-
-        // 토큰이 없으면 통과 (*비인증)
-        if (authTokens == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String refreshToken = authTokens.refreshToken;
-        String accessToken = authTokens.accessToken;
-
-        // ✅ accessToken으로 사용자 조회
-        User user = rq.getUserByAccessToken(accessToken);
-
-        // ✅ accessToken으로 유저를 못 찾으면 refreshToken으로 시도
-        if (user == null)
-            user = refreshAccessTokenByRefreshToken(refreshToken);
-
-        // ✅ 인증된 유저라면 세션에 로그인 처리
-        if (user != null)
-            rq.setLogin(user);
-
-        // ✅ 다음 필터로 요청 전달
+        // 다음 필터로 요청 전달
         filterChain.doFilter(request, response);
     }
-
 }

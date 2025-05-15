@@ -11,11 +11,13 @@ import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.global.exception.CustomException;
 import com.petner.anidoc.global.exception.ErrorCode;
 import com.petner.anidoc.global.rq.Rq;
+import com.petner.anidoc.global.security.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
@@ -80,9 +82,15 @@ public class UserController {
                     .userId(user.getId())
                     .build();
             return ResponseEntity.ok(loginResponseDto);
+        } catch (CustomException ce) {
+            // 원래 예외를 그대로 전달
+            throw ce;
         } catch (Exception e) {
+            log.error("로그인 중 예상치 못한 오류 발생: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.LOGIN_FAILED);
         }
+
+    // TODO : 에러 코드 세분화(USER가 존재하지 않습니다, 비밀번호가 다릅니다 등)
     }
 
 
@@ -90,13 +98,17 @@ public class UserController {
     @Operation(summary = "로그아웃", description = "Logout 관련 API")
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader(value = "Authorization", required = false) String header) {
-        System.out.println("Authorization Header: " + header);
 
         if (header == null || !header.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("올바른 인증 토큰이 필요합니다.");
         }
 
         String accessToken = header.substring(7);
+
+        // 토큰 유효성 검사
+        if (!authTokenService.isValid(accessToken)){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+        }
         userService.logout(accessToken);
 
 
@@ -109,8 +121,8 @@ public class UserController {
     // ✅ 회원 탈퇴
     @Operation(summary = "회원 탈퇴", description = "Withdraw 관련 API")
     @DeleteMapping("/withdraw")
-    public ResponseEntity<String> withdraw(){
-        Long userId = rq.getActor().getId();
+    public ResponseEntity<String> withdraw(@AuthenticationPrincipal SecurityUser securityUser){
+        Long userId = securityUser.getId();
         userService.deleteUser(userId);
 
         return ResponseEntity.ok("회원 탈퇴 성공");

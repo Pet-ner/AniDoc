@@ -25,9 +25,7 @@ public class UserSignUpRequestDto {
     @NotBlank(message = "비밀번호를 입력해주세요.")
     private String password;
 
-    private String checkedPassword;
     private UserRole role;
-
     private String phoneNumber;
     private String emergencyContact;
 
@@ -38,7 +36,7 @@ public class UserSignUpRequestDto {
                 .email(email)
                 .password(password)
                 .role(UserRole.ROLE_USER)
-                .password(phoneNumber)
+                .phoneNumber(phoneNumber)
                 .emergencyContact(emergencyContact)
                 .build();
     }
