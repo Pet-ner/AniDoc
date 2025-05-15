@@ -26,6 +26,9 @@ public class MedicalRecordResponseDto {
     private boolean isSurgery;
     private boolean isHospitalized;
     private boolean isCheckedUp;
+    private boolean isDeleted;
+
+
 
     public static MedicalRecordResponseDto from(MedicalRecord medicalRecord) {
         return MedicalRecordResponseDto.builder()
@@ -39,6 +42,7 @@ public class MedicalRecordResponseDto {
                 .isSurgery(medicalRecord.getIsSurgery())
                 .isHospitalized(medicalRecord.getIsHospitalized())
                 .isCheckedUp(medicalRecord.getIsCheckedUp())
+                .isDeleted(medicalRecord.getIsDeleted())
                 .build();
     }
 

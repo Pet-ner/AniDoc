@@ -5,6 +5,7 @@ import com.petner.anidoc.domain.user.notification.entity.NotificationType;
 import com.petner.anidoc.domain.user.notification.repository.NotificationRepository;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ public class NotificationService {
     private final UserRepository userRepository;
 
     //특정 사용자에게 알림 저장 및 전송
+    @Transactional
     public void notifyUser(Long userId, NotificationType type, String content, Object data){
 
         //알림 DB 저장
@@ -36,12 +38,23 @@ public class NotificationService {
     }
 
     //전체 사용자에게 알림 저장 및 전송 (공지사항)
+    @Transactional
     public void notifyAll(NotificationType type, String content, Object data){
         List<User> allUsers = userRepository.findAll();
         for (User user : allUsers) {
             notifyUser(user.getId(), type, content, data);
         }
 
+    }
+
+    //content 1문장 요약 함수
+    public String getSummary(String content){
+        if(content == null) return "";
+        int idx = content.indexOf(".");
+        if(idx > 0) {
+            return content.substring(0, idx) + "...";
+        }
+        return content;
     }
 
 }
