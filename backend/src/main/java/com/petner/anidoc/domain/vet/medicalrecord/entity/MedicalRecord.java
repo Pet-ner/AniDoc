@@ -19,7 +19,6 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
@@ -84,6 +83,10 @@ public class MedicalRecord extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<HospitalizationRecord> hospitalizations = new ArrayList<>();
+
+    public void markAsDeleted(){
+        this.isDeleted=true;
+    }
 
 
     public void updateFromDto(MedicalRecordRequestDto dto) {

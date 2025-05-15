@@ -39,4 +39,8 @@ public class CheckupRecord extends BaseEntity {
     @Builder.Default
     @Column(name="is_deleted")
     private Boolean isDeleted = false;
+
+    public void markAsDeleted(){
+        this.isDeleted=true;
+    }
 }

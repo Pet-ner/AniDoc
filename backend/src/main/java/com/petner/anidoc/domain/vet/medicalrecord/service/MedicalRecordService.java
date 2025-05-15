@@ -79,7 +79,7 @@ public class MedicalRecordService {
             throw new AccessDeniedException("진료 기록을 삭제할 권한이 없습니다.");
         }
 
-        medicalRecord.setIsDeleted(true); //soft delete
+        medicalRecord.markAsDeleted(); //soft delete
         medicalRecordRepository.save(medicalRecord);
     }
 
