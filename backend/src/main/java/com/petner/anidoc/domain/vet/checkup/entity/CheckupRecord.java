@@ -1,5 +1,6 @@
 package com.petner.anidoc.domain.vet.checkup.entity;
 
+import com.petner.anidoc.domain.vet.checkup.dto.CheckupRequestDto;
 import com.petner.anidoc.domain.vet.medicalrecord.entity.MedicalRecord;
 import com.petner.anidoc.global.jpa.BaseEntity;
 import jakarta.persistence.*;
@@ -42,5 +43,13 @@ public class CheckupRecord extends BaseEntity {
 
     public void markAsDeleted(){
         this.isDeleted=true;
+    }
+
+    public void updateFromDto(CheckupRequestDto dto) {
+        this.checkupType = dto.getCheckupType();
+        this.result = dto.getResult();
+        this.resultUrl = dto.getResultUrl();
+        this.checkupDate = dto.getCheckupDate();
+        this.status = dto.getStatus();
     }
 }

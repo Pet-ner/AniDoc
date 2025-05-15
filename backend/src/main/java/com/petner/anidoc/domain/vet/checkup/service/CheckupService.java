@@ -31,8 +31,8 @@ public class CheckupService {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
-        MedicalRecord medicalRecord = medicalRecordRepository.findById(medicalRecordId)
-                .orElseThrow(()-> new IllegalArgumentException("해당 진료기록이 존재하지 않습니다."));
+        MedicalRecord medicalRecord = medicalRecordRepository.findByIdAndIsDeletedFalse(medicalRecordId)
+                .orElseThrow(()-> new IllegalArgumentException("해당 진료기록이 존재하지 않거나 이미 삭제되었습니다."));
 
 
         if(!user.getRole().equals(UserRole.ROLE_STAFF)){
@@ -58,8 +58,8 @@ public class CheckupService {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
-        MedicalRecord medicalRecord = medicalRecordRepository.findById(medicalRecordId)
-                .orElseThrow(()-> new IllegalArgumentException("해당 진료기록이 존재하지 않습니다."));
+        MedicalRecord medicalRecord = medicalRecordRepository.findByIdAndIsDeletedFalse(medicalRecordId)
+                .orElseThrow(()-> new IllegalArgumentException("해당 진료기록이 존재하지 않거나 이미 삭제되었습니다."));
 
         List<CheckupRecord> checkupRecords = checkupRepository.findAllByMedicalRecordId(medicalRecordId);
 
@@ -78,8 +78,8 @@ public class CheckupService {
                 .orElseThrow(()-> new IllegalArgumentException("해당 진료기록이 존재하지 않거나 이미 삭제되었습니다."));
 
 
-        CheckupRecord checkupRecord = checkupRepository.findById(medicalRecordId)
-                .orElseThrow(()-> new IllegalArgumentException("해당 검사 기록이 존재하지 않습니다."));
+        CheckupRecord checkupRecord = checkupRepository.findByIdAndIsDeletedFalse(medicalRecordId)
+                .orElseThrow(()-> new IllegalArgumentException("해당 검사 기록이 존재하지 않거나 이미 삭제되었습니다."));
 
         if(!user.getRole().equals(UserRole.ROLE_STAFF)){
             throw new AccessDeniedException("검사 기록을 삭제할 권한이 없습니다.");
@@ -89,7 +89,7 @@ public class CheckupService {
     }
 
     @Transactional
-    public CheckupResponseDto updateCheckupRecord(Long userId, Long medicalRecordId, Long checkupRecordId) throws AccessDeniedException {
+    public CheckupResponseDto updateCheckupRecord(CheckupRequestDto checkupRequestDto,Long userId, Long medicalRecordId, Long checkupRecordId) throws AccessDeniedException {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
@@ -97,12 +97,15 @@ public class CheckupService {
                 .orElseThrow(()-> new IllegalArgumentException("해당 진료기록이 존재하지 않거나 이미 삭제되었습니다."));
 
 
-        CheckupRecord checkupRecord = checkupRepository.findById(medicalRecordId)
-                .orElseThrow(()-> new IllegalArgumentException("해당 검사 기록이 존재하지 않습니다."));
+        CheckupRecord checkupRecord = checkupRepository.findByIdAndIsDeletedFalse(checkupRecordId)
+                .orElseThrow(()-> new IllegalArgumentException("해당 검사 기록이 존재하지 않거나 이미 삭제되었습니다."));
 
         if(!user.getRole().equals(UserRole.ROLE_STAFF)){
-            throw new AccessDeniedException("검사 기록을 삭제할 권한이 없습니다.");
+            throw new AccessDeniedException("검사 기록을 수정할 권한이 없습니다.");
         }
+
+        checkupRecord.updateFromDto(checkupRequestDto);
+        return CheckupResponseDto.from(checkupRecord);
     }
 
 }
