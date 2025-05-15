@@ -23,7 +23,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/reservations")
-@Tag(name = "Reservation", description = "진료 예약 API")
+@Tag(name = "예약", description = "Reservation 관련 API")
 public class ReservationController {
 
     private final ReservationService reservationService;
