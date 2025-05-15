@@ -42,6 +42,12 @@ public class SurgeryRecordService {
             throw new AccessDeniedException("수술 기록을 작성할 권한이 없습니다.");
         }
 
+        if (surgeryRecordRepository.existsByMedicalRecord(medicalRecord)) {
+            throw new IllegalStateException("이미 해당 진료기록에 수술기록이 존재합니다.");
+        }
+
+        medicalRecord.setIsSurgery(true);
+
         SurgeryRecord surgery = SurgeryRecord.builder()
                 .medicalRecord(medicalRecord)
                 .pet(medicalRecord.getPet()) // 이미 연관된 pet 사용 가능
@@ -57,18 +63,18 @@ public class SurgeryRecordService {
     }
 
     @Transactional
-    public List<SurgeryRecordResponseDto> getSurgeryRecord(Long userId, Long medicalRecordId){ //진료기록 기준 모든 수술기록 조회
+    public SurgeryRecordResponseDto getSurgeryRecord(Long userId, Long medicalRecordId){ //진료기록 기준 모든 수술기록 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
         MedicalRecord medicalRecord = medicalRecordRepository.findById(medicalRecordId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 진료기록이 존재하지 않습니다."));
 
-        List<SurgeryRecord> surgeryRecords = surgeryRecordRepository.findAllByMedicalRecordId(medicalRecordId);
+        SurgeryRecord surgeryRecord = surgeryRecordRepository.findByMedicalRecordAndIsDeletedFalse(medicalRecord)
+                .orElseThrow(()-> new IllegalArgumentException("해당 진료기록에 수술 기록이 존재하지 않거나 이미삭제되었습니다."));
 
-        return surgeryRecords.stream()
-                .map(SurgeryRecordResponseDto::from)
-                .collect(Collectors.toList());
+        return SurgeryRecordResponseDto.from(surgeryRecord);
+
     }
 
     @Transactional
@@ -87,6 +93,7 @@ public class SurgeryRecordService {
             throw new AccessDeniedException("수술 기록을 삭제할 권한이 없습니다.");
         }
 
+        medicalRecord.setIsSurgery(false);
         surgeryRecord.markAsDeleted();
     }
 

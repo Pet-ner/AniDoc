@@ -39,6 +39,8 @@ public class CheckupRecordService {
             throw new AccessDeniedException("진료 기록을 작성할 권한이 없습니다.");
         }
 
+        medicalRecord.setIsCheckedUp(true);
+
         CheckupRecord checkupRecord = CheckupRecord.builder()
                 .medicalRecord(medicalRecord)
                 .checkupType(checkupRecordRequestDto.getCheckupType())
@@ -78,11 +80,15 @@ public class CheckupRecordService {
                 .orElseThrow(()-> new IllegalArgumentException("해당 진료기록이 존재하지 않거나 이미 삭제되었습니다."));
 
 
-        CheckupRecord checkupRecord = checkupRecordRepository.findById(medicalRecordId)
+        CheckupRecord checkupRecord = checkupRecordRepository.findById(checkupRecordId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 검사 기록이 존재하지 않습니다."));
 
         if(!user.getRole().equals(UserRole.ROLE_STAFF)){
             throw new AccessDeniedException("검사 기록을 삭제할 권한이 없습니다.");
+        }
+
+        if (!checkupRecordRepository.existsByMedicalRecordAndIsDeletedFalse(medicalRecord)) {
+            medicalRecord.setIsCheckedUp(false);
         }
 
         checkupRecord.markAsDeleted();

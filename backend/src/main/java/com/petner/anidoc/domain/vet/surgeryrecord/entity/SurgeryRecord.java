@@ -19,7 +19,7 @@ import java.time.LocalDate;
 @Table(name = "surgery_records")
 public class SurgeryRecord extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "record_id", nullable = false)
+    @JoinColumn(name = "record_id", nullable = false, unique = true)
     private MedicalRecord medicalRecord;
 
     @ManyToOne(fetch = FetchType.LAZY)

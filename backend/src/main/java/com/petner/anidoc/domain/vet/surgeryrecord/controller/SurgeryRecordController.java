@@ -34,13 +34,13 @@ public class SurgeryRecordController {
     }
 
     @GetMapping
-    @Operation(summary = "진료 기록에 대한 모든 수술 기록 조회", description = "의료진이 진료기록에 수술 기록을 조회")
-    public ResponseEntity<List<SurgeryRecordResponseDto>> getSurgeryRecord(
+    @Operation(summary = "진료 기록에 대한 수술 기록 조회", description = "의료진이 진료기록에 수술 기록을 조회")
+    public ResponseEntity<SurgeryRecordResponseDto> getSurgeryRecord(
             @RequestParam Long userId,
             @PathVariable Long medicalRecordId
     ) {
-        List<SurgeryRecordResponseDto> records = surgeryRecordService.getSurgeryRecord(userId, medicalRecordId);
-        return ResponseEntity.ok(records);
+        SurgeryRecordResponseDto record = surgeryRecordService.getSurgeryRecord(userId, medicalRecordId);
+        return ResponseEntity.ok(record);
     }
 
     @PutMapping("/{surgeryRecordId}")
