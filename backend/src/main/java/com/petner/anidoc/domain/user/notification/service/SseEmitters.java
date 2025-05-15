@@ -25,18 +25,31 @@ public class SseEmitters {
         emitters.computeIfAbsent(userId, k-> new CopyOnWriteArrayList<>()).add(emitter);
 
         // 클라이언트와의 연결이 완료되면 컬렉션에서 제거하는 콜백
+//        emitter.onCompletion(() -> {
+//            this.emitters.remove(userId, emitter);
+//        });
         emitter.onCompletion(() -> {
-            this.emitters.remove(userId, emitter);
+            List<SseEmitter> list = this.emitters.get(userId);
+            if (list != null) list.remove(emitter);
         });
 
         // 연결이 타임아웃되면 완료 처리하는 콜백
+//        emitter.onTimeout(() -> {
+//            this.emitters.remove(userId, emitter);
+//        });
         emitter.onTimeout(() -> {
-            this.emitters.remove(userId, emitter);
+            List<SseEmitter> list = this.emitters.get(userId);
+            if (list != null) list.remove(emitter);
         });
 
-        emitter.onError(throwable -> {
-            this.emitters.remove(userId, emitter);
+//        emitter.onError(throwable -> {
+//            this.emitters.remove(userId, emitter);
+//
+//        });
 
+        emitter.onError(e -> {
+            List<SseEmitter> list = this.emitters.get(userId);
+            if (list != null) list.remove(emitter);
         });
 
         return emitter;

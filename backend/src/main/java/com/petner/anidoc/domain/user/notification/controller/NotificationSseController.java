@@ -18,11 +18,12 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/notifications")
-@Tag(name = "알림", description = "notification 관련 API")
+@Tag(name = "SSE 알림 API", description = "알림기능 API")
 public class NotificationSseController {
     // SSE 연결들을 관리하는 컴포넌트
     private final SseEmitters sseEmitters;
@@ -86,7 +87,7 @@ public class NotificationSseController {
                 .noticeId(100L)
                 .title("시스템 점검 안내")
                 .writerName("관리자")
-                .createdAt(LocalDate.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         notificationService.notifyAll(
