@@ -9,7 +9,6 @@ import com.petner.anidoc.domain.vet.medicalrecord.dto.MedicalRecordRequestDto;
 import com.petner.anidoc.domain.vet.prescription.entity.Prescription;
 import com.petner.anidoc.domain.vet.reservation.entity.Reservation;
 import com.petner.anidoc.domain.vet.surgeryrecord.entity.SurgeryRecord;
-import com.petner.anidoc.domain.vet.surgeryrecord.entity.SurgeryRecord;
 import com.petner.anidoc.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -72,12 +71,12 @@ public class MedicalRecord extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name="update_status")
     private UpdateStatus updateStatus = UpdateStatus.NOT_EDITED;
-  
+
     @Builder.Default
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL)
     private List<CheckupRecord> checkupResults = new ArrayList<>();
 
-  
+
     @Builder.Default
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Prescription> prescriptions = new ArrayList<>();
@@ -89,7 +88,6 @@ public class MedicalRecord extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<HospitalizationRecord> hospitalizations = new ArrayList<>();
-
 
     public void markAsDeleted(){
         this.isDeleted=true;
