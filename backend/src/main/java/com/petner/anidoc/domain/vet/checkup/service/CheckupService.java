@@ -3,9 +3,9 @@ package com.petner.anidoc.domain.vet.checkup.service;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.entity.UserRole;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
-import com.petner.anidoc.domain.vet.checkup.dto.CheckupRequestDto;
-import com.petner.anidoc.domain.vet.checkup.dto.CheckupResponseDto;
-import com.petner.anidoc.domain.vet.checkup.entity.CheckupRecord;
+import com.petner.anidoc.domain.vet.checkuprecord.dto.CheckupRecordRequestDto;
+import com.petner.anidoc.domain.vet.checkuprecord.dto.CheckupRecordResponseDto;
+import com.petner.anidoc.domain.vet.checkuprecord.entity.CheckupRecord;
 import com.petner.anidoc.domain.vet.checkup.repository.CheckupRepository;
 import com.petner.anidoc.domain.vet.medicalrecord.entity.MedicalRecord;
 import com.petner.anidoc.domain.vet.medicalrecord.repository.MedicalRecordRepository;
@@ -27,7 +27,7 @@ public class CheckupService {
     private final CheckupRepository checkupRepository;
 
     @Transactional
-    public CheckupResponseDto createCheckupRecord(CheckupRequestDto checkupRequestDto, Long userId, Long medicalRecordId) throws AccessDeniedException {
+    public CheckupRecordResponseDto createCheckupRecord(CheckupRecordRequestDto checkupRequestDto, Long userId, Long medicalRecordId) throws AccessDeniedException {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
@@ -50,11 +50,11 @@ public class CheckupService {
 
         CheckupRecord savedResult = checkupRepository.save(checkupResult);
 
-        return CheckupResponseDto.from(savedResult);
+        return CheckupRecordResponseDto.from(savedResult);
     }
 
     @Transactional
-    public List<CheckupResponseDto> getCheckupRecord(Long userId, Long medicalRecordId){ //진료기록 기준 모든 검사기록 조회
+    public List<CheckupRecordResponseDto> getCheckupRecord(Long userId, Long medicalRecordId){ //진료기록 기준 모든 검사기록 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
@@ -64,7 +64,7 @@ public class CheckupService {
         List<CheckupRecord> checkupRecords = checkupRepository.findAllByMedicalRecordId(medicalRecordId);
 
         return checkupRecords.stream()
-                .map(CheckupResponseDto::from)
+                .map(CheckupRecordResponseDto::from)
                 .collect(Collectors.toList());
 
     }
@@ -89,7 +89,7 @@ public class CheckupService {
     }
 
     @Transactional
-    public CheckupResponseDto updateCheckupRecord(CheckupRequestDto checkupRequestDto,Long userId, Long medicalRecordId, Long checkupRecordId) throws AccessDeniedException {
+    public CheckupRecordResponseDto updateCheckupRecord(CheckupRecordRequestDto checkupRequestDto,Long userId, Long medicalRecordId, Long checkupRecordId) throws AccessDeniedException {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
@@ -105,7 +105,7 @@ public class CheckupService {
         }
 
         checkupRecord.updateFromDto(checkupRequestDto);
-        return CheckupResponseDto.from(checkupRecord);
+        return CheckupRecordResponseDto.from(checkupRecord);
     }
 
 }

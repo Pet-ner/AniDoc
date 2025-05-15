@@ -1,6 +1,6 @@
 package com.petner.anidoc.domain.vet.checkup.repository;
 
-import com.petner.anidoc.domain.vet.checkup.entity.CheckupRecord;
+import com.petner.anidoc.domain.vet.checkuprecord.entity.CheckupRecord;
 import com.petner.anidoc.domain.vet.medicalrecord.entity.MedicalRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 
