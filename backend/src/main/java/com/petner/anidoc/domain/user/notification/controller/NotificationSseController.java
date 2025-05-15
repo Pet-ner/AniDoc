@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -86,7 +87,7 @@ public class NotificationSseController {
                 .noticeId(100L)
                 .title("시스템 점검 안내")
                 .writerName("관리자")
-                .createdAt(LocalDate.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         notificationService.notifyAll(

@@ -3,6 +3,7 @@ package com.petner.anidoc.domain.user.notification.dto;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -12,7 +13,8 @@ public class NoticeNotificationDto {
 
     private Long noticeId;
     private String title;
+    private String content;
     private String writerName;
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
 }
