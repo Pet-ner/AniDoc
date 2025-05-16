@@ -22,6 +22,8 @@ public class ReservationResponseDto {
     private String userName;
     private Long petId;
     private String petName;
+    private Long doctorId;
+    private String doctorName;
     private LocalDate reservationDate;
     private LocalTime reservationTime;
     private ReservationStatus status;
@@ -34,12 +36,22 @@ public class ReservationResponseDto {
     public static ReservationResponseDto fromEntity(Reservation reservation) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+        Long doctorId = null;
+        String doctorName = null;
+
+        if (reservation.getDoctor() != null) {
+            doctorId = reservation.getDoctor().getId();
+            doctorName = reservation.getDoctor().getName();
+        }
+
         return ReservationResponseDto.builder()
                 .id(reservation.getId())
                 .userId(reservation.getUser().getId())
                 .userName(reservation.getUser().getName())
                 .petId(reservation.getPet().getId())
                 .petName(reservation.getPet().getName())
+                .doctorId(doctorId)
+                .doctorName(doctorName)
                 .reservationDate(reservation.getReservationDate())
                 .reservationTime(reservation.getReservationTime())
                 .status(reservation.getStatus())

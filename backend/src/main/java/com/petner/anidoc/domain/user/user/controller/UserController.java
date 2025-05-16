@@ -1,9 +1,6 @@
 package com.petner.anidoc.domain.user.user.controller;
 
-import com.petner.anidoc.domain.user.user.dto.LoginRequestDto;
-import com.petner.anidoc.domain.user.user.dto.LoginResponseDto;
-import com.petner.anidoc.domain.user.user.dto.UserResponseDto;
-import com.petner.anidoc.domain.user.user.dto.UserSignUpRequestDto;
+import com.petner.anidoc.domain.user.user.dto.*;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import com.petner.anidoc.domain.user.user.service.AuthTokenService;
 import com.petner.anidoc.domain.user.user.service.UserService;
@@ -22,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 /**
  * ✅ UserController
@@ -126,5 +125,15 @@ public class UserController {
         userService.deleteUser(userId);
 
         return ResponseEntity.ok("회원 탈퇴 성공");
+    }
+
+    // ✅ 의료진 조회
+    @Operation(summary = "의료진 목록 조회", description = "근무 중인 의료진 목록을 조회합니다.")
+    @GetMapping("/staff")
+    public ResponseEntity<List<StaffResponseDto>> getStaffList(
+            @RequestParam(value = "onlyAvailable", defaultValue = "false") boolean onlyAvailable) {
+
+        List<StaffResponseDto> staffList = userService.getStaffList(onlyAvailable);
+        return ResponseEntity.ok(staffList);
     }
 }

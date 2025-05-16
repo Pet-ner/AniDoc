@@ -1,10 +1,12 @@
 package com.petner.anidoc.domain.user.user.service;
 
 import com.petner.anidoc.domain.user.user.dto.LoginRequestDto;
+import com.petner.anidoc.domain.user.user.dto.StaffResponseDto;
 import com.petner.anidoc.domain.user.user.dto.UserResponseDto;
 import com.petner.anidoc.domain.user.user.dto.UserSignUpRequestDto;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.entity.UserRole;
+import com.petner.anidoc.domain.user.user.entity.UserStatus;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import com.petner.anidoc.global.exception.CustomException;
 import com.petner.anidoc.global.exception.ErrorCode;
@@ -14,8 +16,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 /**
@@ -156,4 +160,23 @@ public class UserService {
     public Optional<User> findByRefreshToken(String refreshToken){
         return userRepository.findByRefreshToken(refreshToken);
     }
+
+    // ✅ 의료진 조회
+    @Transactional(readOnly = true)
+    public List<StaffResponseDto> getStaffList(boolean onlyAvailable) {
+        List<User> staffList;
+
+        if (onlyAvailable) {
+            // 근무 중인 의료진만 조회
+            staffList = userRepository.findByRoleAndStatus(UserRole.ROLE_STAFF, UserStatus.ON_DUTY);
+        } else {
+            // 모든 의료진 조회
+            staffList = userRepository.findByRole(UserRole.ROLE_STAFF);
+        }
+
+        return staffList.stream()
+                .map(StaffResponseDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
 }

@@ -183,18 +183,22 @@ public class ReservationService {
         return ReservationResponseDto.fromEntity(reservation);
     }
 
-    // 예약 상태 변경 (관리자/의료진용)
+    // 예약 상태 변경 (관리자)
     @Transactional
     public ReservationResponseDto updateReservationStatus(Long userId, Long reservationId, ReservationStatusUpdateRequestDto requestDto) {
         User currentUser = getUser(userId);
 
-        // 관리자 또는 의료진 권한 확인
-        if (!currentUser.isAdmin() && !currentUser.getRole().equals(UserRole.ROLE_STAFF)) {
+        // 관리자 권한 확인
+        if (!currentUser.isAdmin()) {
             throw new IllegalArgumentException("상태 변경 권한이 없습니다.");
         }
 
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
+
+        if (ReservationStatus.APPROVED.equals(requestDto.getStatus()) && reservation.getDoctor() == null) {
+            throw new IllegalArgumentException("담당의가 배정되지 않은 예약은 승인할 수 없습니다.");
+        }
 
         // 예약 상태 업데이트
         reservation.updateReservationStatusFromDto(requestDto);
