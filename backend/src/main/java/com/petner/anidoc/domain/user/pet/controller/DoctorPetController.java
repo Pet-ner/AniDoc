@@ -7,6 +7,7 @@ import com.petner.anidoc.domain.user.pet.service.DoctorPetRegistService;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.entity.UserRole;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,18 +17,20 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/doctor/pets")
-@Tag(name = "의료진 반려동물 등록", description = "DoctorPet 관련 API")
+@Tag(name = "의료진 반려동물", description = "DoctorPet 관련 API")
 public class DoctorPetController {
     private final DoctorPetRegistService doctorPetRegistService;
     private final UserRepository userRepository;
 
-    //반료동물 등록 및 수정
+    //반려동물 수정
     @PutMapping("/{petId}")
+    @Operation(summary = "의료진 반려동물 수정", description = "의료진이 반려동물을 진료후 수정")
     public ResponseEntity<?> updatePetByDoctor(
             @PathVariable Long petId,
             @Valid @RequestBody DoctorPetRequestDTO doctorPetRequestDTO,
@@ -44,4 +47,26 @@ public class DoctorPetController {
         DoctorPetResponseDTO doctorPetResponseDTO = new DoctorPetResponseDTO(pet);
         return ResponseEntity.ok(doctorPetResponseDTO);
     }
+    //전체조회
+    @GetMapping
+    @Operation(summary = "의료진 반려동물 전체조회", description = "의료진이 모든 반려동물을 조회")
+    public ResponseEntity<?> finaAllPets(){
+        List<Pet> pets = doctorPetRegistService.findAllPets();
+        List<DoctorPetResponseDTO> doctorPetResponseDTO = pets.stream()
+                .map(DoctorPetResponseDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(doctorPetResponseDTO);
+    }
+
+
+    //상세조회
+    @GetMapping("/{petId}")
+    @Operation(summary = "의료진 반려동물 조회", description = "의료진이 반려동물을 조회")
+    public ResponseEntity<?> findPet(
+            @PathVariable Long petId){
+        Pet pet = doctorPetRegistService.findPetByDoctor(petId);
+        DoctorPetResponseDTO doctorPetResponseDTO = new DoctorPetResponseDTO(pet);
+        return ResponseEntity.ok(doctorPetResponseDTO);
+    }
+
 }
