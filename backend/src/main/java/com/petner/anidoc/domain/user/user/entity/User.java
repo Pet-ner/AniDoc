@@ -51,6 +51,10 @@ public class User extends BaseEntity implements UserDetails {
     private UserRole role;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private UserStatus status;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "sso_provider")
     private SsoProvider ssoProvider;
 

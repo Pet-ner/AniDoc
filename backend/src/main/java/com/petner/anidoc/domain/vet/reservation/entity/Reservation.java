@@ -33,6 +33,10 @@ public class Reservation extends BaseEntity {
     @JoinColumn(name = "pet_id", nullable = false)
     private Pet pet;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "doctor_id")
+    private User doctor;
+
     @Column(name = "reservation_date", nullable = false)
     private LocalDate reservationDate;
 
@@ -63,6 +67,10 @@ public class Reservation extends BaseEntity {
     // 입력된 시간이 유효한 예약 시간인지 확인
     public static boolean isValidReservationTime(LocalTime time) {
         return RESERVATION_TIMES.contains(time);
+    }
+
+    public void updateDoctor(User doctor) {
+        this.doctor = doctor;
     }
 
     public void updateReservationFromDto(ReservationUpdateRequestDto dto) {
