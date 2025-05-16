@@ -56,11 +56,11 @@ public class OwnerPetRegistService {
     public List<Pet> findAllPetsByOwner(Long ownerId){
         return petRepository.findByOwnerId(ownerId);
     }
-    //조회
+    //상세 조회
     @Transactional(readOnly = true)
     public Pet findPetByOwner(Long petId, Long ownerId) {
         Pet pet = petRepository.findById(petId)
-                .orElseThrow(()-> new RuntimeException("반려동물을 찾을수 없습니다"));
+                .orElseThrow(()-> new EntityNotFoundException("반려동물을 찾을수 없습니다"));
         if (!pet.getOwner().getId().equals(ownerId)){
             throw new RuntimeException("조회 권한이 없습니다.");
         }
