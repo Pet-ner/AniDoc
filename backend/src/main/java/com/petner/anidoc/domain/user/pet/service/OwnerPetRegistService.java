@@ -5,6 +5,7 @@ import com.petner.anidoc.domain.user.pet.entity.Pet;
 import com.petner.anidoc.domain.user.pet.repository.PetRepository;
 import com.petner.anidoc.domain.user.pet.repository.PetRepository;
 import com.petner.anidoc.domain.user.user.entity.User;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
