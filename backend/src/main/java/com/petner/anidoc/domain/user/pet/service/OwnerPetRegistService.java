@@ -8,6 +8,8 @@ import com.petner.anidoc.domain.user.user.entity.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class OwnerPetRegistService {
 
@@ -47,6 +49,21 @@ public class OwnerPetRegistService {
         }
 
         pet.updatePet(dto);
+        return pet;
+    }
+    //전체 조회
+    @Transactional(readOnly = true)
+    public List<Pet> findAllPetsByOwner(Long ownerId){
+        return petRepository.findByOwnerId(ownerId);
+    }
+    //상세 조회
+    @Transactional(readOnly = true)
+    public Pet findPetByOwner(Long petId, Long ownerId) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(()-> new EntityNotFoundException("반려동물을 찾을수 없습니다"));
+        if (!pet.getOwner().getId().equals(ownerId)){
+            throw new RuntimeException("조회 권한이 없습니다.");
+        }
         return pet;
     }
 }

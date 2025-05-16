@@ -8,6 +8,8 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class DoctorPetRegistService {
     private final PetRepository petRepository;
@@ -17,18 +19,6 @@ public class DoctorPetRegistService {
     }
 
     @Transactional
-    public Pet registerPet(DoctorPetRequestDTO doctorPetRequestDTO, User isadmin) {
-        Pet pet = Pet.builder()
-                .neuteredDate(doctorPetRequestDTO.getNeuteredDate())
-                .isDeceased(doctorPetRequestDTO.isDeceased())
-                .deceasedDate(doctorPetRequestDTO.getDeceasedDate())
-                .surgeryCount(doctorPetRequestDTO.getSurgeryCount())
-                .hospitalizationCount(doctorPetRequestDTO.getHospitalizationCount())
-                .lastVisitDate(doctorPetRequestDTO.getLastVisitDate())
-                .build();
-        return petRepository.save(pet);
-    }
-    @Transactional
     public Pet updatePet(Long petId, DoctorPetRequestDTO dto) {
         Pet pet = petRepository.findById(petId)
                 .orElseThrow(() -> new EntityNotFoundException("반려동물을 찾을수없어요"));
@@ -36,5 +26,19 @@ public class DoctorPetRegistService {
         pet.updatePet(dto);
         return pet;
     }
+    //전체조회
+    @Transactional(readOnly = true)
+    public List<Pet> findAllPets(){
+        return petRepository.findAll();
+    }
+
+
+    //상세 조회
+    @Transactional(readOnly = true)
+    public Pet findPetByDoctor(Long petId){
+        return petRepository.findById(petId)
+                .orElseThrow(()-> new EntityNotFoundException("반려동물을 찾을수 없습니다."));
+    }
+
 }
 
