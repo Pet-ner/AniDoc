@@ -11,4 +11,7 @@ public interface CheckupRecordRepository extends JpaRepository<CheckupRecord, Lo
     Optional<CheckupRecord> findByIdAndIsDeletedFalse(Long id);
 
     List<CheckupRecord> findAllByMedicalRecordId(Long medicalRecordId);
+
+    boolean existsByMedicalRecordAndIsDeletedFalse(MedicalRecord medicalRecord);
+
 }

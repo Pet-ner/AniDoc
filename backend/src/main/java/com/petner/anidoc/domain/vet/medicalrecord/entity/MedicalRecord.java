@@ -65,6 +65,7 @@ public class MedicalRecord extends BaseEntity {
     @Column(name="is_checked_up")
     private Boolean isCheckedUp=false;
 
+    @Builder.Default
     @Column(name="is_deleted")
     private Boolean isDeleted = false;
 
