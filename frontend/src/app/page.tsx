@@ -129,8 +129,8 @@ export default function Home() {
       </div>
 
       {/* 예약 현황 */}
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2">
+      <div className="grid grid-cols-4 gap-6">
+        <div className="col-span-3">
           <div className="bg-white rounded-lg shadow-sm p-5">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">예약 현황</h2>
@@ -159,9 +159,13 @@ export default function Home() {
                     </svg>
                   </button>
                 </div>
-                <button className="bg-[#49BEB7] text-white px-3 py-1 rounded-md text-sm">
+                <Link
+                  href="/reservation"
+                  title="예약등록"
+                  className="bg-[#49BEB7] text-white px-3 py-1 rounded-md text-sm hover:bg-[#3ea9a2] transition-colors duration-200"
+                >
                   예약 등록
-                </button>
+                </Link>
               </div>
             </div>
 

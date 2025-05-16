@@ -205,7 +205,7 @@ export default function ReservationDetailPage() {
           {reservation.status === "APPROVED" ? (
             <ChatRoom reservationId={parseInt(id as string)} />
           ) : (
-            <div className="h-full border rounded-lg flex flex-col items-center justify-center text-gray-500 bg-white p-6 shadow-sm">
+            <div className="h-full rounded-lg flex flex-col items-center justify-center text-gray-500 bg-white p-6 shadow-sm">
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                 <MessageSquareIcon className="text-gray-400" size={28} />
               </div>
