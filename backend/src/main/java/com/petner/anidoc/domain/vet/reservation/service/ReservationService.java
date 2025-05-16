@@ -4,6 +4,7 @@ import com.petner.anidoc.domain.user.pet.entity.Pet;
 import com.petner.anidoc.domain.user.pet.repository.PetRepository;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.entity.UserRole;
+import com.petner.anidoc.domain.user.user.entity.UserStatus;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import com.petner.anidoc.domain.vet.reservation.dto.*;
 import com.petner.anidoc.domain.vet.reservation.entity.Reservation;
@@ -147,6 +148,37 @@ public class ReservationService {
         reservation.updateReservationFromDto(requestDto);
 
         // TODO: 알림 기능 추가 (의료진/관리자)
+
+        return ReservationResponseDto.fromEntity(reservation);
+    }
+
+    // 담당의 배정
+    @Transactional
+    public ReservationResponseDto assignDoctor(Long userId, Long reservationId, DoctorAssignRequestDto requestDto) {
+        User currentUser = getUser(userId);
+
+        // 관리자 권한 확인
+        if (!currentUser.isAdmin()) {
+            throw new IllegalArgumentException("담당의 배정 권한이 없습니다.");
+        }
+
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
+
+        User doctor = userRepository.findById(requestDto.getDoctorId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 의사입니다."));
+
+        // 의사인지 확인
+        if (!doctor.getRole().equals(UserRole.ROLE_STAFF)) {
+            throw new IllegalArgumentException("의료진만 담당의로 지정할 수 있습니다.");
+        }
+
+        // 의사 상태 확인
+        if (!doctor.getStatus().equals(UserStatus.ON_DUTY)) {
+            throw new IllegalArgumentException("현재 진료 가능한 상태가 아닌 의료진입니다.");
+        }
+
+        reservation.updateDoctor(doctor);
 
         return ReservationResponseDto.fromEntity(reservation);
     }

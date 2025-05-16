@@ -1,10 +1,6 @@
 package com.petner.anidoc.domain.vet.reservation.controller;
 
-import com.petner.anidoc.domain.vet.reservation.dto.ReservationRequestDto;
-import com.petner.anidoc.domain.vet.reservation.dto.ReservationResponseDto;
-import com.petner.anidoc.domain.vet.reservation.dto.ReservationStatusUpdateRequestDto;
-import com.petner.anidoc.domain.vet.reservation.dto.ReservationUpdateRequestDto;
-import com.petner.anidoc.domain.vet.reservation.dto.TimeSlotResponseDto;
+import com.petner.anidoc.domain.vet.reservation.dto.*;
 import com.petner.anidoc.domain.vet.reservation.entity.Reservation;
 import com.petner.anidoc.domain.vet.reservation.service.ReservationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -64,6 +60,15 @@ public class ReservationController {
             @PathVariable Long reservationId,
             @RequestBody ReservationUpdateRequestDto requestDto) {
         return ResponseEntity.ok(reservationService.updateReservation(userId, reservationId, requestDto));
+    }
+
+    @Operation(summary = "담당의 배정", description = "예약에 담당의를 배정합니다. (관리자만 가능)")
+    @PatchMapping("/{reservationId}/doctor")
+    public ResponseEntity<ReservationResponseDto> assignDoctor(
+            @RequestParam Long userId,
+            @PathVariable Long reservationId,
+            @RequestBody DoctorAssignRequestDto requestDto) {
+        return ResponseEntity.ok(reservationService.assignDoctor(userId, reservationId, requestDto));
     }
 
     @Operation(summary = "예약 상태 변경", description = "예약의 상태를 변경합니다. (관리자 또는 의료진만 가능)")
