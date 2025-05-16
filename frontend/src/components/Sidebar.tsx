@@ -58,15 +58,27 @@ export default function Sidebar() {
             </Link>
           </li>
           <li>
-            <Link
-              href="/reservation"
-              className={`flex items-center p-3 rounded-lg ${isActive(
-                "/reservation"
-              )}`}
-            >
-              <Calendar size={20} className="mr-3" />
-              <span>진료 예약</span>
-            </Link>
+            {user.role === "ROLE_USER" ? (
+              <Link
+                href="/reservation"
+                className={`flex items-center p-3 rounded-lg ${isActive(
+                  "/reservation"
+                )}`}
+              >
+                <Calendar size={20} className="mr-3" />
+                <span>진료 예약</span>
+              </Link>
+            ) : (
+              <Link
+                href="/admin/reservations"
+                className={`flex items-center p-3 rounded-lg ${isActive(
+                  "/admin/reservations"
+                )}`}
+              >
+                <Calendar size={20} className="mr-3" />
+                <span>예약 관리</span>
+              </Link>
+            )}
           </li>
 
           <li>
