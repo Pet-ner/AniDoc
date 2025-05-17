@@ -6,12 +6,13 @@ import { useState, useEffect } from "react";
 import {
   Calendar,
   Eye,
-  FileText,
   ChevronLeft,
   ChevronRight,
   Dog,
   Stethoscope,
   ClipboardPlus,
+  Trash2,
+  SquarePen,
 } from "lucide-react";
 
 interface Reservation {
@@ -66,6 +67,8 @@ export default function Home() {
   ]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [cancelingId, setCancelingId] = useState<number | null>(null);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
 
   // 예약 데이터 조회
   useEffect(() => {
@@ -98,6 +101,53 @@ export default function Home() {
 
   if (!user) return null;
 
+  const handleCancel = (id: number) => {
+    setCancelingId(id);
+    setCancelConfirmOpen(true);
+  };
+
+  const confirmCancel = async () => {
+    if (!cancelingId || !user) return;
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/reservations/${cancelingId}?userId=${user.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "예약 취소에 실패했습니다.");
+      }
+      // 취소된 예약 제거
+      const updatedReservations = reservations.filter(
+        (r) => r.id !== cancelingId
+      );
+      setReservations(updatedReservations);
+      alert("예약이 성공적으로 취소되었습니다.");
+    } catch (error: any) {
+      console.error("예약 취소 오류:", error);
+      alert(error.message || "예약 취소 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+      setCancelConfirmOpen(false);
+      setCancelingId(null);
+    }
+  };
+
+  // 취소 모달 닫기
+  const closeCancelModal = () => {
+    setCancelConfirmOpen(false);
+    setCancelingId(null);
+  };
+
   return (
     <div className="space-y-6">
       {/* 상단 통계 카드 섹션 */}
@@ -129,8 +179,8 @@ export default function Home() {
       </div>
 
       {/* 예약 현황 */}
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2">
+      <div className="grid grid-cols-4 gap-6">
+        <div className="col-span-3">
           <div className="bg-white rounded-lg shadow-sm p-5">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">예약 현황</h2>
@@ -159,9 +209,13 @@ export default function Home() {
                     </svg>
                   </button>
                 </div>
-                <button className="bg-[#49BEB7] text-white px-3 py-1 rounded-md text-sm">
+                <Link
+                  href="/reservation"
+                  title="예약등록"
+                  className="bg-[#49BEB7] text-white px-3 py-1 rounded-md text-sm hover:bg-[#3ea9a2] transition-colors duration-200"
+                >
                   예약 등록
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -262,8 +316,15 @@ export default function Home() {
                               className="text-gray-500 hover:text-[#49BEB7]"
                               title="수정하기"
                             >
-                              <FileText size={18} />
+                              <SquarePen size={18} />
                             </Link>
+                            <button
+                              onClick={() => handleCancel(reservation.id)}
+                              className="text-gray-500 hover:text-[#49BEB7]"
+                              title="취소하기"
+                            >
+                              <Trash2 size={18} />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -375,6 +436,32 @@ export default function Home() {
               </button>
             </div>
           </div>
+
+          {/* 예약 취소 확인 모달 */}
+          {cancelConfirmOpen && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                <h3 className="text-lg font-semibold mb-4">예약 취소 확인</h3>
+                <p className="mb-6 text-gray-600">
+                  정말로 이 예약을 취소하시겠습니까?
+                </p>
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={confirmCancel}
+                    className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-500 hover:bg-red-600"
+                  >
+                    예
+                  </button>
+                  <button
+                    onClick={closeCancelModal}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    아니오
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

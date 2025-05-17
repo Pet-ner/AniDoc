@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import ChatRoom from "@/components/chat/ChatRoom";
 import { useUser } from "@/contexts/UserContext";
+import { formatDateToKorean } from "@/utils/formatDateToKorean";
 import {
   CalendarDays,
   Clock,
@@ -33,7 +34,6 @@ export default function ReservationDetailPage() {
   const { user } = useUser();
   const [reservation, setReservation] = useState<Reservation | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -51,10 +51,9 @@ export default function ReservationDetailPage() {
 
         const data = await response.json();
         setReservation(data);
-        setError(null);
       } catch (error) {
         console.error("예약 정보 로드 오류:", error);
-        setError("예약 정보를 불러오는데 오류가 발생했습니다.");
+        alert("예약 정보를 불러오는데 오류가 발생했습니다.");
       } finally {
         setLoading(false);
       }
@@ -71,15 +70,6 @@ export default function ReservationDetailPage() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
-        <p className="font-medium">오류</p>
-        <p>{error}</p>
-      </div>
-    );
-  }
-
   if (!reservation) {
     return (
       <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded">
@@ -88,12 +78,6 @@ export default function ReservationDetailPage() {
       </div>
     );
   }
-
-  // 날짜 포맷 변경 (YYYY-MM-DD -> YYYY년 MM월 DD일)
-  const formatDate = (dateString: string) => {
-    const [year, month, day] = dateString.split("-");
-    return `${year}년 ${month}월 ${day}일`;
-  };
 
   return (
     <div>
@@ -129,7 +113,7 @@ export default function ReservationDetailPage() {
                 <InfoItem
                   icon={<CalendarDays className="text-teal-500" />}
                   label="예약 날짜"
-                  value={formatDate(reservation.reservationDate)}
+                  value={formatDateToKorean(reservation.reservationDate)}
                 />
 
                 <InfoItem
@@ -205,7 +189,7 @@ export default function ReservationDetailPage() {
           {reservation.status === "APPROVED" ? (
             <ChatRoom reservationId={parseInt(id as string)} />
           ) : (
-            <div className="h-full border rounded-lg flex flex-col items-center justify-center text-gray-500 bg-white p-6 shadow-sm">
+            <div className="h-full rounded-lg flex flex-col items-center justify-center text-gray-500 bg-white p-6 shadow-sm">
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                 <MessageSquareIcon className="text-gray-400" size={28} />
               </div>

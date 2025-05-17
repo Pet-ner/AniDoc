@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useUser } from "@/contexts/UserContext";
 import {
   Home,
@@ -18,6 +19,9 @@ export default function Sidebar() {
 
   if (!user) return null;
 
+  // "bg-teal-100 text-teal-600"
+  // bg-[#AFFFDF] text-[#49BEB7]
+  // bg-[#AFFFDF] text-teal-600
   const isActive = (path: string) => {
     return pathname === path
       ? "bg-teal-100 text-teal-600"
@@ -28,10 +32,9 @@ export default function Sidebar() {
     <aside className="fixed top-0 left-0 w-[240px] h-full bg-white border-r border-gray-200 z-10">
       <div className="h-16 px-5 flex items-center border-b border-gray-200">
         <Link href="/" className="flex items-center">
-          <h1 className="text-xl font-semibold text-teal-500">ANIDOC</h1>
+          <h1 className="text-xl font-semibold text-[#49BEB7]">ANIDOC</h1>
         </Link>
       </div>
-
       <nav className="py-6 px-3">
         <ul className="space-y-1">
           <li>
@@ -55,15 +58,27 @@ export default function Sidebar() {
             </Link>
           </li>
           <li>
-            <Link
-              href="/reservation"
-              className={`flex items-center p-3 rounded-lg ${isActive(
-                "/reservation"
-              )}`}
-            >
-              <Calendar size={20} className="mr-3" />
-              <span>진료 예약</span>
-            </Link>
+            {user.role === "ROLE_USER" ? (
+              <Link
+                href="/reservation"
+                className={`flex items-center p-3 rounded-lg ${isActive(
+                  "/reservation"
+                )}`}
+              >
+                <Calendar size={20} className="mr-3" />
+                <span>진료 예약</span>
+              </Link>
+            ) : (
+              <Link
+                href="/admin/reservations"
+                className={`flex items-center p-3 rounded-lg ${isActive(
+                  "/admin/reservations"
+                )}`}
+              >
+                <Calendar size={20} className="mr-3" />
+                <span>예약 관리</span>
+              </Link>
+            )}
           </li>
 
           <li>
@@ -86,9 +101,10 @@ export default function Sidebar() {
             >
               <MessageSquare size={20} className="mr-3" />
               <span>1:1 채팅</span>
-              <div className="ml-auto bg-red-500 text-white rounded-full text-xs px-2 py-1">
+              {/* 안읽은 메시지 수 */}
+              {/* <div className="ml-auto bg-red-500 text-white rounded-full text-xs px-2 py-1">
                 2
-              </div>
+              </div> */}
             </Link>
           </li>
         </ul>

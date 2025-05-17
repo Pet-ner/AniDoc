@@ -41,6 +41,8 @@ public class ChatRoomService {
                 .orElseGet(() -> {
                     // 관리자 계정 찾기
                     User admin = userRepository.findByRole(UserRole.ROLE_ADMIN)
+                            .stream()
+                            .findFirst()
                             .orElseThrow(() -> new IllegalArgumentException("관리자가 존재하지 않습니다."));
 
                     // 새 채팅방 생성
