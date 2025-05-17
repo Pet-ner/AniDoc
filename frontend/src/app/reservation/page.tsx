@@ -335,12 +335,6 @@ export default function CreateReservation() {
 
         {/* 제출 버튼 */}
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
-          <Link
-            href="/reservation"
-            className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-          >
-            취소
-          </Link>
           <button
             type="submit"
             disabled={loading || !selectedPet || !selectedDate || !selectedTime}
@@ -348,6 +342,12 @@ export default function CreateReservation() {
           >
             {loading ? "처리 중..." : "예약하기"}
           </button>
+          <Link
+            href="/reservation"
+            className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+          >
+            취소
+          </Link>
         </div>
       </form>
     </div>

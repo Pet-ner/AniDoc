@@ -12,7 +12,7 @@ import {
   Stethoscope,
   ClipboardPlus,
   Trash2,
-  Pencil,
+  SquarePen,
 } from "lucide-react";
 
 interface Reservation {
@@ -316,7 +316,7 @@ export default function Home() {
                               className="text-gray-500 hover:text-[#49BEB7]"
                               title="수정하기"
                             >
-                              <Pencil size={18} />
+                              <SquarePen size={18} />
                             </Link>
                             <button
                               onClick={() => handleCancel(reservation.id)}
