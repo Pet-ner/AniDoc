@@ -45,7 +45,7 @@ public class SurgeryRecordController {
 
     @PutMapping("/{surgeryRecordId}")
     @Operation(summary = "수술 기록 수정", description = "의료진이 진료기록에 수술 기록을 수정")
-    public ResponseEntity<SurgeryRecordResponseDto> updateSurgery(
+    public ResponseEntity<SurgeryRecordResponseDto> updateSurgeryRecord(
             @RequestBody SurgeryRecordRequestDto requestDto,
             @RequestParam Long userId,
             @PathVariable Long medicalRecordId,

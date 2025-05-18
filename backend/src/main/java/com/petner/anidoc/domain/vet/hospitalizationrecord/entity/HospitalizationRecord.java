@@ -1,13 +1,11 @@
 package com.petner.anidoc.domain.vet.hospitalizationrecord.entity;
 
 import com.petner.anidoc.domain.user.pet.entity.Pet;
+import com.petner.anidoc.domain.vet.hospitalizationrecord.dto.HospitalizationRecordRequestDto;
 import com.petner.anidoc.domain.vet.medicalrecord.entity.MedicalRecord;
 import com.petner.anidoc.global.jpa.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
@@ -39,4 +37,22 @@ public class HospitalizationRecord extends BaseEntity {
 
     @Column(name = "image_url")
     private String imageUrl;
+
+    @Builder.Default
+    @Column(name="is_deleted")
+    private Boolean isDeleted = false;
+
+    public void markAsDeleted(){
+        this.isDeleted=true;
+    }
+
+    public void updateFromDto(HospitalizationRecordRequestDto dto) {
+        this.admissionDate = dto.getAdmissionDate();
+        this.dischargeDate = dto.getDischargeDate();
+        this.reason = dto.getReason();
+        this.imageUrl = dto.getImageUrl();
+    }
+
+
+
 }
