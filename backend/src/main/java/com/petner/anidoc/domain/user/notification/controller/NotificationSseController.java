@@ -53,68 +53,8 @@ public class NotificationSseController {
         return ResponseEntity.ok(emitter);
     }
 
-    //테스트 코드
-    //예방접종 알림 테스트
-    @PostMapping("/vaccination")
-    @Operation(summary = "예방접종 알림 테스트", description = "dto 사용해 전송")
-    public void vaccination(
-            @RequestParam Long userId){
-        VaccinationNotificationDto dto = VaccinationNotificationDto.builder()
-                .vaccinationId(1L)
-                .petId(101L)
-                .petName("냥냥")
-                .vaccineName("감기약")
-                .nextDueDate("2025-05-13 17:00")
-                .vaccinationDate("2025-05-13 19:00")
-                .build();
 
-        notificationService.notifyUser(
-                userId,
-                NotificationType.VACCINATION,
-                "두번째 예방접종 알림 테스트 입니다.",
-                dto
-        );
 
     }
 
 
-    //공지사항 알림(전체) 테스트
-
-    @PostMapping("/test/notice")
-    @Operation(summary = "공지사항 전체 알림 테스트", description = "dto 사용해 전송")
-    public void testNotice() {
-        NoticeNotificationDto dto = NoticeNotificationDto.builder()
-                .noticeId(100L)
-                .title("시스템 점검 안내")
-                .writerName("관리자")
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        notificationService.notifyAll(
-                NotificationType.NOTICE,
-                "두번째 최종 전체 공지사항 알림입니다.",
-                dto
-        );
-    }
-
-    @PostMapping("/test/reservation")
-    @Operation(summary = "개인 진료예약 알림 테스트", description = "dto 사용해 전송")
-    public void testReservation(@RequestParam Long userId) {
-        ReservationNotificationDto dto = new ReservationNotificationDto(
-                200L,
-                "홍길동",
-                "초코",
-                "2024-07-01 10:00",
-                "2024-06-15 09:00",
-                "AniDoc"
-        );
-
-        notificationService.notifyUser(
-                userId,
-                NotificationType.RESERVATION,
-                "두번째 진료 예약 알림입니다.",
-                dto
-        );
-    }
-
-}
