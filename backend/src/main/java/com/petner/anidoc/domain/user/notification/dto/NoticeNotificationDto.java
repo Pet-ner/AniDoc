@@ -16,5 +16,6 @@ public class NoticeNotificationDto {
     private String content;
     private String writerName;
     private LocalDateTime createdAt;
+    private Boolean isRead;
 
 }

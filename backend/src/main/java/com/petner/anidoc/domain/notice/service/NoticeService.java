@@ -48,6 +48,7 @@ public class NoticeService {
                     .content(notificationService.getSummary(saved.getContent()))
                     .writerName(user.getName())
                     .createdAt(saved.getCreatedAt())
+                    .isRead(false)
                     .build();
 
             notificationService.notifyUser(
@@ -79,6 +80,7 @@ public class NoticeService {
                 .content(notificationService.getSummary(notice.getContent()))
                 .writerName(user.getName())
                 .createdAt(notice.getCreatedAt())
+                .isRead(false)
                 .build();
         // 이벤트명 추가(선택), 프론트에 push
         notificationService.notifyAll(
