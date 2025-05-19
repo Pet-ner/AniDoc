@@ -58,7 +58,7 @@ export default function Sidebar() {
             </Link>
           </li>
           <li>
-            {user.role === "ROLE_USER" ? (
+            {user.userRole === "ROLE_USER" ? (
               <Link
                 href="/reservation"
                 className={`flex items-center p-3 rounded-lg ${isActive(
@@ -109,36 +109,6 @@ export default function Sidebar() {
           </li>
         </ul>
       </nav>
-
-      {/* 테스트용 유저 전환 */}
-      <div className="absolute bottom-0 left-0 w-full p-4 border-t border-gray-200">
-        <p className="text-sm text-gray-500 mb-2">테스트 사용자</p>
-        <div className="flex flex-col gap-1">
-          <UserSwitchButton id={1} label="일반 사용자" />
-          <UserSwitchButton id={2} label="의료진" />
-          <UserSwitchButton id={3} label="관리자" />
-        </div>
-      </div>
     </aside>
-  );
-}
-
-// 테스트용 유저 변경
-function UserSwitchButton({ id, label }: { id: number; label: string }) {
-  const { user, login } = useUser();
-  const isCurrentUser = user?.id === id;
-
-  return (
-    <button
-      onClick={() => login(id)}
-      className={`flex items-center justify-between p-2 text-sm rounded ${
-        isCurrentUser
-          ? "bg-teal-100 text-teal-600"
-          : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-      }`}
-    >
-      <span>{label}</span>
-      {isCurrentUser && <ChevronRight size={16} />}
-    </button>
   );
 }

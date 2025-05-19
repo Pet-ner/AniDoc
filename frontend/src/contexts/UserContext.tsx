@@ -7,58 +7,165 @@ import {
   ReactNode,
   useEffect,
 } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 interface User {
   id: number;
   name: string;
-  role: string;
+  userRole: string;
+  email?: string;
 }
 
 interface UserContextType {
   user: User | null;
   isLoading: boolean;
-  login: (userId: number) => void;
+  isLoggedIn: boolean;
+  login: () => void;
   logout: () => void;
+  fetchUserInfo: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// 하드코딩 유저 데이터 (실제 h2 db에 입력된 데이터들)
-const MOCK_USERS = {
-  1: { id: 1, name: "일반 사용자", role: "ROLE_USER" },
-  2: { id: 2, name: "의료진", role: "ROLE_STAFF" },
-  3: { id: 3, name: "관리자", role: "ROLE_ADMIN" },
-};
+// 인증 없이 접근 가능한 경로
+const PUBLIC_PATHS = [
+  "/login",
+  "/register",
+  "/register/user",
+  "/register/staff",
+];
 
 export function UserProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    // 클라이언트 측에서만 실행되도록
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("isLoggedIn") === "true";
+    }
+    return false;
+  });
 
-  useEffect(() => {
-    // 초기 로그인 상태 설정 (테스트용)
-    const userId = 1; // 일반 사용자로 기본 설정
-
-    // @ts-ignore - 타입 체크 우회
-    setUser(MOCK_USERS[userId]);
-    setIsLoading(false);
-
-    // 로컬 스토리지에 저장
-    localStorage.setItem("userId", userId.toString());
-  }, []);
-
-  const login = (userId: number) => {
-    // @ts-ignore - 타입 체크 우회
-    setUser(MOCK_USERS[userId]);
-    localStorage.setItem("userId", userId.toString());
+  const isPublicPath = (path: string) => {
+    return PUBLIC_PATHS.some((publicPath) => path.startsWith(publicPath));
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("userId");
+  // 유저 정보 조회
+  const fetchUserInfo = async () => {
+    // 로그인 상태가 아니면 API 호출하지 않음
+    if (!isLoggedIn) return;
+
+    try {
+      setIsLoading(true);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      } else {
+        // 인증 실패 - 로그인 상태 초기화
+        setUser(null);
+        setIsLoggedIn(false);
+        localStorage.removeItem("isLoggedIn");
+
+        // 인증이 필요한 페이지에 있으면 로그인 페이지로 리다이렉트
+        const currentPath = pathname || "";
+        if (!isPublicPath(currentPath)) {
+          router.push("/login");
+        }
+      }
+    } catch (error) {
+      console.error("유저 정보 조회 오류:", error);
+      setUser(null);
+      setIsLoggedIn(false);
+      localStorage.removeItem("isLoggedIn");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 초기 렌더링시 로그인 상태면 유저 정보 조회
+  useEffect(() => {
+    // 로그인 상태인 경우에만 유저 정보 조회
+    if (isLoggedIn) {
+      fetchUserInfo();
+    }
+
+    // 인증 상태에 따른 리다이렉션 처리
+    const currentPath = pathname || "";
+    if (isLoggedIn && isPublicPath(currentPath)) {
+      router.push("/");
+    } else if (!isLoggedIn && !isPublicPath(currentPath)) {
+      router.push("/login");
+    }
+  }, [isLoggedIn, pathname]);
+
+  const login = async () => {
+    try {
+      // 유저 정보 가져오기
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("유저 정보를 가져오는데 실패했습니다.");
+      }
+
+      const userData = await response.json();
+      setUser(userData);
+
+      // 로그인 상태 설정
+      setIsLoggedIn(true);
+      localStorage.setItem("isLoggedIn", "true");
+
+      // 홈으로 리다이렉트
+      router.push("/");
+    } catch (error) {
+      console.error("로그인 중 오류 발생:", error);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      // 로그아웃 요청
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("로그아웃 중 오류 발생:", error);
+    } finally {
+      // 클라이언트 상태 초기화
+      setUser(null);
+      setIsLoggedIn(false);
+      localStorage.removeItem("isLoggedIn");
+
+      // 로그인 페이지로 리다이렉트
+      router.push("/login");
+    }
   };
 
   return (
-    <UserContext.Provider value={{ user, isLoading, login, logout }}>
+    <UserContext.Provider
+      value={{
+        user,
+        isLoading,
+        isLoggedIn,
+        login,
+        logout,
+        fetchUserInfo,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );
