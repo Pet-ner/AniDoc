@@ -25,7 +25,11 @@ public enum ErrorCode {
     LOGIN_FAILED(HttpStatus.CONFLICT,"로그인에 실패했습니다."),
 
     // 로그아웃 중 오류
-    LOGOUT_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,  "로그아웃에 실패했습니다.");
+    LOGOUT_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,  "로그아웃에 실패했습니다."),
+
+    // 병원 정보 관련 오류
+    VET_NOT_FOUND(HttpStatus.NOT_FOUND,"병원이 존재하지 않습니다.");
+
     // HTTP 상태 코드와 메시지
     private final HttpStatus httpStatus;
     private final String message;
