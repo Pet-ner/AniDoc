@@ -1,5 +1,9 @@
 package com.petner.anidoc.domain.vet.reservation.service;
 
+import com.petner.anidoc.domain.user.notification.dto.ReservationNotificationDto;
+import com.petner.anidoc.domain.user.notification.entity.NotificationType;
+import com.petner.anidoc.domain.user.notification.service.NotificationService;
+import com.petner.anidoc.domain.user.notification.util.NotificationMessageUtil;
 import com.petner.anidoc.domain.user.pet.entity.Pet;
 import com.petner.anidoc.domain.user.pet.repository.PetRepository;
 import com.petner.anidoc.domain.user.user.entity.User;
@@ -28,6 +32,7 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final PetRepository petRepository;
+    private final NotificationService notificationService;
 
     // 유저 가져오기
     private User getUser(Long userId) {
@@ -67,7 +72,25 @@ public class ReservationService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
-        // TODO: 알림 기능 추가 (의료진/관리자)
+        // TODO: 알림 기능 추가 (관리자)
+
+        //관리자 1명 고정
+        User admin = userRepository.findByRole(UserRole.ROLE_ADMIN)
+                .stream().findFirst()
+                .orElseThrow(()-> new IllegalStateException("관리자 계정이 존재하지 않습니다."));
+
+        //알림 Dto에 저장
+        ReservationNotificationDto dto = ReservationNotificationDto.from(savedReservation);
+        String content = NotificationMessageUtil.buildReservationCreated(dto);
+        dto.setContent(content);
+
+        //전송
+        notificationService.notifyUser(
+                admin.getId(),
+                NotificationType.RESERVATION,
+                content,
+                dto
+        );
 
         return ReservationResponseDto.fromEntity(savedReservation);
     }
@@ -148,6 +171,39 @@ public class ReservationService {
         reservation.updateReservationFromDto(requestDto);
 
         // TODO: 알림 기능 추가 (의료진/관리자)
+        ReservationNotificationDto dto = ReservationNotificationDto.from(reservation);
+        String content = NotificationMessageUtil.buildReservationUpdated(dto);
+        dto.setContent(content);
+
+        //예약자에게 전송
+        notificationService.notifyUser(
+                reservation.getUser().getId(),
+                NotificationType.RESERVATION,
+                content,
+                dto
+        );
+
+        //관리자에게 전송
+        User admin = userRepository.findByRole(UserRole.ROLE_ADMIN)
+                .stream().findFirst()
+                .orElseThrow(()-> new IllegalStateException("관리자 계정이 존재하지 않습니다."));
+
+        notificationService.notifyUser(
+                admin.getId(),
+                NotificationType.RESERVATION,
+                content,
+                dto
+        );
+
+        //담당의에게 전송
+        if(reservation.getDoctor() != null){
+            notificationService.notifyUser(
+                    reservation.getDoctor().getId(),
+                    NotificationType.RESERVATION,
+                    content,
+                    dto
+            );
+        }
 
         return ReservationResponseDto.fromEntity(reservation);
     }
@@ -203,7 +259,37 @@ public class ReservationService {
         // 예약 상태 업데이트
         reservation.updateReservationStatusFromDto(requestDto);
 
-        // TODO: 알림 기능 추가 (사용자)
+        // TODO: 알림 기능 추가 (사용자, 의료진)
+
+        ReservationNotificationDto dto = ReservationNotificationDto.from(reservation);
+        String content = null;
+
+        if(reservation.getStatus() == ReservationStatus.APPROVED){
+          content = NotificationMessageUtil.buildReservationStatusApproved(dto);
+        }else if(reservation.getStatus() == ReservationStatus.REJECTED){
+            content = NotificationMessageUtil.buildReservationStatusRejected(dto);
+        }
+
+        if(content != null){
+            dto.setContent(content);
+            //예약자 알림
+            notificationService.notifyUser(
+                    reservation.getUser().getId(),
+                    NotificationType.RESERVATION,
+                    content,
+                    dto
+            );
+
+            //담당의 알림
+            if(reservation.getDoctor() != null){
+                notificationService.notifyUser(
+                        reservation.getDoctor().getId(),
+                        NotificationType.RESERVATION,
+                        content,
+                        dto
+                );
+            }
+        }
 
         return ReservationResponseDto.fromEntity(reservation);
     }
@@ -228,6 +314,40 @@ public class ReservationService {
         reservationRepository.delete(reservation);
 
         // TODO: 알림 기능 추가 (예약취소)
+        ReservationNotificationDto dto = ReservationNotificationDto.from(reservation);
+        String content = NotificationMessageUtil.buildReservationCancelled(dto);
+        dto.setContent(content);
+
+        //대기중 취소로 관리자에게만 알림
+        if(reservation.getStatus() == ReservationStatus.PENDING){
+            User admin = userRepository.findByRole(UserRole.ROLE_ADMIN)
+                    .stream().findFirst()
+                    .orElseThrow(()-> new IllegalStateException("관리자 계정이 존재하지 않습니다."));
+            notificationService.notifyUser(
+                    admin.getId(),
+                    NotificationType.RESERVATION,
+                    content,
+                    dto
+            );
+            //확정이후 취소로 예약자 담당의에게 알림
+        }else if (reservation.getStatus() == ReservationStatus.APPROVED){
+            notificationService.notifyUser(
+                    reservation.getUser().getId(),
+                    NotificationType.RESERVATION,
+                    content,
+                    dto
+            );
+            if(reservation.getDoctor() != null) {
+                notificationService.notifyUser(
+                        reservation.getDoctor().getId(),
+                        NotificationType.RESERVATION,
+                        content,
+                        dto
+                );
+            }
+        }
+
+
     }
 
     // 날짜별 예약 조회 (관리자/의료진용)
