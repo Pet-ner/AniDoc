@@ -2,13 +2,11 @@ package com.petner.anidoc.domain.user.user.dto;
 
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.entity.UserRole;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-
+@Data
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,14 +16,15 @@ public class UserSignUpRequestDto {
     @NotBlank(message = "이름을 입력해주세요.")
     private String name;
 
-    @NotBlank(message = "아이디를 입력해주세요.")
-
+    @NotBlank(message = "이메일은 필수입니다.")
+    @Email(message = "올바른 이메일 형식이 아닙니다.")
     private String email;
 
     @NotBlank(message = "비밀번호를 입력해주세요.")
     private String password;
 
-    private UserRole role;
+    @Builder.Default
+    private UserRole role = UserRole.ROLE_USER;
     private String phoneNumber;
     private String emergencyContact;
 

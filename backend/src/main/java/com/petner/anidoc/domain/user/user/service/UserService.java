@@ -60,7 +60,7 @@ public class UserService {
                 .name(dto.getName())
                 .email(dto.getEmail())
                 .password(encodedPassword)
-                .role(UserRole.ROLE_USER)
+                .role(dto.getRole())
                 .phoneNumber(dto.getPhoneNumber())
                 .emergencyContact(dto.getEmergencyContact())
                 .build();
