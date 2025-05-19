@@ -11,6 +11,7 @@ import com.petner.anidoc.global.rq.Rq;
 import com.petner.anidoc.global.security.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -24,27 +25,33 @@ import java.util.List;
 
 /**
  * ✅ UserController
- * - 사용자 회원가입과 로그인 기능을 제공하는 REST API 컨트롤러
- * - 주요 기능
- * - 회원가입 및 유저 등록
- * - 로그인
- * - 토큰 반환
+ *
+ * - 사용자 인증 및 계정 관리 기능을 제공하는 REST API 컨트롤러입니다.
+ *
+ * 🔹 주요 기능
+ *   - 일반 사용자 및 의료진 회원가입
+ *   - 이메일 중복 검사
+ *   - 로그인 및 토큰 발급
+ *   - 로그아웃
+ *   - 회원 탈퇴
+ *   - 의료진 목록 조회
  */
 
+@Tag(name = "사용자 인증 및 계정 관리", description = "사용자 관련 API")
 @SecurityRequirement(name = "BearerAuth")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 @Slf4j
+
 public class UserController {
 
     private final UserService userService;
     private final AuthTokenService authTokenService;
-    private final UserRepository userRepository;
     private final Rq rq;
 
     // ✅ 회원가입
-    @Operation(summary = "회원 가입", description = "User Register 관련 API")
+    @Operation(summary = "회원 가입", description = "필수 정보 입력해 회원가입을 진행합니다.")
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> register(@Valid @RequestBody UserSignUpRequestDto userSignDto){
         User user = userService.register(userSignDto);
@@ -52,7 +59,7 @@ public class UserController {
     }
 
     // ✅ email 중복 검사
-    @Operation(summary = "이메일 중복 검사", description = "Email check 관련 API")
+    @Operation(summary = "이메일 중복 검사", description = "중복 Email 확인합니다.")
     @GetMapping("/emailCheck")
     public ResponseEntity<String> emailCheck(@RequestParam String email) {
         boolean exists = userService.existsByEmail(email);
@@ -68,7 +75,7 @@ public class UserController {
     }
 
     // ✅ 로그인
-    @Operation(summary = "로그인", description = "Login 관련 API")
+    @Operation(summary = "로그인", description = "email과 password 입력해 로그인합니다.")
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginReqDto){
         try {
@@ -94,7 +101,7 @@ public class UserController {
 
 
     // ✅ 로그아웃
-    @Operation(summary = "로그아웃", description = "Logout 관련 API")
+    @Operation(summary = "로그아웃", description = "로그인 상태에서 로그아웃을 진행합니다.")
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader(value = "Authorization", required = false) String header) {
 
@@ -118,7 +125,7 @@ public class UserController {
     }
 
     // ✅ 회원 탈퇴
-    @Operation(summary = "회원 탈퇴", description = "Withdraw 관련 API")
+    @Operation(summary = "회원 탈퇴", description = "로그인 상태에서 회원 탈퇴를 진행합니다.")
     @DeleteMapping("/withdraw")
     public ResponseEntity<String> withdraw(@AuthenticationPrincipal SecurityUser securityUser){
         Long userId = securityUser.getId();
