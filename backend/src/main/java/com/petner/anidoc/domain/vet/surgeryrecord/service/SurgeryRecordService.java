@@ -63,7 +63,7 @@ public class SurgeryRecordService {
     }
 
     @Transactional
-    public SurgeryRecordResponseDto getSurgeryRecord(Long userId, Long medicalRecordId){ //진료기록 기준 모든 수술기록 조회
+    public SurgeryRecordResponseDto getSurgeryRecord(Long userId, Long medicalRecordId){ //진료기록 기준 수술기록 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
