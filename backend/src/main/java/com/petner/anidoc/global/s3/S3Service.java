@@ -35,7 +35,7 @@ public class S3Service {
                 .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(30)) //Presigned URL 유효시간(30분)
+                .signatureDuration(Duration.ofMinutes(5)) //Presigned URL 유효시간(5분)
                 .putObjectRequest(objectRequest)
                 .build();
 
