@@ -32,6 +32,7 @@ export default function ChatRoom({ reservationId }: ChatRoomProps) {
               reservationId,
               userId: user.id,
             }),
+            credentials: "include",
           }
         );
 
