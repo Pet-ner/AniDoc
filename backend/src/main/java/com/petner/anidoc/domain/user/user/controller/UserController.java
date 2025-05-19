@@ -103,16 +103,9 @@ public class UserController {
     // ✅ 로그아웃
     @Operation(summary = "로그아웃", description = "로그인 상태에서 로그아웃을 진행합니다.")
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestHeader(value = "Authorization", required = false) String header) {
-
-        if (header == null || !header.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("올바른 인증 토큰이 필요합니다.");
-        }
-
-        String accessToken = header.substring(7);
-
+    public ResponseEntity<String> logout(@CookieValue(value = "accessToken", required = false) String accessToken) {
         // 토큰 유효성 검사
-        if (!authTokenService.isValid(accessToken)){
+        if (accessToken == null || !authTokenService.isValid(accessToken)){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
         }
         userService.logout(accessToken);
@@ -132,6 +125,14 @@ public class UserController {
         userService.deleteUser(userId);
 
         return ResponseEntity.ok("회원 탈퇴 성공");
+    }
+
+    // ✅ 현재 인증된 사용자 정보 조회
+    @Operation(summary = "현재 사용자 정보 조회", description = "현재 인증된 사용자의 정보를 조회합니다.")
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDto> getCurrentUser(@AuthenticationPrincipal SecurityUser securityUser) {
+        User user = userService.getUserById(securityUser.getId());
+        return ResponseEntity.ok(UserResponseDto.fromEntity(user));
     }
 
     // ✅ 의료진 조회

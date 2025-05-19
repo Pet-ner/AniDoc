@@ -8,6 +8,8 @@ import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.entity.UserRole;
 import com.petner.anidoc.domain.user.user.entity.UserStatus;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
+import com.petner.anidoc.domain.vet.vet.entity.VetInfo;
+import com.petner.anidoc.domain.vet.vet.repository.VetInfoRepository;
 import com.petner.anidoc.global.exception.CustomException;
 import com.petner.anidoc.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final VetInfoRepository vetInfoRepository;
     private final AuthTokenService authTokenService;
     private final PasswordEncoder passwordEncoder;
 
@@ -53,6 +56,10 @@ public class UserService {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
+        // 병원 정보 확인
+        VetInfo vetInfo = vetInfoRepository.findById(dto.getVetInfoId())
+                .orElseThrow(() -> new CustomException(ErrorCode.VET_NOT_FOUND));
+
         // 암호화
         String encodedPassword = passwordEncoder.encode(dto.getPassword());
         // 유저 생성
@@ -63,7 +70,13 @@ public class UserService {
                 .role(dto.getRole())
                 .phoneNumber(dto.getPhoneNumber())
                 .emergencyContact(dto.getEmergencyContact())
+                .vetInfo(vetInfo)
                 .build();
+
+        // 의료진인 경우 상태 설정
+        if (dto.getRole() == UserRole.ROLE_STAFF) {
+            user.updateStatus(UserStatus.ON_DUTY);
+        }
 
         return userRepository.save(user);
     }
@@ -159,6 +172,13 @@ public class UserService {
     // ✅ 리프레시 토큰으로 사용자 조회
     public Optional<User> findByRefreshToken(String refreshToken){
         return userRepository.findByRefreshToken(refreshToken);
+    }
+
+    // ✅ ID로 사용자 조회
+    @Transactional(readOnly = true)
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
     // ✅ 의료진 조회

@@ -4,6 +4,7 @@ import com.petner.anidoc.global.rq.Rq;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -48,10 +49,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers("/h2-console/**").permitAll()
+                                .requestMatchers("/api/users/register", "/api/users/login", "/api/users/logout").permitAll()
+                                .requestMatchers("/api/users/emailCheck").permitAll()
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/swagger-ui/**").permitAll()
-                                .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
-                                .permitAll()
+                                .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
+
+                                // 임시
+                                .requestMatchers(HttpMethod.GET, "/api/vets/**").permitAll()
+
+                                .requestMatchers("/api/**").authenticated()
 
 
 

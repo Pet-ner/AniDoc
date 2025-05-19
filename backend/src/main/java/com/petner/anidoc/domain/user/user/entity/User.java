@@ -126,4 +126,7 @@ public class User extends BaseEntity implements UserDetails {
     }
 
 
+    public void updateStatus(UserStatus status) {
+        this.status = status;
+    }
 }

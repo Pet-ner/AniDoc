@@ -4,6 +4,7 @@ import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.entity.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Data
@@ -27,6 +28,9 @@ public class UserSignUpRequestDto {
     private UserRole role = UserRole.ROLE_USER;
     private String phoneNumber;
     private String emergencyContact;
+
+    @NotNull(message = "병원 정보는 필수입니다.")
+    private Long vetInfoId; // 소속 병원 ID
 
     @Builder
     public User toEntity(){
