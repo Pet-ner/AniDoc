@@ -26,15 +26,16 @@ public class S3Service {
 
     private final S3Presigner s3Presigner;
 
-    public String generatePresignedUrl(String fileName, String contentType) {
+    public String generatePresignedUrl(S3Folder s3Folder,String fileName, String contentType) {
+        String key = s3Folder.getFolderName()+"/"+fileName;
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
-                .key("your-folder/" + fileName) // 원하는 경로로 추후에 수정
+                .key(key) // 원하는 경로로 추후에 수정
                 .contentType(contentType)
                 .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(30))
+                .signatureDuration(Duration.ofMinutes(30)) //Presigned URL 유효시간(30분)
                 .putObjectRequest(objectRequest)
                 .build();
 
