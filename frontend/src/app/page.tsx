@@ -90,11 +90,11 @@ export default function Home() {
     const fetchNotices = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notices?page=0&size=5`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notices?page=0&size=4`,
           {
+            credentials: "include",
             headers: {
               "Content-Type": "application/json",
-              // 인증 헤더는 백엔드 인증 설정에 맞게 추가될 예정
             },
           }
         );
@@ -110,10 +110,11 @@ export default function Home() {
       }
     };
 
+    // 예약은 로그인한 사용자만, 공지사항은 모든 사용자가 볼 수 있음
     if (user) {
       fetchReservations();
-      fetchNotices();
     }
+    fetchNotices();
   }, [user]);
 
   if (!user) return null;

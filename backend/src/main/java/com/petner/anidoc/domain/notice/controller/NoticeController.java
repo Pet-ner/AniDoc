@@ -12,9 +12,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.file.AccessDeniedException;
 
@@ -28,7 +31,14 @@ public class NoticeController {
     private final NoticeService noticeService;
     private final UserRepository userRepository;
 
-   //로그인 기능 반영 후 @RequestParam Long userId)는 인증관련으로 교체
+    //컨트롤러 예외 처리 유틸 메서드
+    private User getUserFromUserDetails(UserDetails userDetails){
+        if(userDetails == null){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"로그인이 필요합니다.");
+        }
+        return  userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
+    }
 
     //공지사항 전체 조회
     @Operation(summary = "공지사항 전체 조회")
@@ -52,31 +62,33 @@ public class NoticeController {
     @Operation(summary = "공지사항 생성", description = "제목, 내용(작성자는 고정)")
     @PostMapping
     public NoticeResponseDto createNotice(@Valid @RequestBody NoticeRequestDto noticeRequestDto,
-                                          @AuthenticationPrincipal User currentUser
-                                          ) throws AccessDeniedException {
+                                    @AuthenticationPrincipal UserDetails currentUser) throws AccessDeniedException {
+    User user = getUserFromUserDetails(currentUser);
+    return noticeService.createNotice(noticeRequestDto, user);
+}
 
-        return noticeService.createNotice(noticeRequestDto, currentUser);
-    }
 
     //공지사항 수정
     @Operation(summary = "공지사항 수정", description = "제목, 내용")
     @PutMapping("/{noticeId}")
     public NoticeResponseDto updateNotice(@PathVariable Long noticeId,
                                           @Valid @RequestBody NoticeRequestDto noticeRequestDto,
-                                          @AuthenticationPrincipal User currentUser) throws AccessDeniedException {
+                                          @AuthenticationPrincipal UserDetails currentUser) throws AccessDeniedException {
 
-        return noticeService.updateNotice(noticeId, noticeRequestDto, currentUser);
+        User user = getUserFromUserDetails(currentUser);
+
+        return noticeService.updateNotice(noticeId, noticeRequestDto, user);
     }
 
     //공지사항 삭제
     @Operation(summary = "공지사항 삭제", description = "관리자만 삭제가능")
     @DeleteMapping("/{noticeId}")
     public ResponseEntity<Void> deleteNotice(@PathVariable Long noticeId,
-                                             @RequestParam Long userId,
-                                             @AuthenticationPrincipal User currentUser
-                                             ) throws AccessDeniedException {
+                                             @AuthenticationPrincipal UserDetails currentUser) throws AccessDeniedException {
 
-        noticeService.deleteNotice(noticeId, currentUser);
+        User user = getUserFromUserDetails(currentUser);
+
+        noticeService.deleteNotice(noticeId, user);
         return ResponseEntity.noContent().build();
     }
     
