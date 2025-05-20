@@ -86,9 +86,9 @@ export default function Header() {
               <div className="p-3 border-b border-gray-200">
                 <p className="font-medium">{user.name}</p>
                 <p className="text-sm text-gray-500">
-                  {user.role === "ROLE_ADMIN"
+                  {user.userRole === "ROLE_ADMIN"
                     ? "관리자"
-                    : user.role === "ROLE_STAFF"
+                    : user.userRole === "ROLE_STAFF"
                     ? "의료진"
                     : "일반 사용자"}
                 </p>

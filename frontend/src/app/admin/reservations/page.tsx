@@ -89,7 +89,10 @@ export default function ReservationManagement() {
 
         // 날짜별 예약 목록 조회 API 호출
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/reservations/date/${selectedDate}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/reservations/date/${selectedDate}`,
+          {
+            credentials: "include",
+          }
         );
         if (!response.ok)
           throw new Error("예약 정보를 불러오는데 실패했습니다.");
@@ -115,7 +118,10 @@ export default function ReservationManagement() {
       try {
         // 의사 조회 API (ON_DUTY 상태인 의사만 조회)
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/staff?onlyAvailable=true`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/staff?onlyAvailable=true`,
+          {
+            credentials: "include",
+          }
         );
         if (!response.ok)
           throw new Error("의사 정보를 불러오는데 실패했습니다.");
@@ -180,6 +186,7 @@ export default function ReservationManagement() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(requestData),
+          credentials: "include",
         }
       );
 
@@ -249,6 +256,7 @@ export default function ReservationManagement() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(requestData),
+          credentials: "include",
         }
       );
 

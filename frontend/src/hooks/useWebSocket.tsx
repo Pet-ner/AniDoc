@@ -29,7 +29,10 @@ export default function useWebSocket({ roomId, userId }: UseWebSocketProps) {
     const fetchMessages = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/chat/rooms/${roomId}/messages`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/chat/rooms/${roomId}/messages`,
+          {
+            credentials: "include",
+          }
         );
 
         if (!response.ok) {
@@ -99,6 +102,7 @@ export default function useWebSocket({ roomId, userId }: UseWebSocketProps) {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/chat/rooms/${roomId}/read?userId=${userId}`,
         {
           method: "POST",
+          credentials: "include",
         }
       );
 

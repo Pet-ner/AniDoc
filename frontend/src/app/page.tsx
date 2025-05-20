@@ -78,7 +78,10 @@ export default function Home() {
       try {
         setLoading(true);
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/reservations/user/${user.id}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/reservations/user/${user.id}`,
+          {
+            credentials: "include",
+          }
         );
 
         if (!response.ok) {
@@ -119,6 +122,7 @@ export default function Home() {
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
         }
       );
 

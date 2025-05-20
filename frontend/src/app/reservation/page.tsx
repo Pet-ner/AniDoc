@@ -80,7 +80,10 @@ export default function CreateReservation() {
         setLoading(true);
         // 예약 가능 시간 조회 API 호출
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/reservations/available-slots/${selectedDate}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/reservations/available-slots/${selectedDate}`,
+          {
+            credentials: "include",
+          }
         );
         if (!response.ok)
           throw new Error("예약 가능 시간을 불러오는데 실패했습니다.");
@@ -137,6 +140,7 @@ export default function CreateReservation() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(requestData),
+          credentials: "include",
         }
       );
 
@@ -343,7 +347,7 @@ export default function CreateReservation() {
             {loading ? "처리 중..." : "예약하기"}
           </button>
           <Link
-            href="/reservation"
+            href="/"
             className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
           >
             취소
