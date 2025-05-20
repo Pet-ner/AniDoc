@@ -48,9 +48,9 @@ export default function Sidebar() {
           </li>
           <li>
             <Link
-              href="/pets"
+              href="/ownerpet"
               className={`flex items-center p-3 rounded-lg ${isActive(
-                "/pets"
+                "/ownerpet"
               )}`}
             >
               <Dog size={20} className="mr-3" />

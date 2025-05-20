@@ -68,7 +68,10 @@ public class Pet extends BaseEntity {
     @Column(name = "last_visit_date") //마지막 병원 방문일
     private LocalDate lastVisitDate;
 
-    @Column(name = "special_note", length = 1000) //특이사항
+    @Column(name = "profile_url")
+    private String profileUrl;
+
+    @Column(name = "special_note", columnDefinition = "TEXT") //특이사항
     private String specialNote;
 
 
@@ -94,6 +97,7 @@ public class Pet extends BaseEntity {
         this.birth = dto.getBirth();
         this.weight = dto.getWeight();
         this.isNeutered = dto.isNeutered();
+        this.lastDiroDate = dto.getLastDiroDate();
         this.specialNote = dto.getSpecialNote();
 
         this.neuteredDate = dto.getNeuteredDate();
@@ -113,6 +117,8 @@ public class Pet extends BaseEntity {
         this.weight = dto.getWeight();
         this.isNeutered = dto.isNeutered();
 //        this.lastVisitDate = dto.getLastVisitDate();
+        this.lastDiroDate = dto.getLastDiroDate();
+        this.profileUrl = dto.getProfileUrl();
         this.specialNote = dto.getSpecialNote();
 
     }

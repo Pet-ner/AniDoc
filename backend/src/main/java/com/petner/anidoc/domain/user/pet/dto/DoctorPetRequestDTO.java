@@ -31,8 +31,9 @@ public class DoctorPetRequestDTO{
     private BigDecimal weight;
 
 //    private LocalDate lastVisitDate;
+    private LocalDate lastDiroDate;
 
-    @Size(max = 1000, message = "특이사항은 1000자 이내로 입력하세요.")
+    @Size(message = "반려동물의 특이사항 입력해주세요.(알러지, 질병 등)")
     private String specialNote;
     private LocalDate neuteredDate;     //중성화 일자
     private boolean isDeceased;     //사명여부

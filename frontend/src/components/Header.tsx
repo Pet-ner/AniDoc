@@ -18,7 +18,7 @@ export default function Header() {
     const routes: { [key: string]: string } = {
       "/": "대시보드",
       "/reservation": "진료 예약",
-      "/pets": "반려동물 관리",
+      "/ownerpet": "반려동물 관리",
       "/medical-records": "진료 기록",
       "/chats": "1:1 채팅",
     };
