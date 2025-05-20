@@ -12,6 +12,7 @@ public class NoticeResponseDto {
     private Long id;
     private String title;
     private String content;
+    private String writer;
     private String createdAt;
     private String updatedAt;
 
@@ -20,6 +21,7 @@ public class NoticeResponseDto {
                 .id(notice.getId())
                 .title(notice.getTitle())
                 .content(notice.getContent())
+                .writer(notice.getWriter().getName())
                 .createdAt(notice.getCreatedAt() != null ? notice.getCreatedAt().toString() : null)
                 .updatedAt(notice.getUpdatedAt() != null ? notice.getUpdatedAt().toString() : null)
                 .build();
