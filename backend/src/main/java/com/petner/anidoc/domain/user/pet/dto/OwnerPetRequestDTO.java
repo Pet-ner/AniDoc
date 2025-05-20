@@ -32,7 +32,11 @@ public class OwnerPetRequestDTO {
 
 //    private LocalDate lastVisitDate;
 
-    @Size(max = 1000, message = "특이사항은 1000자 이내로 입력하세요.")
+    private LocalDate lastDiroDate;
+
+    private String profileUrl;
+
+    @Size(message = "반려동물의 특이사항 입력해주세요.(알러지, 질병 등)")
     private String specialNote;
 
 }

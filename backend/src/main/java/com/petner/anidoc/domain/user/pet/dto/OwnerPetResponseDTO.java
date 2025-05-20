@@ -33,6 +33,10 @@ public class OwnerPetResponseDTO {
 
 //    protected LocalDate lastVisitDate;
 
+    private LocalDate lastDiroDate;
+
+    private String profileUrl;
+
     private String specialNote;
 
     public OwnerPetResponseDTO(Pet pet){
@@ -44,6 +48,8 @@ public class OwnerPetResponseDTO {
         this.weight = pet.getWeight();
         this.isNeutered = pet.isNeutered();
 //        this.lastVisitDate = pet.getLastVisitDate();
+        this.lastDiroDate = pet.getLastDiroDate();
+        this.profileUrl = pet.getProfileUrl();
         this.specialNote = pet.getSpecialNote();
     }
 
