@@ -33,6 +33,8 @@ public class OwnerPetRegistService {
                 .weight(ownerPetRequestdto.getWeight())
                 .isNeutered(ownerPetRequestdto.isNeutered())
 //                .lastVisitDate(ownerPetRequestdto.getLastVisitDate())
+                .lastDiroDate(ownerPetRequestdto.getLastDiroDate())
+                .profileUrl(ownerPetRequestdto.getProfileUrl()) //사진등록 추가
                 .specialNote(ownerPetRequestdto.getSpecialNote())
                 .build();
 

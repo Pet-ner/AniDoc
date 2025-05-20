@@ -11,6 +11,7 @@ import {
   Dog,
   FilePen,
   ChevronRight,
+  Megaphone,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -23,7 +24,8 @@ export default function Sidebar() {
   // bg-[#AFFFDF] text-[#49BEB7]
   // bg-[#AFFFDF] text-teal-600
   const isActive = (path: string) => {
-    return pathname === path
+    const isMatch = pathname === path || pathname.startsWith(`${path}/`);
+    return isMatch
       ? "bg-teal-100 text-teal-600"
       : "hover:bg-gray-100 text-gray-700";
   };
@@ -48,9 +50,9 @@ export default function Sidebar() {
           </li>
           <li>
             <Link
-              href="/pets"
+              href="/ownerpet"
               className={`flex items-center p-3 rounded-lg ${isActive(
-                "/pets"
+                "/ownerpet"
               )}`}
             >
               <Dog size={20} className="mr-3" />
@@ -90,6 +92,17 @@ export default function Sidebar() {
             >
               <FilePen size={20} className="mr-3" />
               <span>진료 기록</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/notices"
+              className={`flex items-center p-3 rounded-lg ${isActive(
+                "/notices"
+              )}`}
+            >
+              <Megaphone size={20} className="mr-3" />
+              <span>공지사항</span>
             </Link>
           </li>
           <li>

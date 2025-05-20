@@ -28,6 +28,8 @@ public class DoctorPetResponseDTO {
 
 //    protected LocalDate lastVisitDate;
 
+    private LocalDate lastDiroDate;
+
     private String specialNote;
     private LocalDate neuteredDate;
     private boolean isDeceased;
@@ -43,6 +45,7 @@ public class DoctorPetResponseDTO {
         this.breed = pet.getBreed();
         this.birth = pet.getBirth();
         this.weight = pet.getWeight();
+        this.lastVisitDate = pet.getLastDiroDate();
         this.isNeutered = pet.isNeutered();
         this.specialNote = pet.getSpecialNote();
         this.neuteredDate = pet.getNeuteredDate();

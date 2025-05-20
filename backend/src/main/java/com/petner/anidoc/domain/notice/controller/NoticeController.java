@@ -7,14 +7,20 @@ import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.file.AccessDeniedException;
-import java.util.List;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -25,14 +31,25 @@ public class NoticeController {
     private final NoticeService noticeService;
     private final UserRepository userRepository;
 
-   //로그인 기능 반영 후 @RequestParam Long userId)는 인증관련으로 교체
+    //컨트롤러 예외 처리 유틸 메서드
+    private User getUserFromUserDetails(UserDetails userDetails){
+        if(userDetails == null){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"로그인이 필요합니다.");
+        }
+        return  userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
+    }
 
     //공지사항 전체 조회
     @Operation(summary = "공지사항 전체 조회")
     @GetMapping
-    public List<NoticeResponseDto> getAllNotices() {
-        return noticeService.getAllNotices();
-    }
+    public Page<NoticeResponseDto> getAllNotices(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+) {
+    Pageable pageable = PageRequest.of(page, size);
+    return noticeService.getAllNotices(pageable);
+}
 
     //공지사항 단건 상세조회
     @Operation(summary = "공지사항 상세 조회", description = "noticeId로 상세보기")
@@ -44,26 +61,21 @@ public class NoticeController {
     //공지사항 작성
     @Operation(summary = "공지사항 생성", description = "제목, 내용(작성자는 고정)")
     @PostMapping
-    public NoticeResponseDto createNotice(@RequestBody NoticeRequestDto noticeRequestDto,
-                                          @RequestParam Long userId) throws AccessDeniedException {
+    public NoticeResponseDto createNotice(@Valid @RequestBody NoticeRequestDto noticeRequestDto,
+                                    @AuthenticationPrincipal UserDetails currentUser) throws AccessDeniedException {
+    User user = getUserFromUserDetails(currentUser);
+    return noticeService.createNotice(noticeRequestDto, user);
+}
 
-        //테스트용
-        User user = userRepository.findById(userId)
-                .orElseThrow(()->new EntityNotFoundException("존재하지 않는 사용자"));
-
-        return noticeService.createNotice(noticeRequestDto, user);
-    }
 
     //공지사항 수정
     @Operation(summary = "공지사항 수정", description = "제목, 내용")
     @PutMapping("/{noticeId}")
     public NoticeResponseDto updateNotice(@PathVariable Long noticeId,
-                                          @RequestBody NoticeRequestDto noticeRequestDto,
-                                          @RequestParam Long userId) throws AccessDeniedException {
+                                          @Valid @RequestBody NoticeRequestDto noticeRequestDto,
+                                          @AuthenticationPrincipal UserDetails currentUser) throws AccessDeniedException {
 
-        //테스트용
-        User user = userRepository.findById(userId)
-                .orElseThrow(()->new EntityNotFoundException("존재하지 않는 사용자"));
+        User user = getUserFromUserDetails(currentUser);
 
         return noticeService.updateNotice(noticeId, noticeRequestDto, user);
     }
@@ -72,14 +84,22 @@ public class NoticeController {
     @Operation(summary = "공지사항 삭제", description = "관리자만 삭제가능")
     @DeleteMapping("/{noticeId}")
     public ResponseEntity<Void> deleteNotice(@PathVariable Long noticeId,
-                                             @RequestParam Long userId) throws AccessDeniedException {
+                                             @AuthenticationPrincipal UserDetails currentUser) throws AccessDeniedException {
 
-        //테스트용
-        User user = userRepository.findById(userId)
-                .orElseThrow(()->new EntityNotFoundException("존재하지 않는 사용자"));
+        User user = getUserFromUserDetails(currentUser);
 
         noticeService.deleteNotice(noticeId, user);
         return ResponseEntity.noContent().build();
     }
+    
+    //공지사항 검색
+    @GetMapping("/search")
+    public ResponseEntity<Page<NoticeResponseDto>> searchNotices(
+            @RequestParam String title,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(noticeService.searchNotices(title, pageable));
 
+    }
 }
