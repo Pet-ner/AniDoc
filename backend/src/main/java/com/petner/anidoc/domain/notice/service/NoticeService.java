@@ -14,6 +14,8 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.nio.file.AccessDeniedException;
 import java.util.List;
@@ -105,14 +107,6 @@ public class NoticeService {
     }
 
 
-    //공지사항 전체 조회
-    @Transactional
-    public List<NoticeResponseDto> getAllNotices() {
-        return noticeRepository.findAll().stream()
-                .map(NoticeResponseDto::from)
-                .toList();
-    }
-
 
     @Transactional
     public NoticeResponseDto getNoticeById(Long noticeId) {
@@ -122,5 +116,17 @@ public class NoticeService {
                 return NoticeResponseDto.from(notice);
     }
 
+    // 공지사항 전체 조회 (페이징)
+    @Transactional
+    public Page<NoticeResponseDto> getAllNotices(Pageable pageable) {
+        return noticeRepository.findAllByOrderByCreatedAtDesc(pageable)
+                .map(NoticeResponseDto::from);
+    }
 
+    // 공지사항 검색 (페이징)
+    @Transactional
+    public Page<NoticeResponseDto> searchNotices(String title, Pageable pageable) {
+        return noticeRepository.findByTitleContainingOrderByCreatedAtDesc(title, pageable)
+                .map(NoticeResponseDto::from);
+    }
 }

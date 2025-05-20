@@ -31,39 +31,27 @@ interface Reservation {
   updatedAt: string;
 }
 
-// 공지사항 데이터 -> TODO: 실제 데이터로 변경
-const MOCK_NOTICES = [
-  {
-    id: 1,
-    title: "5월 진료 일정 안내",
-    date: "2025-05-05",
-  },
-  {
-    id: 2,
-    title: "애완동물 반려견용 건강검진 안내",
-    date: "2025-05-07",
-  },
-  {
-    id: 3,
-    title: "신규 의료진 소개 안내",
-    date: "2025-05-09",
-  },
-  {
-    id: 4,
-    title: "동물등록제 관련안내 안내",
-    date: "2025-05-13",
-  },
-];
+interface Notice {
+  id: number;
+  title: string;
+  createdAt: string;
+}
 
 export default function Home() {
   const { user } = useUser();
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [notices, setNotices] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
-  // TODO: 실제 데이터로 변경
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: "네이버 예방접종 일정이 다가옵니다.", read: false },
-    { id: 2, title: "진료예약 4/2 오후 2시 확정되었습니다.", read: false },
-    { id: 3, title: "진료예약이 5/10으로 변경되었습니다.", read: true },
+  const [notifications, setNotifications] = useState<
+    Array<{
+      id: number;
+      title: string;
+      read: boolean;
+    }>
+  >([
+    { id: 1, title: "예방접종 일정이 다가옵니다.", read: false },
+    { id: 2, title: "진료예약 5/22 오후 2시 확정되었습니다.", read: false },
+    { id: 3, title: "진료예약이 5/25로 변경되었습니다.", read: true },
   ]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -90,8 +78,7 @@ export default function Home() {
 
         const data = await response.json();
         setReservations(data);
-        // TODO: 예약 조회 페이지로 받아오도록 백엔드 Reservation 도메인 수정
-        setTotalPages(Math.ceil(data.length / 10)); // 한 페이지당 10개
+        setTotalPages(Math.ceil(data.length / 10));
       } catch (error) {
         console.error("예약 정보 로드 오류:", error);
       } finally {
@@ -99,7 +86,34 @@ export default function Home() {
       }
     };
 
-    fetchReservations();
+    // 공지사항 데이터 조회
+    const fetchNotices = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notices?page=0&size=5`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              // 인증 헤더는 백엔드 인증 설정에 맞게 추가될 예정
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("공지사항을 불러오는데 실패했습니다.");
+        }
+
+        const data = await response.json();
+        setNotices(data.content); // content 배열에서 공지사항 데이터 추출
+      } catch (error) {
+        console.error("공지사항 로드 오류:", error);
+      }
+    };
+
+    if (user) {
+      fetchReservations();
+      fetchNotices();
+    }
   }, [user]);
 
   if (!user) return null;
@@ -422,22 +436,43 @@ export default function Home() {
               <h2 className="text-lg font-semibold">공지사항</h2>
             </div>
             <div className="space-y-3">
-              {MOCK_NOTICES.map((notice) => (
-                <div
-                  key={notice.id}
-                  className="border-b border-gray-100 pb-2 last:border-0"
-                >
-                  <Link href="#" className="block py-1 hover:text-[#49BEB7]">
-                    <p className="text-sm">{notice.title}</p>
-                    <p className="text-xs text-gray-500 mt-1">{notice.date}</p>
-                  </Link>
+              {Array.isArray(notices) && notices.length > 0 ? (
+                notices.map((notice) => (
+                  <div
+                    key={notice.id}
+                    className="border-b border-gray-100 pb-2 last:border-0"
+                  >
+                    <Link
+                      href={`/notices/${notice.id}`}
+                      className="block py-1 hover:text-[#49BEB7]"
+                    >
+                      <p className="text-sm">{notice.title}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(notice.createdAt).toLocaleDateString(
+                          "ko-KR",
+                          {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                          }
+                        )}
+                      </p>
+                    </Link>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-gray-500 py-4">
+                  공지사항이 없습니다.
                 </div>
-              ))}
+              )}
             </div>
             <div className="mt-3 text-center">
-              <button className="text-sm text-[#49BEB7] hover:underline">
+              <Link
+                href="/notices"
+                className="text-sm text-[#49BEB7] hover:underline"
+              >
                 모든 공지사항 보기
-              </button>
+              </Link>
             </div>
           </div>
 
