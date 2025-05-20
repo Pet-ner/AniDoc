@@ -15,6 +15,7 @@ interface HospitalComboboxProps {
   name: string;
   placeholder?: string;
   required?: boolean;
+  isValid?: boolean;
 }
 
 export default function HospitalCombobox({
@@ -23,6 +24,7 @@ export default function HospitalCombobox({
   name,
   placeholder = "병원 선택",
   required = false,
+  isValid = false,
 }: HospitalComboboxProps) {
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -109,7 +111,11 @@ export default function HospitalCombobox({
     <div className="relative" ref={comboboxRef}>
       <div
         className={`flex items-center px-3 py-2 border rounded-md ${
-          isOpen ? "border-[#49BEB7] ring-1 ring-[#49BEB7]" : "border-gray-300"
+          isOpen
+            ? "border-[#49BEB7] ring-1 ring-[#49BEB7]"
+            : selectedHospital
+            ? "border-green-300"
+            : "border-gray-300"
         }`}
       >
         {selectedHospital ? (
