@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@stomp/stompjs": "^7.1.1",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.510.0",
     "next": "15.3.2",
     "react": "^19.0.0",
@@ -20,6 +21,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/lodash": "^4.17.16",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
