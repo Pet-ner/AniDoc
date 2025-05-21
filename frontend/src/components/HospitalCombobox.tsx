@@ -180,22 +180,6 @@ export default function HospitalCombobox({
             </div>
           ) : (
             <>
-              {/* <div className="sticky top-0 bg-white p-2 border-b border-gray-200">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <Search size={16} className="text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    className="w-full p-2 pl-10 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-[#49BEB7] focus:border-[#49BEB7]"
-                    placeholder="병원 이름 검색..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    // autoFocus
-                  />
-                </div>
-              </div> */}
-
               <ul>
                 {filteredHospitals.map((hospital) => (
                   <li
