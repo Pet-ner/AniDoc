@@ -17,6 +17,7 @@ import {
   RefreshCw,
   User,
   Eye,
+  Trash2,
 } from "lucide-react";
 
 // 예약 타입
@@ -65,6 +66,8 @@ export default function ReservationManagement() {
     useState<Reservation | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [cancelingId, setCancelingId] = useState<number | null>(null);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
 
   // 관리자만 접근 가능하도록
   //   useEffect(() => {
@@ -297,6 +300,57 @@ export default function ReservationManagement() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancel = (id: number) => {
+    setCancelingId(id);
+    setCancelConfirmOpen(true);
+  };
+
+  const confirmCancel = async () => {
+    if (!cancelingId || !user) return;
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/reservations/${cancelingId}?userId=${user.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        // throw new Error(errorData.message || "예약 취소에 실패했습니다.");
+      }
+      // 취소된 예약 제거
+      const updatedReservations = reservations.filter(
+        (r) => r.id !== cancelingId
+      );
+      setReservations(updatedReservations);
+      setFilteredReservations((prevFiltered) =>
+        prevFiltered.filter((r) => r.id !== cancelingId)
+      );
+      alert("예약이 성공적으로 취소되었습니다.");
+    } catch (error: any) {
+      console.error("예약 취소 오류:", error);
+      alert(error.message || "예약 취소 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+      setCancelConfirmOpen(false);
+      setCancelingId(null);
+    }
+  };
+
+  // 취소 모달 닫기
+  const closeCancelModal = () => {
+    setCancelConfirmOpen(false);
+    setCancelingId(null);
   };
 
   // 페이지네이션 계산
@@ -550,7 +604,13 @@ export default function ReservationManagement() {
                         >
                           <Eye size={18} />
                         </button>
-
+                        <button
+                          onClick={() => handleCancel(reservation.id)}
+                          className="text-gray-500 hover:text-[#49BEB7]"
+                          title="취소하기"
+                        >
+                          <Trash2 size={18} />
+                        </button>
                         {reservation.status === "PENDING" && (
                           <>
                             <button
@@ -856,6 +916,32 @@ export default function ReservationManagement() {
                   닫기
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 예약 취소 확인 모달 */}
+      {cancelConfirmOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-4">예약 취소 확인</h3>
+            <p className="mb-6 text-gray-600">
+              정말로 이 예약을 취소하시겠습니까?
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={confirmCancel}
+                className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-500 hover:bg-red-600"
+              >
+                예
+              </button>
+              <button
+                onClick={closeCancelModal}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                아니오
+              </button>
             </div>
           </div>
         </div>
