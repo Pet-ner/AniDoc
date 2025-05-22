@@ -403,4 +403,15 @@ public class ReservationService {
         return result;
     }
 
+    @Transactional
+    public List<ReservationResponseDto> getApprovedReservationsForDoctor(Long doctorId) {
+        List<Reservation> reservations = reservationRepository.findByDoctorIdAndStatus(doctorId, ReservationStatus.APPROVED);
+
+        return reservations.stream()
+                .map(ReservationResponseDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+
+
 }

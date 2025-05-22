@@ -38,6 +38,11 @@ public class MedicalRecordService {
             throw new AccessDeniedException("진료 기록을 작성할 권한이 없습니다.");
         }
 
+        medicalRecordRepository.findByReservationIdAndIsDeletedFalse(reservationId)
+                .ifPresent(r -> {
+                    throw new IllegalStateException("이미 해당 예약에 대한 진료기록이 존재합니다.");
+                });
+
         MedicalRecord medicalRecord = MedicalRecord.builder()
                 .pet(reservation.getPet())
                 .reservation(reservation)

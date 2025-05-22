@@ -11,5 +11,7 @@ import java.util.Optional;
 @Repository
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Long> {
     Optional<MedicalRecord> findByIdAndIsDeletedFalse(Long id);
+    Optional<MedicalRecord> findByReservationIdAndIsDeletedFalse(Long reservationId);
+
 
 }

@@ -27,7 +27,7 @@ import org.hibernate.annotations.Where;
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-@Where(clause = "is_deleted = false")
+//@Where(clause = "is_deleted = false")
 @Table(name = "medical_records")
 public class MedicalRecord extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,7 +35,7 @@ public class MedicalRecord extends BaseEntity {
     private Pet pet;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reservation_id", nullable = false)
+    @JoinColumn(name = "reservation_id", nullable = false, unique = true)
     private Reservation reservation;
 
     @ManyToOne(fetch = FetchType.LAZY)

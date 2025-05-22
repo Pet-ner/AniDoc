@@ -116,4 +116,12 @@ public class ReservationController {
     public ResponseEntity<List<LocalTime>> getTimeSlots() {
         return ResponseEntity.ok(Reservation.RESERVATION_TIMES);
     }
+
+    @Operation(summary = "의료진 배정 + 승인된 예약 목록 조회")
+    @GetMapping("/approved")
+    public ResponseEntity<List<ReservationResponseDto>> getApprovedReservationsForDoctor(
+            @RequestParam Long doctorId) {
+        return ResponseEntity.ok(reservationService.getApprovedReservationsForDoctor(doctorId));
+    }
+
 }
