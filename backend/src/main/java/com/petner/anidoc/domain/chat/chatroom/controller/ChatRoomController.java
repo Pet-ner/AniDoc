@@ -1,5 +1,6 @@
 package com.petner.anidoc.domain.chat.chatroom.controller;
 
+import com.petner.anidoc.domain.chat.chatmessage.dto.ChatMessagePageResponseDto;
 import com.petner.anidoc.domain.chat.chatmessage.dto.ChatMessageResponseDto;
 import com.petner.anidoc.domain.chat.chatmessage.service.ChatMessageService;
 import com.petner.anidoc.domain.chat.chatroom.dto.ChatRoomRequestDto;
@@ -47,6 +48,23 @@ public class ChatRoomController {
     @GetMapping("/rooms/{roomId}/messages")
     public ResponseEntity<List<ChatMessageResponseDto>> getChatMessages(@PathVariable Long roomId) {
         return ResponseEntity.ok(chatMessageService.getChatMessages(roomId));
+    }
+
+    @Operation(summary = "채팅방 메시지 페이지 조회", description = "채팅방 ID로 메시지를 페이지로 조회합니다.")
+    @GetMapping("/rooms/{roomId}/messages/page")
+    public ResponseEntity<ChatMessagePageResponseDto> getChatMessagesPage(
+            @PathVariable Long roomId,
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(chatMessageService.getLatestChatMessages(roomId, page));
+    }
+
+    @Operation(summary = "이전 메시지 페이지 조회", description = "특정 메시지 이전의 메시지들을 조회합니다.")
+    @GetMapping("/rooms/{roomId}/messages/prev")
+    public ResponseEntity<ChatMessagePageResponseDto> getPreviousMessages(
+            @PathVariable Long roomId,
+            @RequestParam Long lastMessageId,
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(chatMessageService.getPreviousChatMessages(roomId, lastMessageId, page));
     }
 
     @Operation(summary = "메시지 읽음 처리", description = "채팅방의 메시지를 읽음 처리합니다.")
