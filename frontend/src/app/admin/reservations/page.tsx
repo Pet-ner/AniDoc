@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
 import { formatDate } from "@/utils/formatDate";
 import Link from "next/link";
@@ -47,13 +47,17 @@ interface Doctor {
 export default function ReservationManagement() {
   const router = useRouter();
   const { user } = useUser();
+  const searchParams = useSearchParams();
+  const dateParam = searchParams.get("date");
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [filteredReservations, setFilteredReservations] = useState<
     Reservation[]
   >([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>(
+    dateParam ? new Date(dateParam).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]
+  );
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [assigningDoctor, setAssigningDoctor] = useState<{
@@ -78,6 +82,13 @@ export default function ReservationManagement() {
     const today = formatDate(new Date());
     setSelectedDate(today);
   }, []);
+
+  // URL 변경 감지하여 selectedDate 업데이트
+  useEffect(() => {
+    if (dateParam) {
+      setSelectedDate(new Date(dateParam).toISOString().split("T")[0]);
+    }
+  }, [dateParam]);
 
   // 예약 목록 조회
   useEffect(() => {
