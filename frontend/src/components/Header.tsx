@@ -19,6 +19,7 @@ export default function Header() {
       "/": "대시보드",
       "/reservation": "진료 예약",
       "/ownerpet": "반려동물 관리",
+      "/doctorpet": "반려동물 관리",
       "/medical-records": "진료 기록",
       "/chats": "1:1 채팅",
       "/notices": "공지사항",

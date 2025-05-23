@@ -50,9 +50,9 @@ export default function Sidebar() {
           </li>
           <li>
             <Link
-              href="/ownerpet"
+              href={user?.userRole === "ROLE_USER" ? "/ownerpet" : "/doctorpet"}
               className={`flex items-center p-3 rounded-lg ${isActive(
-                "/ownerpet"
+                user?.userRole === "ROLE_USER" ? "/ownerpet" : "/doctorpet"
               )}`}
             >
               <Dog size={20} className="mr-3" />
