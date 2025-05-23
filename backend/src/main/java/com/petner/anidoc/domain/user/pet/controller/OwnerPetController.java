@@ -37,8 +37,6 @@ public class OwnerPetController {
             BindingResult bindingResult,
             @AuthenticationPrincipal UserDetails currentUser) {
 
-        System.out.println("isNeutered: " + ownerPetRequestDTO.getIsNeutered());
-        System.out.println("전체 DTO: " + ownerPetRequestDTO);
         if (bindingResult.hasErrors()) {
             String errorMsg = bindingResult.getFieldErrors().stream()
                     .map(e -> e.getField() + ": " + e.getDefaultMessage())
