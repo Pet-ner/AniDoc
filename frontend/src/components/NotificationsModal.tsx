@@ -7,8 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { formatTimeForNotification } from "@/utils/formatTimeForNotification"; // 이 줄 추가
-import NotificationsList from "@/components/NotificationsList";
+import { formatTimeForNotification } from "@/utils/formatTimeForNotification";
 
 interface NotificationDto {
   id: number;
