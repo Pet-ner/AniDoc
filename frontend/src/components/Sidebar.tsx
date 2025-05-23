@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useUser } from "@/contexts/UserContext";
@@ -16,6 +16,7 @@ import {
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useUser();
 
   if (!user) return null;
@@ -97,9 +98,7 @@ export default function Sidebar() {
           <li>
             <Link
               href="/notices"
-              className={`flex items-center p-3 rounded-lg ${isActive(
-                "/notices"
-              )}`}
+              className={`flex items-center p-3 rounded-lg ${isActive("/notices")}`}
             >
               <Megaphone size={20} className="mr-3" />
               <span>공지사항</span>
