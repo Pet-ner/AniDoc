@@ -31,7 +31,7 @@ public class OwnerPetRegistService {
                 .breed(ownerPetRequestdto.getBreed())
                 .birth(ownerPetRequestdto.getBirth())
                 .weight(ownerPetRequestdto.getWeight())
-                .isNeutered(ownerPetRequestdto.isNeutered())
+                .isNeutered(ownerPetRequestdto.getIsNeutered())
 //                .lastVisitDate(ownerPetRequestdto.getLastVisitDate())
                 .lastDiroDate(ownerPetRequestdto.getLastDiroDate())
                 .profileUrl(ownerPetRequestdto.getProfileUrl()) //사진등록 추가
@@ -68,5 +68,17 @@ public class OwnerPetRegistService {
             throw new RuntimeException("조회 권한이 없습니다.");
         }
         return pet;
+    }
+
+    //삭제
+    @Transactional
+    public void deletePet(Long petId, User owner) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new EntityNotFoundException("반려동물을 찾을 수 없습니다."));
+        // 소유자 확인
+        if (!pet.getOwner().getId().equals(owner.getId())) {
+            throw new RuntimeException("삭제 권한이 없습니다.");
+        }
+        petRepository.delete(pet);
     }
 }
