@@ -64,6 +64,7 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "refresh_token", unique = true)
     private String refreshToken;
 
+
     @Builder.Default
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
     private List<Pet> pets = new ArrayList<>();
@@ -79,6 +80,7 @@ public class User extends BaseEntity implements UserDetails {
     public boolean isAdmin() {
         return UserRole.ROLE_ADMIN.equals(this.role);
     }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

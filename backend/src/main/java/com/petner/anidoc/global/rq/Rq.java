@@ -28,14 +28,12 @@ import java.util.Optional;
  *   - 쿠키 처리
  *   - 헤더 처리
  *   - 토큰 갱신
- *
  *   등을 쉽게 다룰 수 있도록 돕는 유틸리티 클래스
  */
 @RequestScope
 @Component
 @RequiredArgsConstructor
 public class Rq {
-
 
     private final HttpServletRequest req;
     private final HttpServletResponse resp;
@@ -44,7 +42,6 @@ public class Rq {
 
     @Value("${custom.cookieDomain}")
     private String cookieDomain;
-
 
     // ✅ SecurityContextHolder에 인증 정보 등록
     public void setLogin(User user){
@@ -63,7 +60,6 @@ public class Rq {
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
-
 
     // ✅ 현재 로그인한 유저 반환
     public User getActor(){
@@ -92,7 +88,6 @@ public class Rq {
         resp.addHeader("Set-Cookie", cookie.toString());
     }
 
-
     //✅ 쿠키에서 값 조회
     public String getCookieValue(String name){
         return Optional.ofNullable(req.getCookies())
@@ -105,7 +100,6 @@ public class Rq {
     }
 
      // ✅ 쿠키 삭제
-
     public void deleteCookie(String name){
         ResponseCookie cookie = ResponseCookie.from(name, null)
                 .path("/")
@@ -119,12 +113,10 @@ public class Rq {
         resp.addHeader("Set-Cookie", cookie.toString());
     }
 
-
     //✅ 응답 헤더 설정
     public void setHeader(String name, String value){
         resp.setHeader(name, value);
     }
-
 
     //✅ 요청 헤더 조회
     public String getHeader(String name) {
@@ -133,7 +125,6 @@ public class Rq {
             System.out.println("Request 객체가 null입니다.");
             return null;
         }
-
         // 헤더 값 가져오기
         String headerValue = req.getHeader(name);
 
@@ -159,7 +150,6 @@ public class Rq {
         setHeader("Authorization", "Bearer " + newAccessToken);
         setCookie("accessToken", newAccessToken);
     }
-
 
     // ✅ refreshToken을 이용해 사용자 인증 및 accessToken 갱신
     public User refreshAccessTokenByRefreshToken(String refreshToken){
@@ -198,6 +188,4 @@ public class Rq {
         String token = authHeader.substring(7);
         return userService.getUserByAccessToken(token);
     }
-
-
 }

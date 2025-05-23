@@ -12,6 +12,7 @@ import com.petner.anidoc.domain.vet.vet.entity.VetInfo;
 import com.petner.anidoc.domain.vet.vet.repository.VetInfoRepository;
 import com.petner.anidoc.global.exception.CustomException;
 import com.petner.anidoc.global.exception.ErrorCode;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -174,6 +175,10 @@ public class UserService {
         return userRepository.findByRefreshToken(refreshToken);
     }
 
+    public Optional<User> findByEmail(String email){
+        return userRepository.findByEmail(email);
+    }
+
     // ✅ ID로 사용자 조회
     @Transactional(readOnly = true)
     public User getUserById(Long id) {
@@ -198,5 +203,38 @@ public class UserService {
                 .map(StaffResponseDto::fromEntity)
                 .collect(Collectors.toList());
     }
+
+    public void modify(User user, @NotBlank String email){
+        user.setEmail(email);
+    }
+
+    public User join(String email){
+        userRepository
+                .findByEmail(email)
+                .ifPresent(user -> {
+                    throw new RuntimeException("해당 email은 이미 사용중입니다.");
+                });
+
+        User user = User.builder()
+                .name("Temp_name")
+                .email(email)
+                .password("SOCIALPASSWORD")
+                .phoneNumber("test")
+                .role(UserRole.ROLE_USER)
+                .build();
+        return userRepository.save(user);
+    }
+
+    public User modifyOrJoin(String email){
+        Optional<User> opUser = findByEmail(email);
+
+        if(opUser.isPresent()){
+            User user = opUser.get();
+            modify(user, email);
+            return user;
+        }
+        return join(email);
+    }
+
 
 }
