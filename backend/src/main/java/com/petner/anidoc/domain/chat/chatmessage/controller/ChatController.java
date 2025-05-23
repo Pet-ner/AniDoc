@@ -12,13 +12,14 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 @RequiredArgsConstructor
+@MessageMapping("/chat")
 public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageService chatMessageService;
 
     // 프론트엔드에서 /pub/chat/message 로 메시지를 보내면 처리
-    @MessageMapping("/chat/message")
+    @MessageMapping("/message")
     public void sendMessage(@Payload ChatMessageRequestDto messageDto) {
         // 메시지 저장
         ChatMessageResponseDto savedMessage = chatMessageService.saveMessage(messageDto);
@@ -28,7 +29,7 @@ public class ChatController {
     }
 
     // 읽음 처리
-    @MessageMapping("/chat/read")
+    @MessageMapping("/read")
     public void markAsRead(@Payload ReadStatusDto readStatusDto) {
         chatMessageService.markMessagesAsRead(readStatusDto.getRoomId(), readStatusDto.getUserId());
 
