@@ -178,9 +178,6 @@ export default function ReservationDetailPage() {
               <ul className="list-disc list-inside space-y-2 text-gray-700">
                 <li>예약 시간 10분 전에 도착해주세요.</li>
                 <li>반려동물 건강기록부가 있다면 지참해주세요.</li>
-                <li>
-                  최근 식사 및 배변 상태를 메모해오시면 진료에 도움이 됩니다.
-                </li>
                 <li>필요시 이전 병원 진료기록을 지참해주세요.</li>
               </ul>
             </div>

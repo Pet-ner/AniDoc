@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 
@@ -12,6 +12,15 @@ interface Message {
   createdAt: string;
 }
 
+interface MessagePage {
+  messages: Message[];
+  totalElements: number;
+  totalPages: number;
+  currentPage: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
 interface UseWebSocketProps {
   roomId: number | null;
   userId: number | null;
@@ -20,16 +29,24 @@ interface UseWebSocketProps {
 export default function useWebSocket({ roomId, userId }: UseWebSocketProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [connected, setConnected] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const clientRef = useRef<Client | null>(null);
+  const messagesRef = useRef<Message[]>([]);
 
-  // 메시지 불러오기
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // 초기 메시지 불러오기
   useEffect(() => {
     if (!roomId) return;
 
-    const fetchMessages = async () => {
+    const fetchInitialMessages = async () => {
       try {
+        setLoading(true);
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/chat/rooms/${roomId}/messages`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/chat/rooms/${roomId}/messages/page?page=0`,
           {
             credentials: "include",
           }
@@ -39,15 +56,59 @@ export default function useWebSocket({ roomId, userId }: UseWebSocketProps) {
           throw new Error("메시지 로드 실패");
         }
 
-        const data = await response.json();
-        setMessages(data);
+        const data: MessagePage = await response.json();
+        setMessages(data.messages);
+        setHasMoreMessages(data.hasNext);
       } catch (error) {
         console.error("메시지 로드 오류:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchMessages();
+    fetchInitialMessages();
   }, [roomId]);
+
+  // 메시지 더 불러오기
+  const loadMoreMessages = useCallback(async (): Promise<void> => {
+    if (!roomId || !hasMoreMessages || loading) {
+      return Promise.resolve();
+    }
+
+    const currentMessages = messagesRef.current;
+    if (currentMessages.length === 0) {
+      return Promise.resolve();
+    }
+
+    try {
+      setLoading(true);
+      const oldestMessageId = messages[0].id;
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/chat/rooms/${roomId}/messages/prev?lastMessageId=${oldestMessageId}&page=0`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("이전 메시지 로드 실패");
+      }
+
+      const data: MessagePage = await response.json();
+
+      if (data.messages.length > 0) {
+        setMessages((prevMessages) => [...data.messages, ...prevMessages]);
+        setHasMoreMessages(data.hasNext);
+      } else {
+        setHasMoreMessages(false);
+      }
+    } catch (error) {
+      console.error("메시지 더 불러오기 오류:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [roomId, hasMoreMessages, loading]);
 
   // 웹소켓 연결
   useEffect(() => {
@@ -135,6 +196,9 @@ export default function useWebSocket({ roomId, userId }: UseWebSocketProps) {
   return {
     messages,
     connected,
+    loading,
+    hasMoreMessages,
     sendMessage,
+    loadMoreMessages,
   };
 }

@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class ChatMessageService {
 
-    private static final int DEFAULT_PAGE_SIZE = 30; // 한 페이지당 메시지 수
+    private static final int DEFAULT_PAGE_SIZE = 20; // 한 페이지당 메시지 수
 
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
