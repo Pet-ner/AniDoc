@@ -29,12 +29,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Modifying
     @Transactional
     @Query("UPDATE User u SET u.name = :name, u.phoneNumber = :phoneNumber, " +
-            "u.emergencyContact = :emergencyContact, u.vetInfo = :vetInfo, u.updatedAt = CURRENT_TIMESTAMP " +
+            "u.emergencyContact = :emergencyContact," +
+            "u.role = :role, " +
+            " u.vetInfo = :vetInfo, u.updatedAt = CURRENT_TIMESTAMP " +
             "WHERE u.id = :id")
     void updateUserBasicInfo(@Param("id") Long id,
                              @Param("name") String name,
                              @Param("phoneNumber") String phoneNumber,
                              @Param("emergencyContact") String emergencyContact,
+                             @Param("role") UserRole role,
                              @Param("vetInfo") VetInfo vetInfo);
 }
 

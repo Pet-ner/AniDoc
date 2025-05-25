@@ -153,7 +153,7 @@ export default function UserRegisterPage() {
         name: formData.name,
         phoneNumber: formData.phoneNumber,
         emergencyContact: formData.emergencyContact,
-        role: "ROLE_USER",
+        role: "ROLE_STAFF",
         vetInfo: {
           id: selectedHospital.id,
         },

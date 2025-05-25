@@ -2,7 +2,6 @@ package com.petner.anidoc.global.security;
 
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.service.UserService;
-import com.petner.anidoc.global.app.AppConfig;
 import com.petner.anidoc.global.rq.Rq;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

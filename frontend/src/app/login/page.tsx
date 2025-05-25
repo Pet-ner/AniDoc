@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
@@ -13,6 +13,30 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // 소셜 로그인 체크
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/social/me`,
+          {
+            credentials: "include",
+          }
+        );
+
+        if (response.ok) {
+          // 이미 로그인된 상태라면 UserContext 업데이트 후 메인으로 리다이렉트
+          login();
+          router.push("/");
+        }
+      } catch (error) {
+        console.error("로그인 상태 확인 실패:", error);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +80,7 @@ export default function LoginPage() {
 
   const handleKakaoLogin = () => {
     // 메인 페이지로 리다이렉트
-    const redirectUrl = window.location.origin + "/dashboard"; // TODO: 리다이렉트 url 수정
+    const redirectUrl = window.location.origin; // TODO: 리다이렉트 url 수정
     window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/kakao?redirectUrl=${redirectUrl}`;
   };
 

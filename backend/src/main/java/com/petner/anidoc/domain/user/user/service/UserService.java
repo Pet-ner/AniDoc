@@ -206,7 +206,7 @@ public class UserService {
         user.setEmail(email);
     }
 
-    public User join(String email){
+    public User join(String email, String socialId, SsoProvider provider){
         userRepository
                 .findByEmail(email)
                 .ifPresent(user -> {
@@ -218,20 +218,22 @@ public class UserService {
                 .email(email)
                 .password("SOCIALPASSWORD")
                 .phoneNumber("test")
+                .socialId(socialId)
+                .ssoProvider(provider)
                 .role(UserRole.ROLE_USER)
                 .build();
         return userRepository.save(user);
     }
 
-    public User modifyOrJoin(String email){
+    public User modifyOrJoin(String email, String socialId, SsoProvider provider) {
         Optional<User> opUser = findByEmail(email);
 
-        if(opUser.isPresent()){
+        if (opUser.isPresent()) {
             User user = opUser.get();
             modify(user, email);
             return user;
         }
-        return join(email);
+        return join(email,socialId,provider);
     }
 
     @Transactional
@@ -242,8 +244,8 @@ public class UserService {
 
         // VetInfo 조회
         VetInfo vetInfo = null;
-        if (updateDto.getVetInfoId() != null) {
-            vetInfo = vetInfoRepository.findById(updateDto.getVetInfoId())
+        if (updateDto.getVetInfo() != null) {
+            vetInfo = vetInfoRepository.findById(updateDto.getVetInfo().getId())
                     .orElseThrow(() -> new RuntimeException("병원 정보를 찾을 수 없습니다."));
         }
 
@@ -253,7 +255,8 @@ public class UserService {
                 updateDto.getName(),
                 updateDto.getPhoneNumber(),
                 updateDto.getEmergencyContact(),
-                vetInfo
+                updateDto.getRole(),
+                updateDto.getVetInfo()
         );
 
         // 업데이트된 사용자 정보 반환
