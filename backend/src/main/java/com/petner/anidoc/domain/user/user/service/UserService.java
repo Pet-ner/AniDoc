@@ -1,9 +1,7 @@
 package com.petner.anidoc.domain.user.user.service;
 
-import com.petner.anidoc.domain.user.user.dto.LoginRequestDto;
-import com.petner.anidoc.domain.user.user.dto.StaffResponseDto;
-import com.petner.anidoc.domain.user.user.dto.UserResponseDto;
-import com.petner.anidoc.domain.user.user.dto.UserSignUpRequestDto;
+import com.petner.anidoc.domain.user.user.dto.*;
+import com.petner.anidoc.domain.user.user.entity.SsoProvider;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.entity.UserRole;
 import com.petner.anidoc.domain.user.user.entity.UserStatus;
@@ -236,5 +234,29 @@ public class UserService {
         return join(email);
     }
 
+    @Transactional
+    public User updateUser(Long userId, SocialSignUpRequestDto updateDto) {
+        // userId로 User 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
+        // VetInfo 조회
+        VetInfo vetInfo = null;
+        if (updateDto.getVetInfoId() != null) {
+            vetInfo = vetInfoRepository.findById(updateDto.getVetInfoId())
+                    .orElseThrow(() -> new RuntimeException("병원 정보를 찾을 수 없습니다."));
+        }
+
+        // Repository의 업데이트 메서드 사용
+        userRepository.updateUserBasicInfo(
+                userId,
+                updateDto.getName(),
+                updateDto.getPhoneNumber(),
+                updateDto.getEmergencyContact(),
+                vetInfo
+        );
+
+        // 업데이트된 사용자 정보 반환
+        return userRepository.findById(userId).orElseThrow();
+    }
 }

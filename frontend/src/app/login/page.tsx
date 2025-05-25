@@ -56,7 +56,7 @@ export default function LoginPage() {
 
   const handleKakaoLogin = () => {
     // 메인 페이지로 리다이렉트
-    const redirectUrl = window.location.origin + ""; // TODO: 리다이렉트 url 수정
+    const redirectUrl = window.location.origin + "/dashboard"; // TODO: 리다이렉트 url 수정
     window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/kakao?redirectUrl=${redirectUrl}`;
   };
 

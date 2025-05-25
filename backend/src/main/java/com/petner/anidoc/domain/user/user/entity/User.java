@@ -8,6 +8,7 @@ import com.petner.anidoc.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,6 +25,7 @@ import java.util.List;
 @SuperBuilder
 @ToString(exclude = "password")
 @Table(name = "users")
+@DynamicUpdate
 public class User extends BaseEntity implements UserDetails {
 
 

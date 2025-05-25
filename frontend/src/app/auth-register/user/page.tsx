@@ -116,18 +116,23 @@ export default function UserRegisterPage() {
   };
 
   const validateForm = () => {
-    if (!formData.name || !formData.email || !formData.phoneNumber) {
-      setError("필수 항목을 모두 입력해주세요.");
+    if (!formData.name) {
+      setError("이름을 입력해주세요.");
+      return false;
+    }
+
+    if (!formData.phoneNumber || !phoneValid) {
+      setError("올바른 전화번호를 입력해주세요.");
+      return false;
+    }
+
+    if (formData.emergencyContact && !emergencyPhoneValid) {
+      setError("올바른 비상 연락처를 입력해주세요.");
       return false;
     }
 
     if (!selectedHospital.id) {
       setError("소속 병원을 선택해주세요.");
-      return false;
-    }
-
-    if (emailValid !== true) {
-      setError("이메일을 확인해주세요.");
       return false;
     }
 
@@ -145,39 +150,51 @@ export default function UserRegisterPage() {
     setError("");
 
     try {
-      const registerData = {
+      const updateData = {
         name: formData.name,
-        email: formData.email,
-        role: "ROLE_USER",
         phoneNumber: formData.phoneNumber,
         emergencyContact: formData.emergencyContact,
-        vetInfoId: selectedHospital.id,
+        vetInfo: {
+          id: selectedHospital.id,
+        },
       };
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/social/register`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/social/update`,
         {
-          method: "POST",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(registerData),
+          body: JSON.stringify(updateData),
           credentials: "include", // HttpOnly 쿠키 포함
         }
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "회원가입에 실패했습니다.");
+        // Try to parse error message from response
+        try {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message || "회원가입 정보 업데이트에 실패했습니다."
+          );
+        } catch (e) {
+          // If we can't parse the error message, use the status text
+          throw new Error(
+            `회원가입 정보 업데이트에 실패했습니다. (${response.status}: ${response.statusText})`
+          );
+        }
       }
 
+      const data = await response.json();
       // 회원가입 성공
-      alert("회원가입이 완료되었습니다.");
-      router.push("/"); // 메인 페이지로 이동
+      router.push("/dashboard"); // 대시보드로 이동
     } catch (error) {
-      console.error("회원가입 오류:", error);
+      console.error("회원가입 정보 업데이트 오류:", error);
       setError(
-        error instanceof Error ? error.message : "회원가입에 실패했습니다."
+        error instanceof Error
+          ? error.message
+          : "회원가입 정보 업데이트에 실패했습니다."
       );
     } finally {
       setIsLoading(false);
