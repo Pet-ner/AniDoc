@@ -1,5 +1,6 @@
 package com.petner.anidoc.domain.chat.chatmessage.service;
 
+import com.petner.anidoc.domain.chat.chatmessage.dto.ChatMessagePageResponseDto;
 import com.petner.anidoc.domain.chat.chatmessage.dto.ChatMessageRequestDto;
 import com.petner.anidoc.domain.chat.chatmessage.dto.ChatMessageResponseDto;
 import com.petner.anidoc.domain.chat.chatmessage.entity.ChatMessage;
@@ -8,7 +9,12 @@ import com.petner.anidoc.domain.chat.chatroom.entity.ChatRoom;
 import com.petner.anidoc.domain.chat.chatroom.repository.ChatRoomRepository;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
+import com.petner.anidoc.global.exception.CustomException;
+import com.petner.anidoc.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +25,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ChatMessageService {
+
+    private static final int DEFAULT_PAGE_SIZE = 20; // 한 페이지당 메시지 수
 
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
@@ -55,6 +63,56 @@ public class ChatMessageService {
         return messages.stream()
                 .map(ChatMessageResponseDto::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    // 최신 메시지 페이지 조회 (첫 로드)
+    public ChatMessagePageResponseDto getLatestChatMessages(Long roomId, int page) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+
+        Pageable pageable = PageRequest.of(page, DEFAULT_PAGE_SIZE);
+        Page<ChatMessage> messagePage = chatMessageRepository.findByChatRoomIdOrderByCreatedAtDesc(roomId, pageable);
+
+        // 최신순으로 조회했으니 순서 뒤집어야 함 (프론트엔드 표시용)
+        List<ChatMessageResponseDto> messages = messagePage.getContent()
+                .stream()
+                .sorted((m1, m2) -> m1.getCreatedAt().compareTo(m2.getCreatedAt()))
+                .map(ChatMessageResponseDto::fromEntity)
+                .collect(Collectors.toList());
+
+        return ChatMessagePageResponseDto.builder()
+                .messages(messages)
+                .totalElements(messagePage.getTotalElements())
+                .totalPages(messagePage.getTotalPages())
+                .currentPage(page)
+                .hasNext(messagePage.hasNext())
+                .hasPrevious(messagePage.hasPrevious())
+                .build();
+    }
+
+    public ChatMessagePageResponseDto getPreviousChatMessages(Long roomId, Long lastMessageId, int page) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+
+        Pageable pageable = PageRequest.of(page, DEFAULT_PAGE_SIZE);
+        Page<ChatMessage> messagePage = chatMessageRepository
+                .findByChatRoomIdAndIdLessThanOrderByCreatedAtDesc(roomId, lastMessageId, pageable);
+
+        // 최신순으로 조회했으니 순서 뒤집어야 함 (프론트엔드 표시용)
+        List<ChatMessageResponseDto> messages = messagePage.getContent()
+                .stream()
+                .sorted((m1, m2) -> m1.getCreatedAt().compareTo(m2.getCreatedAt()))
+                .map(ChatMessageResponseDto::fromEntity)
+                .collect(Collectors.toList());
+
+        return ChatMessagePageResponseDto.builder()
+                .messages(messages)
+                .totalElements(messagePage.getTotalElements())
+                .totalPages(messagePage.getTotalPages())
+                .currentPage(page)
+                .hasNext(messagePage.hasNext())
+                .hasPrevious(messagePage.hasPrevious())
+                .build();
     }
 
     // 메시지 읽음 처리

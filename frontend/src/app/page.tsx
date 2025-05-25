@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useUser } from "@/contexts/UserContext";
 import { useState, useEffect } from "react";
@@ -12,6 +13,9 @@ import {
   ClipboardPlus,
   Trash2,
 } from "lucide-react";
+// RecentNotifications 삭제하고 RecentReservations만 import
+import RecentReservations from "@/components/RecentReservations";
+import RecentNotices from "@/components/RecentNotices";
 
 interface Reservation {
   id: number;
@@ -30,6 +34,7 @@ interface Reservation {
 }
 
 export default function Home() {
+  const router = useRouter();
   const { user } = useUser();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [filteredReservations, setFilteredReservations] = useState<
@@ -252,9 +257,9 @@ export default function Home() {
   const calendarDays = generateCalendar();
 
   return (
-    <div className="space-y-6">
+    <div className="p-8">
       {/* 상단 통계 카드 섹션 */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-4 gap-6 mb-6">
         <StatCard
           title="예정된 예약"
           value="2"
@@ -281,206 +286,219 @@ export default function Home() {
         />
       </div>
 
-      {/* 예약 현황 */}
+      {/* 예약 현황과 알림/공지사항 그리드 */}
       <div className="grid grid-cols-4 gap-6">
-        <div className="col-span-3 bg-white rounded-lg shadow-sm relative">
-          <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200 px-6 pt-6">
-            <h2 className="text-xl font-semibold">예약 현황</h2>
-            <Link
-              href="/reservation"
-              className="bg-[#49BEB7] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#3ea9a2] transition-colors duration-200"
-            >
-              예약 등록
-            </Link>
-          </div>
+        {/* 예약 현황 섹션 */}
+        <div className="col-span-3">
+          <div className="bg-white rounded-lg shadow-sm relative">
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200 px-6 pt-6">
+              <h2 className="text-xl font-semibold">예약 현황</h2>
+              <Link
+                href="/reservation"
+                className="bg-[#49BEB7] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#3ea9a2] transition-colors duration-200"
+              >
+                예약 등록
+              </Link>
+            </div>
 
-          <div className="px-6 pb-6">
-            <div className="grid grid-cols-10 gap-8 relative">
-              {/* 달력 섹션 */}
-              <div className="col-span-3 pr-6">
-                <div className="mb-3">
-                  <div className="flex items-center justify-between mb-3">
-                    <button
-                      onClick={() => changeMonth("prev")}
-                      className="p-1 hover:bg-gray-100 rounded"
-                    >
-                      <ChevronLeft size={16} className="text-gray-600" />
-                    </button>
-                    <h3 className="text-sm font-medium text-center flex-1">
-                      {currentDate.toLocaleDateString("ko-KR", {
-                        year: "numeric",
-                        month: "long",
-                      })}
-                    </h3>
-                    <button
-                      onClick={() => changeMonth("next")}
-                      className="p-1 hover:bg-gray-100 rounded"
-                    >
-                      <ChevronRight size={16} className="text-gray-600" />
-                    </button>
-                  </div>
-
-                  {/* 요일 헤더 */}
-                  <div className="grid grid-cols-7 gap-1 mb-1">
-                    {["일", "월", "화", "수", "목", "금", "토"].map((day) => (
-                      <div
-                        key={day}
-                        className="text-center text-xs font-medium text-gray-500 py-1"
+            <div className="px-6 pb-6">
+              <div className="grid grid-cols-10 gap-8 relative">
+                {/* 달력 섹션 */}
+                <div className="col-span-3 pr-6">
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between mb-3">
+                      <button
+                        onClick={() => changeMonth("prev")}
+                        className="p-1 hover:bg-gray-100 rounded"
                       >
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* 달력 날짜 */}
-                  <div className="grid grid-cols-7 gap-1">
-                    {calendarDays.map((dayInfo, index) => (
-                      <div key={index} className="aspect-square">
-                        {dayInfo ? (
-                          <button
-                            onClick={() => handleDateSelect(dayInfo.dateStr)}
-                            className={`w-full h-full flex items-center justify-center text-xs relative rounded transition-colors ${
-                              dayInfo.isSelected
-                                ? "bg-[#49BEB7] text-white"
-                                : dayInfo.isToday
-                                ? "bg-blue-100 text-blue-800"
-                                : "hover:bg-gray-100"
-                            }`}
-                          >
-                            {dayInfo.day}
-                            {dayInfo.hasReservation && (
-                              <div
-                                className={`absolute bottom-0.5 left-1/2 transform -translate-x-1/2 w-1 h-1 rounded-full ${
-                                  dayInfo.isSelected
-                                    ? "bg-white"
-                                    : "bg-[#49BEB7]"
-                                }`}
-                              />
-                            )}
-                          </button>
-                        ) : (
-                          <div />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* 세로 구분선 */}
-              <div className="absolute left-[30%] -top-6 -bottom-6 w-px bg-gray-200" />
-
-              {/* 선택된 날짜의 예약 목록 */}
-              <div className="col-span-7 pl-6">
-                <div className="mb-4">
-                  <h3 className="text-base font-medium mb-2">
-                    {selectedDate
-                      ? formatSelectedDate(selectedDate)
-                      : "날짜를 선택해주세요"}
-                  </h3>
-                </div>
-
-                {selectedDate && (
-                  <div className="grid grid-cols-2 gap-x-8 h-80">
-                    {/* 왼쪽 8개 시간 슬롯 */}
-                    <div className="space-y-0">
-                      {timeSlots.slice(0, 8).map((time) => {
-                        const reservation = getReservationByTime(time);
-                        return (
-                          <div
-                            key={time}
-                            className="flex items-center py-2.5 h-10"
-                          >
-                            <div className="w-12 text-sm text-gray-600 mr-3 flex-shrink-0">
-                              {time}
-                            </div>
-                            {reservation ? (
-                              <Link
-                                href={`/reservation/${reservation.id}`}
-                                className="flex items-center space-x-2 flex-1 min-w-0 hover:bg-gray-50 rounded px-2 py-1 cursor-pointer transition-colors"
-                              >
-                                <div
-                                  className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusColor(
-                                    reservation.status
-                                  )}`}
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-sm text-gray-900 truncate">
-                                    <span className="font-medium">
-                                      {reservation.userName}
-                                    </span>
-                                    <span className="text-gray-500 ml-2">
-                                      {reservation.petName} /{" "}
-                                      {reservation.type === "GENERAL"
-                                        ? "일반진료"
-                                        : "예방접종"}
-                                      {reservation.doctorName &&
-                                        ` / ${reservation.doctorName}`}
-                                    </span>
-                                  </div>
-                                </div>
-                              </Link>
-                            ) : (
-                              <div className="text-sm text-gray-400 py-1">
-                                -
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                        <ChevronLeft size={16} className="text-gray-600" />
+                      </button>
+                      <h3 className="text-sm font-medium text-center flex-1">
+                        {currentDate.toLocaleDateString("ko-KR", {
+                          year: "numeric",
+                          month: "long",
+                        })}
+                      </h3>
+                      <button
+                        onClick={() => changeMonth("next")}
+                        className="p-1 hover:bg-gray-100 rounded"
+                      >
+                        <ChevronRight size={16} className="text-gray-600" />
+                      </button>
                     </div>
 
-                    {/* 오른쪽 8개 시간 슬롯 */}
-                    <div className="space-y-0">
-                      {timeSlots.slice(8, 16).map((time) => {
-                        const reservation = getReservationByTime(time);
-                        return (
-                          <div
-                            key={time}
-                            className="flex items-center py-2.5 h-10"
-                          >
-                            <div className="w-12 text-sm text-gray-600 mr-3 flex-shrink-0">
-                              {time}
-                            </div>
-                            {reservation ? (
-                              <Link
-                                href={`/reservation/${reservation.id}`}
-                                className="flex items-center space-x-2 flex-1 min-w-0 hover:bg-gray-50 rounded px-2 py-1 cursor-pointer transition-colors"
-                              >
+                    {/* 요일 헤더 */}
+                    <div className="grid grid-cols-7 gap-1 mb-1">
+                      {["일", "월", "화", "수", "목", "금", "토"].map((day) => (
+                        <div
+                          key={day}
+                          className="text-center text-xs font-medium text-gray-500 py-1"
+                        >
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* 달력 날짜 */}
+                    <div className="grid grid-cols-7 gap-1">
+                      {calendarDays.map((dayInfo, index) => (
+                        <div key={index} className="aspect-square">
+                          {dayInfo ? (
+                            <button
+                              onClick={() => handleDateSelect(dayInfo.dateStr)}
+                              className={`w-full h-full flex items-center justify-center text-xs relative rounded transition-colors ${
+                                dayInfo.isSelected
+                                  ? "bg-[#49BEB7] text-white"
+                                  : dayInfo.isToday
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "hover:bg-gray-100"
+                              }`}
+                            >
+                              {dayInfo.day}
+                              {dayInfo.hasReservation && (
                                 <div
-                                  className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusColor(
-                                    reservation.status
-                                  )}`}
+                                  className={`absolute bottom-0.5 left-1/2 transform -translate-x-1/2 w-1 h-1 rounded-full ${
+                                    dayInfo.isSelected
+                                      ? "bg-white"
+                                      : "bg-[#49BEB7]"
+                                  }`}
                                 />
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-sm text-gray-900 truncate">
-                                    <span className="font-medium">
-                                      {reservation.userName}
-                                    </span>
-                                    <span className="text-gray-500 ml-2">
-                                      {reservation.petName} /{" "}
-                                      {reservation.type === "GENERAL"
-                                        ? "일반진료"
-                                        : "예방접종"}
-                                      {reservation.doctorName &&
-                                        ` / ${reservation.doctorName}`}
-                                    </span>
-                                  </div>
-                                </div>
-                              </Link>
-                            ) : (
-                              <div className="text-sm text-gray-400 py-1">
-                                -
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                              )}
+                            </button>
+                          ) : (
+                            <div />
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
-                )}
+                </div>
+
+                {/* 세로 구분선 */}
+                <div className="absolute left-[30%] -top-6 -bottom-6 w-px bg-gray-200" />
+
+                {/* 선택된 날짜의 예약 목록 */}
+                <div className="col-span-7 pl-6">
+                  <div className="mb-4">
+                    <h3 className="text-base font-medium mb-2">
+                      {selectedDate
+                        ? formatSelectedDate(selectedDate)
+                        : "날짜를 선택해주세요"}
+                    </h3>
+                  </div>
+
+                  {selectedDate && (
+                    <div className="grid grid-cols-2 gap-x-8 h-80">
+                      {/* 왼쪽 8개 시간 슬롯 */}
+                      <div className="space-y-0">
+                        {timeSlots.slice(0, 8).map((time) => {
+                          const reservation = getReservationByTime(time);
+                          return (
+                            <div
+                              key={time}
+                              className="flex items-center py-2.5 h-10"
+                            >
+                              <div className="w-12 text-sm text-gray-600 mr-3 flex-shrink-0">
+                                {time}
+                              </div>
+                              {reservation ? (
+                                <Link
+                                  href={`/reservation/${reservation.id}`}
+                                  className="flex items-center space-x-2 flex-1 min-w-0 hover:bg-gray-50 rounded px-2 py-1 cursor-pointer transition-colors"
+                                >
+                                  <div
+                                    className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusColor(
+                                      reservation.status
+                                    )}`}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-sm text-gray-900 truncate">
+                                      <span className="font-medium">
+                                        {reservation.userName}
+                                      </span>
+                                      <span className="text-gray-500 ml-2">
+                                        {reservation.petName} /{" "}
+                                        {reservation.type === "GENERAL"
+                                          ? "일반진료"
+                                          : "예방접종"}
+                                        {reservation.doctorName &&
+                                          ` / ${reservation.doctorName}`}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </Link>
+                              ) : (
+                                <div className="text-sm text-gray-400 py-1">
+                                  -
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* 오른쪽 8개 시간 슬롯 */}
+                      <div className="space-y-0">
+                        {timeSlots.slice(8, 16).map((time) => {
+                          const reservation = getReservationByTime(time);
+                          return (
+                            <div
+                              key={time}
+                              className="flex items-center py-2.5 h-10"
+                            >
+                              <div className="w-12 text-sm text-gray-600 mr-3 flex-shrink-0">
+                                {time}
+                              </div>
+                              {reservation ? (
+                                <Link
+                                  href={`/reservation/${reservation.id}`}
+                                  className="flex items-center space-x-2 flex-1 min-w-0 hover:bg-gray-50 rounded px-2 py-1 cursor-pointer transition-colors"
+                                >
+                                  <div
+                                    className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusColor(
+                                      reservation.status
+                                    )}`}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-sm text-gray-900 truncate">
+                                      <span className="font-medium">
+                                        {reservation.userName}
+                                      </span>
+                                      <span className="text-gray-500 ml-2">
+                                        {reservation.petName} /{" "}
+                                        {reservation.type === "GENERAL"
+                                          ? "일반진료"
+                                          : "예방접종"}
+                                        {reservation.doctorName &&
+                                          ` / ${reservation.doctorName}`}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </Link>
+                              ) : (
+                                <div className="text-sm text-gray-400 py-1">
+                                  -
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* 알림 및 공지사항 섹션 */}
+        <div className="col-span-1 space-y-6">
+          <div className="relative">
+            <RecentReservations />
+          </div>
+          <div className="relative">
+            <RecentNotices />
           </div>
         </div>
       </div>

@@ -7,10 +7,12 @@ import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
+
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +57,36 @@ public class NotificationService {
             return content.substring(0, idx) + "...";
         }
         return content;
+    }
+
+    //전체 목록 조회
+    @Transactional
+    public Page<Notification> getNotifications(Long userId, Pageable pageable){
+        return notificationRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
+    }
+
+
+    //알림 읽음 처리(1개)
+    @Transactional
+    public void markAsRead(Long notificationId){
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 알림입니다."));
+        notification.markAsRead();
+        notificationRepository.save(notification);
+
+    }
+
+
+    //알림 읽음 처리(전체)
+    @Transactional
+    public void markAllAsRead(Long userId) {
+        List<Notification> notifications = notificationRepository.findByUserIdAndIsReadFalse(userId);
+
+        //읽음 처리
+        notifications.forEach(Notification::markAsRead);
+
+        notificationRepository.saveAll(notifications);
+
     }
 
 }

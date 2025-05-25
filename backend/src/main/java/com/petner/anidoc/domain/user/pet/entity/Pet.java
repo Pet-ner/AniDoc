@@ -1,5 +1,6 @@
 package com.petner.anidoc.domain.user.pet.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.petner.anidoc.domain.user.pet.dto.DoctorPetRequestDTO;
 import com.petner.anidoc.domain.user.pet.dto.OwnerPetRequestDTO;
 import com.petner.anidoc.domain.user.user.entity.User;
@@ -45,7 +46,8 @@ public class Pet extends BaseEntity {
     private BigDecimal weight;
 
     @Column(name = "is_neutered", nullable = false) //중성화 여부
-    private boolean isNeutered;
+//    @JsonProperty("isNeutered")
+    private Boolean isNeutered;
 
     @Column(name = "neutered_date") //중성화 날짜
     private LocalDate neuteredDate;
@@ -101,7 +103,7 @@ public class Pet extends BaseEntity {
         this.specialNote = dto.getSpecialNote();
 
         this.neuteredDate = dto.getNeuteredDate();
-        this.isDeceased = dto.isDeceased();
+        this.isDeceased = dto.getIsDeceased();
         this.deceasedDate = dto.getDeceasedDate();
         this.surgeryCount = dto.getSurgeryCount();
         this.hospitalizationCount = dto.getHospitalizationCount();
@@ -115,7 +117,7 @@ public class Pet extends BaseEntity {
         this.breed = dto.getBreed();
         this.birth = dto.getBirth();
         this.weight = dto.getWeight();
-        this.isNeutered = dto.isNeutered();
+        this.isNeutered = dto.getIsNeutered();
 //        this.lastVisitDate = dto.getLastVisitDate();
         this.lastDiroDate = dto.getLastDiroDate();
         this.profileUrl = dto.getProfileUrl();
