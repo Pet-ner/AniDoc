@@ -64,7 +64,7 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
             attributes.put("userEmail", user.getEmail());
             attributes.put("userRole", user.getRole().name());
 
-            log.info("WebSocket 연결 성공 - 유저: {}", user.getEmail());
+            log.info("WebSocket 연결 성공 - 유저: {}", user.getId());
             return true;
 
         } catch (Exception e) {
