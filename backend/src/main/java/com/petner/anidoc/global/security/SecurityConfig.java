@@ -54,9 +54,12 @@ public class SecurityConfig {
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/swagger-ui/**").permitAll()
                                 .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
-                                //삭제 추가(보호자, 의료진,스태프)
+                                //펫등록 삭제 추가(보호자, 의료진,스태프)
                                 .requestMatchers(HttpMethod.DELETE, "/api/pets/**").hasRole("USER")
                                 .requestMatchers(HttpMethod.DELETE, "/api/doctor/pets/**").hasAnyRole("STAFF", "ADMIN")
+
+                                //예방접종 삭제 추가(의료진)
+                                .requestMatchers("/api/vaccins/**").hasRole("STAFF")
 
                                 // 임시
                                 .requestMatchers(HttpMethod.GET, "/api/vets/**").permitAll()
