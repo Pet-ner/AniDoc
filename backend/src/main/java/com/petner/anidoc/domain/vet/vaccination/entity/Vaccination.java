@@ -3,7 +3,7 @@ package com.petner.anidoc.domain.vet.vaccination.entity;
 import com.petner.anidoc.domain.user.pet.entity.Pet;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.vet.reservation.entity.Reservation;
-import com.petner.anidoc.domain.vet.vaccination.dto.DoctorPetVaccinRequestDTO;
+import com.petner.anidoc.domain.vet.vaccination.dto.DoctorPetVaccineRequestDTO;
 import com.petner.anidoc.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -56,11 +56,11 @@ public class Vaccination extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String notes; //메모
 
-    public void updateVaccin (
+    public void updateVaccine (
             Pet pet,
             User doctor,
             Reservation reservation,
-            DoctorPetVaccinRequestDTO dto){
+            DoctorPetVaccineRequestDTO dto){
         this.pet = pet;
         this.doctor = doctor;
         this.reservation = reservation;

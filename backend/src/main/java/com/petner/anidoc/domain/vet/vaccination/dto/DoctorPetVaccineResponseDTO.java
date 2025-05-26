@@ -13,10 +13,8 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DoctorPetVaccinResponseDTO {
+public class DoctorPetVaccineResponseDTO {
     private Long id;
-
-//    private Long petId;
 
     private String petName;
 
@@ -40,9 +38,8 @@ public class DoctorPetVaccinResponseDTO {
 
     private String notes;
 
-    public DoctorPetVaccinResponseDTO(Vaccination vaccination){
+    public DoctorPetVaccineResponseDTO(Vaccination vaccination){
         this.id = vaccination.getId();
-//        this.petId = vaccination.getPet().getId();
         this.petName = vaccination.getPet().getName();
         this.doctorId = vaccination.getDoctor().getId();
         this.doctorName = vaccination.getDoctor().getName();

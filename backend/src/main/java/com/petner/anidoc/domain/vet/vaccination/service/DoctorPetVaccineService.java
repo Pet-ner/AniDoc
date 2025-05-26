@@ -1,16 +1,15 @@
 package com.petner.anidoc.domain.vet.vaccination.service;
 
-import com.petner.anidoc.domain.user.pet.dto.DoctorPetRequestDTO;
 import com.petner.anidoc.domain.user.pet.entity.Pet;
 import com.petner.anidoc.domain.user.pet.repository.PetRepository;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import com.petner.anidoc.domain.vet.reservation.entity.Reservation;
 import com.petner.anidoc.domain.vet.reservation.repository.ReservationRepository;
-import com.petner.anidoc.domain.vet.vaccination.dto.DoctorPetVaccinRequestDTO;
-import com.petner.anidoc.domain.vet.vaccination.dto.DoctorPetVaccinResponseDTO;
+import com.petner.anidoc.domain.vet.vaccination.dto.DoctorPetVaccineRequestDTO;
+import com.petner.anidoc.domain.vet.vaccination.dto.DoctorPetVaccineResponseDTO;
 import com.petner.anidoc.domain.vet.vaccination.entity.Vaccination;
-import com.petner.anidoc.domain.vet.vaccination.repository.VaccinRepository;
+import com.petner.anidoc.domain.vet.vaccination.repository.VaccineRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,79 +20,78 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class DoctorPetVaccinService {
-    private final VaccinRepository vaccinRepository;
+public class DoctorPetVaccineService {
+    private final VaccineRepository vaccineRepository;
     private final PetRepository petRepository;
     private final ReservationRepository reservationRepository;
-    private final UserRepository userRepository; //? 필요할까?, 추후 생각다시해보기
+    private final UserRepository userRepository;
 
 
     //등록
     @Transactional
-    public Vaccination registerVaccination(Long petId, DoctorPetVaccinRequestDTO doctorPetVaccinRequestDTO, User doctor) {
+    public Vaccination registerVaccination(Long petId, DoctorPetVaccineRequestDTO doctorPetVaccineRequestDTO, User doctor) {
         Pet pet = petRepository.findById(petId)
                 .orElseThrow(()-> new EntityNotFoundException("존재하지 않는 반려동물입니다."));
 
-        Reservation reservation = reservationRepository.findById(doctorPetVaccinRequestDTO.getReservationId())
+        Reservation reservation = reservationRepository.findById(doctorPetVaccineRequestDTO.getReservationId())
                 .orElseThrow(()-> new EntityNotFoundException("존재하지 않는 예약입니다."));
 
         Vaccination vaccination = Vaccination.builder()
                 .doctor(doctor)
                 .pet(pet)
                 .reservation(reservation)
-                .vaccineName(doctorPetVaccinRequestDTO.getVaccineName())
-                .currentDose(doctorPetVaccinRequestDTO.getCurrentDose())
-                .totalDoses(doctorPetVaccinRequestDTO.getTotalDoses())
-                .nextDueDate(doctorPetVaccinRequestDTO.getNextDueDate())
-                .status(doctorPetVaccinRequestDTO.getStatus())
-                .notes(doctorPetVaccinRequestDTO.getNotes())
+                .vaccineName(doctorPetVaccineRequestDTO.getVaccineName())
+                .currentDose(doctorPetVaccineRequestDTO.getCurrentDose())
+                .totalDoses(doctorPetVaccineRequestDTO.getTotalDoses())
+                .nextDueDate(doctorPetVaccineRequestDTO.getNextDueDate())
+                .status(doctorPetVaccineRequestDTO.getStatus())
+                .notes(doctorPetVaccineRequestDTO.getNotes())
                 .build();
 
-        return vaccinRepository.save(vaccination);
+        return vaccineRepository.save(vaccination);
     }
     //수정
     @Transactional
-    public DoctorPetVaccinResponseDTO updateVaccin(Long vaccinationId, DoctorPetVaccinRequestDTO doctorPetVaccinRequestDTO){
-        Vaccination vaccination = vaccinRepository.findById(vaccinationId)
+    public DoctorPetVaccineResponseDTO updateVaccine(Long vaccinationId, DoctorPetVaccineRequestDTO doctorPetVaccineRequestDTO){
+        Vaccination vaccination = vaccineRepository.findById(vaccinationId)
                 .orElseThrow(()-> new RuntimeException("예방접종 기록이 없습니다."));
-        User doctor = userRepository.findById(doctorPetVaccinRequestDTO.getDoctorId())
+        User doctor = userRepository.findById(doctorPetVaccineRequestDTO.getDoctorId())
                 .orElseThrow(() -> new RuntimeException("의사 정보가 없습니다."));
-        Reservation reservation = reservationRepository.findById(doctorPetVaccinRequestDTO.getReservationId())
+        Reservation reservation = reservationRepository.findById(doctorPetVaccineRequestDTO.getReservationId())
                 .orElseThrow(() -> new RuntimeException("예약 정보가 없습니다."));
-        vaccination.updateVaccin(
+        vaccination.updateVaccine(
                 vaccination.getPet(),
                 doctor,
                 reservation,
-                doctorPetVaccinRequestDTO
+                doctorPetVaccineRequestDTO
         );
 
-//        return vaccination;
-        return new DoctorPetVaccinResponseDTO(vaccination);
+        return new DoctorPetVaccineResponseDTO(vaccination);
     }
 
 
     //전체 조회
     @Transactional(readOnly = true)
-    public List<DoctorPetVaccinResponseDTO> findAllVaccinations() {
-        List<Vaccination> vaccinations = vaccinRepository.findAll();
+    public List<DoctorPetVaccineResponseDTO> findAllVaccinations() {
+        List<Vaccination> vaccinations = vaccineRepository.findAll();
         return vaccinations.stream()
-                .map(DoctorPetVaccinResponseDTO::new)
+                .map(DoctorPetVaccineResponseDTO::new)
                 .collect(Collectors.toList());
     }
 
     //상세 조회
     @Transactional(readOnly = true)
-    public DoctorPetVaccinResponseDTO findVaccinationById(Long vaccinationId) {
-        Vaccination vaccination = vaccinRepository.findById(vaccinationId)
+    public DoctorPetVaccineResponseDTO findVaccinationById(Long vaccinationId) {
+        Vaccination vaccination = vaccineRepository.findById(vaccinationId)
                 .orElseThrow(() -> new RuntimeException("예방접종 기록이 없습니다."));
-        return new DoctorPetVaccinResponseDTO(vaccination);
+        return new DoctorPetVaccineResponseDTO(vaccination);
     }
     //삭제
     @Transactional
     public void deleteVaccination(Long vaccinationId) {
-        Vaccination vaccination = vaccinRepository.findById(vaccinationId)
+        Vaccination vaccination = vaccineRepository.findById(vaccinationId)
                 .orElseThrow(() -> new RuntimeException("예방접종 기록이 없습니다."));
-        vaccinRepository.delete(vaccination);
+        vaccineRepository.delete(vaccination);
     }
 
 }

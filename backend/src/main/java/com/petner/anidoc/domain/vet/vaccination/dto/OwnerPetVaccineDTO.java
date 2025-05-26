@@ -1,6 +1,5 @@
 package com.petner.anidoc.domain.vet.vaccination.dto;
 
-import com.petner.anidoc.domain.user.pet.entity.Pet;
 import com.petner.anidoc.domain.vet.vaccination.entity.Vaccination;
 import com.petner.anidoc.domain.vet.vaccination.entity.VaccinationStatus;
 import lombok.AllArgsConstructor;
@@ -14,7 +13,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OwnerPetVaccinDTO {
+public class OwnerPetVaccineDTO {
     private Long vaccinationId;
     private String petName;
     private String vaccineName;
@@ -25,7 +24,7 @@ public class OwnerPetVaccinDTO {
     private VaccinationStatus status;
     private String notes;
 
-    public OwnerPetVaccinDTO (Vaccination vaccination){
+    public OwnerPetVaccineDTO(Vaccination vaccination){
         this.vaccinationId = vaccination.getId();
         this.petName = vaccination.getPet().getName();
         this.vaccineName = vaccination.getVaccineName();

@@ -10,9 +10,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DoctorPetVaccinRequestDTO {
-//    @NotNull
-//    private Long petId; // 어떤 반려동물의 백신인지
+public class DoctorPetVaccineRequestDTO {
 
     @NotNull
     private Long doctorId; // 담당 의사
