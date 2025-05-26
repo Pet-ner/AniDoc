@@ -51,7 +51,7 @@ public class SecurityUser extends User implements OAuth2User {
     }
 
     /**
-     * OAuth2User 인터페이스 구현 - 사용자 이름 반환
+     * OAuth2User 인터페이스 구현 - 사용자 이름 반환 * email
      */
     @Override
     public String getName(){
