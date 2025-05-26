@@ -355,11 +355,7 @@ export default function UserRegisterPage() {
                 </div>
               </div>
               <p className="mt-1 text-sm text-gray-500">
-                {provider === "KAKAO"
-                  ? "카카오 계정의 이메일이 자동으로 설정되었습니다."
-                  : provider === "NAVER"
-                  ? "네이버 계정의 이메일이 자동으로 설정되었습니다."
-                  : "소셜 계정의 이메일이 자동으로 설정되었습니다."}
+                소셜 계정의 이메일이 자동으로 설정되었습니다.
               </p>
             </div>
 

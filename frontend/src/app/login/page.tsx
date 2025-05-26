@@ -88,13 +88,13 @@ export default function LoginPage() {
 
   const handleKakaoLogin = () => {
     // 메인 페이지로 리다이렉트
-    const redirectUrl = window.location.origin; // TODO: 리다이렉트 url 수정
+    const redirectUrl = window.location.origin;
     window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/kakao?redirectUrl=${redirectUrl}`;
   };
 
   const handleNaverLogin = () => {
     // 메인 페이지로 리다이렉트
-    const redirectUrl = window.location.origin; // TODO: 리다이렉트 url 수정
+    const redirectUrl = window.location.origin;
     window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/naver?redirectUrl=${redirectUrl}`;
   };
 
@@ -224,18 +224,12 @@ export default function LoginPage() {
               className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white bg-[#03C75A] hover:bg-[#02b54d]"
             >
               <span className="mr-2">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 18 18"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M13.7 1.8H4.3C3.6 1.8 3 2.4 3 3.1V14.9C3 15.6 3.6 16.2 4.3 16.2H13.7C14.4 16.2 15 15.6 15 14.9V3.1C15 2.4 14.4 1.8 13.7 1.8ZM9 12.6L7.6 10.9L5.8 11.3L6.8 9.6L5.1 8.5L6.8 7.3L5.8 5.6L7.6 6L9 4.3L10.4 6L12.2 5.6L11.2 7.3L12.9 8.5L11.2 9.6L10.2 11.3L9 10.9L9 12.6Z"
-                    fill="white"
-                  />
-                </svg>
+                <img
+                  src="/images/naver-login.png"
+                  alt="네이버 로그인"
+                  width="30"
+                  height="30"
+                />
               </span>
               네이버 계정으로 로그인
             </button>
