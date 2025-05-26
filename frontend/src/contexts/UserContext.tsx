@@ -33,6 +33,9 @@ const PUBLIC_PATHS = [
   "/register",
   "/register/user",
   "/register/staff",
+  "/auth-register",
+  "/auth-register/user",
+  "/auth-register/staff",
 ];
 
 export function UserProvider({ children }: { children: ReactNode }) {

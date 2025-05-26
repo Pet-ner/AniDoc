@@ -36,7 +36,7 @@ public class NotificationSseController {
     @GetMapping(value = "/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<SseEmitter> connect(@RequestParam Long userId) {
         // 새로운 SSE 연결 생성 (타임아웃 1시간=60L * 60 * 1000, 기본값 30초)
-        SseEmitter emitter = new SseEmitter();
+        SseEmitter emitter = new SseEmitter(60L * 60 * 2000L);
 
 
         // 생성된 emitter를 컬렉션에 추가하여 관리
@@ -52,9 +52,6 @@ public class NotificationSseController {
         }
         return ResponseEntity.ok(emitter);
     }
-
-
-
 
     }
 

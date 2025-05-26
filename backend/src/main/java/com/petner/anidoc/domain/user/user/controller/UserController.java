@@ -144,4 +144,5 @@ public class UserController {
         List<StaffResponseDto> staffList = userService.getStaffList(onlyAvailable);
         return ResponseEntity.ok(staffList);
     }
+
 }
