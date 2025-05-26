@@ -14,6 +14,8 @@ export default function UserRegisterPage() {
     phoneNumber: "",
     emergencyContact: "",
   });
+  // provider 상태 추가
+  const [provider, setProvider] = useState<"KAKAO" | "NAVER" | null>(null);
   const [selectedHospital, setSelectedHospital] = useState<{
     id: number | null;
     name: string;
@@ -51,12 +53,16 @@ export default function UserRegisterPage() {
         );
 
         if (response.ok) {
-          const userData = await response.json();
-          // 이메일을 폼에 미리 채워넣기
+          const userData = await response.json(); // 이메일을 폼에 미리 채워넣기
+          console.log("Social user data:", userData); // 추가
+          console.log("Provider value:", userData.provider); // 추가
+
           if (userData.email) {
             setFormData((prev) => ({ ...prev, email: userData.email }));
             setEmailValid(true); // 소셜 로그인 이메일은 이미 검증된 것으로 간주
             setEmailError(null);
+            // provider 정보 저장
+            setProvider((userData.provider as "KAKAO" | "NAVER") || null);
           }
         } else {
           setSocialUserError("소셜 로그인 정보를 가져올 수 없습니다.");
@@ -349,7 +355,11 @@ export default function UserRegisterPage() {
                 </div>
               </div>
               <p className="mt-1 text-sm text-gray-500">
-                카카오 계정의 이메일이 자동으로 설정되었습니다.
+                {provider === "KAKAO"
+                  ? "카카오 계정의 이메일이 자동으로 설정되었습니다."
+                  : provider === "NAVER"
+                  ? "네이버 계정의 이메일이 자동으로 설정되었습니다."
+                  : "소셜 계정의 이메일이 자동으로 설정되었습니다."}
               </p>
             </div>
 

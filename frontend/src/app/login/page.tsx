@@ -7,7 +7,7 @@ import { useUser } from "@/contexts/UserContext";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useUser();
+  const { login, isLoggedIn } = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -17,6 +17,12 @@ export default function LoginPage() {
   // 소셜 로그인 체크
   useEffect(() => {
     const checkLoginStatus = async () => {
+      // 이미 UserContext에서 로그인 상태가 true라면 체크하지 않고 리다이렉트
+      if (isLoggedIn) {
+        router.push("/");
+        return;
+      }
+
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/social/me`,
@@ -26,9 +32,12 @@ export default function LoginPage() {
         );
 
         if (response.ok) {
-          // 이미 로그인된 상태라면 UserContext 업데이트 후 메인으로 리다이렉트
-          login();
-          router.push("/");
+          const userData = await response.json();
+          // 실제 유저 데이터가 있을 때만 로그인 처리
+          if (userData && userData.id) {
+            login();
+            router.push("/");
+          }
         }
       } catch (error) {
         console.error("로그인 상태 확인 실패:", error);
@@ -36,8 +45,7 @@ export default function LoginPage() {
     };
 
     checkLoginStatus();
-  }, []);
-
+  }, [isLoggedIn, login, router]); // 의존성 배열에 isLoggedIn 추가
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -85,7 +93,9 @@ export default function LoginPage() {
   };
 
   const handleNaverLogin = () => {
-    // TODO: 네이버 로그인
+    // 메인 페이지로 리다이렉트
+    const redirectUrl = window.location.origin; // TODO: 리다이렉트 url 수정
+    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/naver?redirectUrl=${redirectUrl}`;
   };
 
   return (
@@ -207,7 +217,28 @@ export default function LoginPage() {
               </span>
               카카오 계정으로 로그인
             </button>
-            {/* TODO: 네이버 로그인 버튼 추가 */}
+            {/* 네이버 로그인 버튼 */}
+            <button
+              type="button"
+              onClick={handleNaverLogin}
+              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white bg-[#03C75A] hover:bg-[#02b54d]"
+            >
+              <span className="mr-2">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 18 18"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13.7 1.8H4.3C3.6 1.8 3 2.4 3 3.1V14.9C3 15.6 3.6 16.2 4.3 16.2H13.7C14.4 16.2 15 15.6 15 14.9V3.1C15 2.4 14.4 1.8 13.7 1.8ZM9 12.6L7.6 10.9L5.8 11.3L6.8 9.6L5.1 8.5L6.8 7.3L5.8 5.6L7.6 6L9 4.3L10.4 6L12.2 5.6L11.2 7.3L12.9 8.5L11.2 9.6L10.2 11.3L9 10.9L9 12.6Z"
+                    fill="white"
+                  />
+                </svg>
+              </span>
+              네이버 계정으로 로그인
+            </button>
           </div>
         </form>
 
