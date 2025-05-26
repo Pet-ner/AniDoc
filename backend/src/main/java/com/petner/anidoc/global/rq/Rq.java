@@ -6,6 +6,7 @@ import com.petner.anidoc.domain.user.user.service.UserService;
 import com.petner.anidoc.global.exception.CustomException;
 import com.petner.anidoc.global.exception.ErrorCode;
 import com.petner.anidoc.global.security.SecurityUser;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -95,6 +96,14 @@ public class Rq {
                 .flatMap(Arrays::stream)
                 .filter(cookie -> cookie.getName().equals(name))
                 .map(cookie -> cookie.getValue())
+                .findFirst()
+                .orElse(null);
+    }
+
+    public String getCookieValue(Cookie[] cookies, String name) {
+        return Arrays.stream(cookies)
+                .filter(cookie -> cookie.getName().equals(name))
+                .map(Cookie::getValue)
                 .findFirst()
                 .orElse(null);
     }
