@@ -106,4 +106,29 @@ public class MedicalRecordService {
 
     }
 
+    @Transactional
+    public MedicalRecord getMedicalRecordByReservationId(Long reservationId, Long userId) throws AccessDeniedException {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+
+        MedicalRecord record = medicalRecordRepository.findWithAllDetailsByReservationId(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 예약에 대한 진료기록이 존재하지 않습니다."));
+
+
+        Long reservationOwnerId = record.getReservation().getUser().getId();
+
+        if (!reservationOwnerId.equals(userId)
+                && user.getRole() != UserRole.ROLE_STAFF
+                && user.getRole() != UserRole.ROLE_ADMIN) {
+            throw new AccessDeniedException("진료기록 조회 권한이 없습니다.");
+        }
+
+        return record;
+
+    }
+
+
+
+
 }

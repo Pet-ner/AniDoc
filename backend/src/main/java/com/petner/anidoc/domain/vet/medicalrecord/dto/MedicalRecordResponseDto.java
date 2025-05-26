@@ -1,12 +1,16 @@
 package com.petner.anidoc.domain.vet.medicalrecord.dto;
 
+import com.petner.anidoc.domain.vet.checkuprecord.dto.CheckupRecordResponseDto;
+import com.petner.anidoc.domain.vet.hospitalizationrecord.dto.HospitalizationRecordResponseDto;
 import com.petner.anidoc.domain.vet.medicalrecord.entity.MedicalRecord;
+import com.petner.anidoc.domain.vet.surgeryrecord.dto.SurgeryRecordResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 @Builder
@@ -27,10 +31,18 @@ public class MedicalRecordResponseDto {
     private boolean isHospitalized;
     private boolean isCheckedUp;
     private boolean isDeleted;
+    private SurgeryRecordResponseDto surgery;
+    private HospitalizationRecordResponseDto hospitalization;
+    private List<CheckupRecordResponseDto> checkups;
 
 
 
-    public static MedicalRecordResponseDto from(MedicalRecord medicalRecord) {
+    public static MedicalRecordResponseDto from(
+            MedicalRecord medicalRecord,
+            SurgeryRecordResponseDto surgeryDto,
+            HospitalizationRecordResponseDto hospitalizationDto,
+            List<CheckupRecordResponseDto> checkupDtos
+    ) {
         return MedicalRecordResponseDto.builder()
                 .id(medicalRecord.getId())
                 .doctorName(medicalRecord.getDoctor().getName())
@@ -43,7 +55,16 @@ public class MedicalRecordResponseDto {
                 .isHospitalized(medicalRecord.getIsHospitalized())
                 .isCheckedUp(medicalRecord.getIsCheckedUp())
                 .isDeleted(medicalRecord.getIsDeleted())
+                .surgery(surgeryDto)
+                .hospitalization(hospitalizationDto)
+                .checkups(checkupDtos)
                 .build();
     }
+
+    // ✅ 새로 추가: 파라미터 1개짜리 (기존 서비스에서 사용되던 용도)
+    public static MedicalRecordResponseDto from(MedicalRecord medicalRecord) {
+        return from(medicalRecord, null, null, null); // 수술/입원/검사 없음으로 간주
+    }
+
 
 }

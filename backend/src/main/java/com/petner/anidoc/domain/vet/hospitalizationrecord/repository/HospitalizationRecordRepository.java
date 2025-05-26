@@ -14,4 +14,6 @@ public interface HospitalizationRecordRepository extends JpaRepository<Hospitali
     Optional<HospitalizationRecord> findByMedicalRecordAndIsDeletedFalse(MedicalRecord medicalRecord);
 
     Optional<HospitalizationRecord> findByIdAndIsDeletedFalse(Long id);
+
+    Optional<HospitalizationRecord> findByMedicalRecordId(Long medicalRecordId);
 }

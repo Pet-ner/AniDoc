@@ -15,4 +15,6 @@ public interface SurgeryRecordRepository extends JpaRepository<SurgeryRecord, Lo
 
     boolean existsByMedicalRecord(MedicalRecord medicalRecord);
 
+    Optional<SurgeryRecord> findByMedicalRecordId(Long medicalRecordId);
+
 }

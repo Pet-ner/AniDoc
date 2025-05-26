@@ -10,6 +10,7 @@ import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.entity.UserRole;
 import com.petner.anidoc.domain.user.user.entity.UserStatus;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
+import com.petner.anidoc.domain.vet.medicalrecord.repository.MedicalRecordRepository;
 import com.petner.anidoc.domain.vet.reservation.dto.*;
 import com.petner.anidoc.domain.vet.reservation.entity.Reservation;
 import com.petner.anidoc.domain.vet.reservation.entity.ReservationStatus;
@@ -33,6 +34,7 @@ public class ReservationService {
     private final UserRepository userRepository;
     private final PetRepository petRepository;
     private final NotificationService notificationService;
+    private final MedicalRecordRepository medicalRecordRepository;
 
     // 유저 가져오기
     private User getUser(Long userId) {
@@ -408,9 +410,19 @@ public class ReservationService {
         List<Reservation> reservations = reservationRepository.findByDoctorIdAndStatus(doctorId, ReservationStatus.APPROVED);
 
         return reservations.stream()
-                .map(ReservationResponseDto::fromEntity)
+                .map(reservation -> {
+                    boolean hasRecord = medicalRecordRepository.existsByReservationId(reservation.getId());
+                    return ReservationResponseDto.fromEntity(reservation, hasRecord);
+                })
                 .collect(Collectors.toList());
     }
+//    public List<ReservationResponseDto> getApprovedReservationsForDoctor(Long doctorId) {
+//        List<Reservation> reservations = reservationRepository.findByDoctorIdAndStatus(doctorId, ReservationStatus.APPROVED);
+//
+//        return reservations.stream()
+//                .map(ReservationResponseDto::fromEntity)
+//                .collect(Collectors.toList());
+//    }
 
 
 

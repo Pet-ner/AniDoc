@@ -55,6 +55,9 @@ public class SecurityConfig {
                                 .requestMatchers("/swagger-ui/**").permitAll()
                                 .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
 
+                                //s3 이미지 조회
+                                .requestMatchers("/api/s3/presigned-url/view").permitAll()
+
                                 // 임시
                                 .requestMatchers(HttpMethod.GET, "/api/vets/**").permitAll()
 
