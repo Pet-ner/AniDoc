@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -66,8 +67,11 @@ public class MedicalRecordService {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
-        MedicalRecord medicalRecord = medicalRecordRepository.findByIdAndIsDeletedFalse(medicalRecordId)
-                .orElseThrow(()-> new IllegalArgumentException("해당 진료기록이 존재하지 않거나 삭제되었습니다."));
+//        MedicalRecord medicalRecord = medicalRecordRepository.findByIdAndIsDeletedFalse(medicalRecordId)
+//                .orElseThrow(()-> new IllegalArgumentException("해당 진료기록이 존재하지 않거나 삭제되었습니다."));
+        MedicalRecord medicalRecord = medicalRecordRepository.findByIdWithAllDetails(medicalRecordId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 진료기록이 존재하지 않거나 삭제되었습니다."));
+
 
         return MedicalRecordResponseDto.from(medicalRecord);
     }
@@ -87,6 +91,8 @@ public class MedicalRecordService {
         medicalRecord.markAsDeleted(); //soft delete
         medicalRecordRepository.save(medicalRecord);
     }
+
+
 
     @Transactional
     public MedicalRecordResponseDto updateMedicalRecord(Long userId, Long medicalRecordId, MedicalRecordRequestDto medicalRecordRequestDto) throws AccessDeniedException {
@@ -127,6 +133,20 @@ public class MedicalRecordService {
         return record;
 
     }
+
+    @Transactional(readOnly = true)
+    public List<MedicalRecordResponseDto> getMedicalRecordsByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+
+        // 보호자가 등록한 반려동물의 예약들을 통해 진료기록을 가져옴
+        List<MedicalRecord> records = medicalRecordRepository.findAllByReservation_UserIdAndIsDeletedFalse(userId);
+
+        return records.stream()
+                .map(MedicalRecordResponseDto::from)
+                .toList();
+    }
+
 
 
 

@@ -34,6 +34,10 @@ public class MedicalRecordResponseDto {
     private SurgeryRecordResponseDto surgery;
     private HospitalizationRecordResponseDto hospitalization;
     private List<CheckupRecordResponseDto> checkups;
+    private String reservationDate;
+    private String reservationTime;
+    private String symptom;
+    private Long userId;
 
 
 
@@ -58,6 +62,11 @@ public class MedicalRecordResponseDto {
                 .surgery(surgeryDto)
                 .hospitalization(hospitalizationDto)
                 .checkups(checkupDtos)
+                .reservationId(medicalRecord.getReservation().getId())
+                .reservationDate(medicalRecord.getReservation().getReservationDate().toString())
+                .reservationTime(medicalRecord.getReservation().getReservationTime().toString())
+                .symptom(medicalRecord.getReservation().getSymptom())
+                .userId(medicalRecord.getReservation().getUser().getId())
                 .build();
     }
 

@@ -137,6 +137,18 @@ public class MedicalRecordController {
         }
     }
 
+    @GetMapping("/by-user/{userId}")
+    @Operation(summary = "보호자 ID로 진료기록 목록 조회", description = "특정 보호자의 모든 진료기록을 반환")
+    public ResponseEntity<?> getMedicalRecordsByUserId(@PathVariable Long userId) {
+        List<MedicalRecordResponseDto> records = medicalRecordService.getMedicalRecordsByUserId(userId);
+
+        return ResponseEntity.ok(Map.of(
+                "hasMedicalRecords", !records.isEmpty(),
+                "medicalRecords", records
+        ));
+    }
+
+
 
 
 

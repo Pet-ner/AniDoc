@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit2, Search } from "lucide-react";
+import { Edit2, Search, Eye } from "lucide-react";
 import { useEffect, useState } from "react";
 import ChartModal from "./ChartModal";
 import ChartDetailModal from "./ChartDetailModal";
@@ -254,6 +254,9 @@ export default function StaffMedicalRecord({
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                날짜
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                 시간
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
@@ -294,7 +297,12 @@ export default function StaffMedicalRecord({
                 .map((r) => (
                   <tr key={r.id} className="hover:bg-gray-50">
                     <td className="px-4 py-4 text-sm text-gray-700">
-                      {r.reservationTime}
+                      {r.reservationDate}
+                    </td>
+                    <td className="px-4 py-4 text-sm text-gray-700">
+                      {r.reservationTime
+                        ? r.reservationTime.substring(0, 5)
+                        : ""}
                     </td>
                     <td className="px-4 py-4 text-sm text-[#49BEB7] font-medium">
                       {r.petName}
@@ -325,8 +333,15 @@ export default function StaffMedicalRecord({
                             : "text-white bg-[#49BEB7] hover:bg-[#3ea9a2]"
                         }`}
                       >
-                        <Edit2 size={16} />{" "}
-                        {r.hasMedicalRecord ? "진료기록 조회" : "진료기록 작성"}
+                        {r.hasMedicalRecord ? (
+                          <>
+                            <Eye size={16} /> 진료기록 조회
+                          </>
+                        ) : (
+                          <>
+                            <Edit2 size={16} /> 진료기록 작성
+                          </>
+                        )}
                       </button>
                     </td>
                   </tr>

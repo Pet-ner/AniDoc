@@ -70,7 +70,7 @@ export default function MedicalRecordPage() {
       if (user.userRole === "ROLE_STAFF") {
         endpoint = `/api/reservations/approved?doctorId=${user.id}`;
       } else if (user.userRole === "ROLE_USER") {
-        endpoint = `/api/medical-records/mine?userId=${user.id}`;
+        endpoint = `/api/medical-records/by-user/${user.id}`;
       } else {
         router.push("/");
         return;
@@ -196,8 +196,7 @@ export default function MedicalRecordPage() {
             />
           ) : user?.userRole === "ROLE_USER" ? (
             <UserMedicalRecord
-              records={records}
-              loading={loading}
+              userId={user.id}
               search={search}
               setSearch={setSearch}
             />
