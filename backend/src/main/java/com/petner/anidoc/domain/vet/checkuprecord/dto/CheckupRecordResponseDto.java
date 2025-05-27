@@ -20,7 +20,6 @@ public class CheckupRecordResponseDto {
     private String result;
     private String resultUrl;
     private LocalDate checkupDate;
-//    private String status;
 
     public static CheckupRecordResponseDto from(CheckupRecord checkupRecord) {
         return CheckupRecordResponseDto.builder()
@@ -30,7 +29,6 @@ public class CheckupRecordResponseDto {
                 .result(checkupRecord.getResult())
                 .resultUrl(checkupRecord.getResultUrl())
                 .checkupDate(checkupRecord.getCheckupDate())
-//                .status(checkupRecord.getStatus().name())
                 .build();
     }
 

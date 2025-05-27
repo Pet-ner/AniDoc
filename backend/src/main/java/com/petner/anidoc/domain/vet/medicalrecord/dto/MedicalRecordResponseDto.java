@@ -70,7 +70,6 @@ public class MedicalRecordResponseDto {
                 .build();
     }
 
-    // ✅ 새로 추가: 파라미터 1개짜리 (기존 서비스에서 사용되던 용도)
     public static MedicalRecordResponseDto from(MedicalRecord medicalRecord) {
         return from(medicalRecord, null, null, null); // 수술/입원/검사 없음으로 간주
     }

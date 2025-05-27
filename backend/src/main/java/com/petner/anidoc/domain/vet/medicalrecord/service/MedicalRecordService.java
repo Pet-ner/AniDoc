@@ -67,8 +67,6 @@ public class MedicalRecordService {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
-//        MedicalRecord medicalRecord = medicalRecordRepository.findByIdAndIsDeletedFalse(medicalRecordId)
-//                .orElseThrow(()-> new IllegalArgumentException("해당 진료기록이 존재하지 않거나 삭제되었습니다."));
         MedicalRecord medicalRecord = medicalRecordRepository.findByIdWithAllDetails(medicalRecordId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 진료기록이 존재하지 않거나 삭제되었습니다."));
 
