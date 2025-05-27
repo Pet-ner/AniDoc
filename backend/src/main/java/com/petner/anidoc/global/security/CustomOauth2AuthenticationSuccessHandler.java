@@ -36,7 +36,7 @@ public class CustomOauth2AuthenticationSuccessHandler extends SavedRequestAwareA
         String redirectUrl = request.getParameter("state");
         // 유저가 Temp_name라면 회원가입 페이지로 보냄
         if ("Temp_name".equals(actor.getName())) {
-            redirectUrl = socialUrl +"/auth-register"; // or /onboarding, /signup?from=social 같은 URI
+            redirectUrl = socialUrl +"/auth-register";
         }
 
         response.sendRedirect(redirectUrl);
