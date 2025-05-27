@@ -57,32 +57,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
-      {/* 예약 취소 확인 모달 */}
-      {cancelConfirmOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">예약 취소 확인</h3>
-            <p className="mb-6 text-gray-600">
-              정말로 이 예약을 취소하시겠습니까?
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={confirmCancel}
-                className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-500 hover:bg-red-600"
-              >
-                예
-              </button>
-              <button
-                onClick={closeCancelModal}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-              >
-                아니오
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
