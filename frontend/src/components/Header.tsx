@@ -59,6 +59,7 @@ export default function Header() {
       "/doctorpet": "반려동물 관리",
       "/medical-records": "진료 기록",
       "/chats": "1:1 채팅",
+      "/admin/reservations": "예약 관리",
     };
 
     return routes[pathname] || "진료 예약";
