@@ -236,6 +236,8 @@ public class UserService {
         return join(email,socialId,provider);
     }
 
+
+
     @Transactional
     public User updateUser(Long userId, SocialSignUpRequestDto updateDto) {
         // userId로 User 조회
