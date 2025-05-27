@@ -1,35 +1,156 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { useUser } from "@/contexts/UserContext";
+
+// Update Pet interface
+interface Pet {
+  id: number;
+  name: string;
+  birth: string;
+  gender: string;
+  species: string; // changed from type
+  breed: string;
+  weight: number;
+  isNeutered: boolean;
+  profileUrl?: string;
+  lastDiroDate?: string;
+  specialNote?: string;
+}
 
 interface PetProps {
   onClose: () => void;
 }
 
-const Pet = ({ onClose }: PetProps) => {
+// Pet 등록 데이터 타입 정의
+interface PetRegistrationData {
+  name: string;
+  birth: string;
+  gender: string;
+  isNeutered: boolean;
+  species: string; // changed from type
+  breed: string;
+  weight: number;
+  lastDiroDate: string;
+  profileUrl: string;
+  specialNote: string;
+}
+
+// Add gender mapping constant
+const GENDER_MAP = {
+  수컷: "MALE",
+  암컷: "FEMALE",
+} as const;
+
+interface PetRegistProps {
+  petData?: Pet | null;
+  onClose: () => void;
+}
+
+const PetRegist: React.FC<PetRegistProps> = ({ petData, onClose }) => {
+  // userId 상태 제거
+  const { user } = useUser();
   const [loading, setLoading] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string>(""); // S3 URL
-  const [previewUrl, setPreviewUrl] = useState<string>(""); // 미리보기 URL
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+
+  // userId 관련 useEffect 제거
+
+  // 폼 데이터 상태 추가
+  const [formData, setFormData] = useState<PetRegistrationData>({
+    name: "",
+    birth: "",
+    gender: "",
+    isNeutered: false,
+    species: "",
+    breed: "",
+    weight: 0,
+    lastDiroDate: "",
+    profileUrl: "",
+    specialNote: "",
+  });
+
+  // petData가 있을 경우 폼 데이터 초기화
+  useEffect(() => {
+    console.log("Pet data:", petData); // 디버깅 로그 추가
+    if (petData) {
+      setFormData({
+        name: petData.name || "",
+        birth: formatDate(petData.birth) || "",
+        gender: petData.gender === "MALE" ? "수컷" : "암컷",
+        isNeutered: petData.isNeutered || false,
+        species: petData.species || "",
+        breed: petData.breed || "",
+        weight: petData.weight || 0,
+        lastDiroDate: formatDate(petData.lastDiroDate || "") || "",
+        profileUrl: petData.profileUrl || "",
+        specialNote: petData.specialNote || "",
+      });
+      if (petData.profileUrl) {
+        setImageUrl(petData.profileUrl);
+        setPreviewUrl(petData.profileUrl);
+      }
+    }
+  }, [petData]);
+
+  // 입력 핸들러
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value, type } = e.target;
+    console.log(
+      "Checkbox change:",
+      type,
+      name,
+      (e.target as HTMLInputElement).checked
+    ); // 디버깅 로그 추가
+    setFormData((prev) => ({
+      ...prev,
+      [name]:
+        type === "checkbox"
+          ? (e.target as HTMLInputElement).checked
+          : type === "number"
+          ? parseFloat(value) || 0
+          : value,
+    }));
+  };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !user) return;
 
     try {
       setLoading(true);
 
-      // ✅ 1. Presigned URL 요청
       const folder = "PROFILE_IMAGES";
+      const accessToken = localStorage.getItem("accessToken");
       const res = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_BASE_URL
         }/api/s3/presigned-url?s3Folder=${folder}&fileName=${encodeURIComponent(
           file.name
-        )}&contentType=${encodeURIComponent(file.type)}`
+        )}&contentType=${encodeURIComponent(file.type)}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
       );
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Presigned URL 발급 실패:", res.status, errorText);
+        throw new Error("Presigned URL 발급 실패");
+      }
+
       const { url: presignedUrl } = await res.json();
+      if (!presignedUrl) {
+        console.error("Presigned URL이 undefined입니다.");
+        throw new Error("Presigned URL이 올바르지 않습니다.");
+      }
       console.log("Presigned URL:", presignedUrl);
 
-      // ✅ 2. S3에 이미지 업로드
+      // 3. S3에 이미지 업로드
       const uploadRes = await fetch(presignedUrl, {
         method: "PUT",
         headers: {
@@ -39,15 +160,21 @@ const Pet = ({ onClose }: PetProps) => {
       });
 
       if (!uploadRes.ok) {
+        const errorText = await uploadRes.text();
+        console.error(
+          "S3 업로드 실패:",
+          uploadRes.status,
+          uploadRes.statusText,
+          errorText
+        );
         throw new Error("S3 업로드 실패");
       }
 
-      // ✅ 3. 서버에 저장할 실제 URL (query string 제거)
+      // 4. 서버에 저장할 실제 URL (query string 제거)
       const objectKey = presignedUrl.split(".com/")[1]?.split("?")[0];
       const finalUrl = `https://anidoc-bucket.s3.ap-northeast-2.amazonaws.com/${objectKey}`;
-      setImageUrl(finalUrl); // ❗ 제출용 URL 저장
+      setImageUrl(finalUrl);
 
-      // 미리보기 URL 생성
       const previewUrl = URL.createObjectURL(file);
       setPreviewUrl(previewUrl);
     } catch (err) {
@@ -67,10 +194,81 @@ const Pet = ({ onClose }: PetProps) => {
     };
   }, [previewUrl]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // 폼 제출 핸들러 수정
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 폼 제출 로직
-    onClose(); // 성공 시 모달 닫기
+
+    try {
+      console.log("Submit form data:", formData); // 디버깅 로그 추가
+
+      if (
+        !formData.name ||
+        !formData.birth ||
+        !formData.gender ||
+        !formData.species
+      ) {
+        throw new Error("필수 항목을 모두 입력해주세요.");
+      }
+
+      const petRequestData = {
+        ...formData,
+        gender: GENDER_MAP[formData.gender as keyof typeof GENDER_MAP],
+        profileUrl: imageUrl || null,
+        weight: parseFloat(formData.weight.toString()),
+        birth: new Date(formData.birth).toISOString().split("T")[0],
+        lastDiroDate: formData.lastDiroDate
+          ? new Date(formData.lastDiroDate).toISOString().split("T")[0]
+          : null,
+        isNeutered: Boolean(formData.isNeutered), // 명시적으로 boolean으로 변환
+      };
+
+      console.log("Request data:", petRequestData); // 디버깅 로그 추가
+
+      const url = petData
+        ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/pets/${petData.id}`
+        : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/pets/petreg`;
+
+      const response = await fetch(url, {
+        method: petData ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(petRequestData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          typeof errorData === "string"
+            ? errorData
+            : errorData.message ||
+              `반려동물 ${petData ? "수정" : "등록"}에 실패했습니다.`
+        );
+      }
+
+      const result = await response.json();
+      console.log(`${petData ? "수정" : "등록"} 성공:`, result);
+      alert(`반려동물이 성공적으로 ${petData ? "수정" : "등록"}되었습니다.`);
+      onClose();
+    } catch (error) {
+      console.error(`${petData ? "수정" : "등록"} 실패:`, error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : `반려동물 ${petData ? "수정" : "등록"} 중 오류가 발생했습니다.`
+      );
+    }
+  };
+
+  // 날짜 포맷 유틸리티 함수
+  const formatDate = (date: string) => {
+    if (!date) return null;
+    try {
+      return new Date(date).toISOString().split("T")[0];
+    } catch {
+      return null;
+    }
   };
 
   return (
@@ -83,8 +281,12 @@ const Pet = ({ onClose }: PetProps) => {
             </label>
             <input
               type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               placeholder="반려동물 이름을 입력하세요"
+              required
             />
           </div>
 
@@ -94,7 +296,11 @@ const Pet = ({ onClose }: PetProps) => {
             </label>
             <input
               type="date"
+              name="birth"
+              value={formData.birth}
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              required
             />
           </div>
 
@@ -108,7 +314,10 @@ const Pet = ({ onClose }: PetProps) => {
                   type="radio"
                   name="gender"
                   value="수컷"
+                  checked={formData.gender === "수컷"}
+                  onChange={handleInputChange}
                   className="w-4 h-4 text-teal-500 border-gray-300 focus:ring-teal-500"
+                  required
                 />
                 <span className="ml-2">수컷</span>
               </label>
@@ -117,6 +326,8 @@ const Pet = ({ onClose }: PetProps) => {
                   type="radio"
                   name="gender"
                   value="암컷"
+                  checked={formData.gender === "암컷"}
+                  onChange={handleInputChange}
                   className="w-4 h-4 text-teal-500 border-gray-300 focus:ring-teal-500"
                 />
                 <span className="ml-2">암컷</span>
@@ -131,6 +342,9 @@ const Pet = ({ onClose }: PetProps) => {
             <div className="flex items-center">
               <input
                 type="checkbox"
+                name="isNeutered"
+                checked={formData.isNeutered}
+                onChange={handleInputChange}
                 className="w-4 h-4 text-teal-500 border-gray-300 rounded focus:ring-teal-500"
               />
               <span className="ml-2">중성화 완료</span>
@@ -141,7 +355,12 @@ const Pet = ({ onClose }: PetProps) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               종류
             </label>
-            <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+            <select
+              name="species"
+              value={formData.species}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            >
               <option value="">동물의 종류를 선택하세요</option>
               <option value="강아지">강아지</option>
               <option value="고양이">고양이</option>
@@ -156,6 +375,9 @@ const Pet = ({ onClose }: PetProps) => {
             </label>
             <input
               type="text"
+              name="breed"
+              value={formData.breed}
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               placeholder="품종을 입력하세요 (예: 말티즈, 페르시안 등)"
             />
@@ -167,9 +389,20 @@ const Pet = ({ onClose }: PetProps) => {
             </label>
             <input
               type="number"
+              name="weight"
+              value={formData.weight}
+              onChange={(e) => {
+                const value = Math.max(0, parseFloat(e.target.value) || 0);
+                setFormData((prev) => ({
+                  ...prev,
+                  weight: value,
+                }));
+              }}
+              min="0"
               step="0.1"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               placeholder="체중을 입력하세요"
+              required
             />
           </div>
 
@@ -179,6 +412,9 @@ const Pet = ({ onClose }: PetProps) => {
             </label>
             <input
               type="date"
+              name="lastDiroDate"
+              value={formData.lastDiroDate}
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
             />
           </div>
@@ -251,6 +487,9 @@ const Pet = ({ onClose }: PetProps) => {
               특이사항
             </label>
             <textarea
+              name="specialNote"
+              value={formData.specialNote}
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               rows={3}
               placeholder="반려동물의 특이사항을 입력하세요 (알러지, 질병 등)"
@@ -271,11 +510,11 @@ const Pet = ({ onClose }: PetProps) => {
           type="submit"
           className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
         >
-          등록하기
+          {petData ? "수정하기" : "등록하기"}
         </button>
       </div>
     </form>
   );
 };
 
-export default Pet;
+export default PetRegist;

@@ -10,8 +10,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/pets")
 @Tag(name = "보호자 반려동물", description = "OwnerPet 관련 API")
 public class OwnerPetController {
+    @Autowired
     private final OwnerPetRegistService ownerPetRegistService;
     private final UserRepository userRepository;
 
@@ -30,9 +33,9 @@ public class OwnerPetController {
     @PostMapping("/petreg")
     @Operation(summary = "보호자 반려동물 등록", description = "보호자가 반려동물을 등록")
     public ResponseEntity<?> registerPet(
-            @RequestParam("ownerId") Long ownerId,
             @Valid @RequestBody OwnerPetRequestDTO ownerPetRequestDTO,
-            BindingResult bindingResult) {
+            BindingResult bindingResult,
+            @AuthenticationPrincipal UserDetails currentUser) {
 
         if (bindingResult.hasErrors()) {
             String errorMsg = bindingResult.getFieldErrors().stream()
@@ -40,26 +43,22 @@ public class OwnerPetController {
                     .collect(Collectors.joining(", "));
             return ResponseEntity.badRequest().body(errorMsg);
         }
-
-        if (ownerId == null) {
-            return ResponseEntity.badRequest().body("ownerId는 null일 수 없습니다.");
-        }
-        User user = userRepository.findById(ownerId)
-                .orElseThrow(() -> new RuntimeException("보호자를 찾을수없어요"));
+        User user = userRepository.findByEmail(currentUser.getUsername())
+                .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
 
         Pet pet = ownerPetRegistService.registerPet(ownerPetRequestDTO, user);
         OwnerPetResponseDTO ownerPetResponseDTO = new OwnerPetResponseDTO(pet);
         return ResponseEntity.ok(ownerPetResponseDTO);
-
     }
+
     //수정
     @PutMapping("/{petId}")
     @Operation(summary = "보호자 반려동물 수정", description = "보호자가 반려동물을 등록한것을 수정")
     public ResponseEntity<?> updatePet(
             @PathVariable Long petId,
-            @RequestParam("ownerId") Long ownerId,
             @Valid @RequestBody OwnerPetRequestDTO ownerPetRequestDTO,
-            BindingResult bindingResult) {
+            BindingResult bindingResult,
+            @AuthenticationPrincipal UserDetails currentUser) {
 
         if (bindingResult.hasErrors()) {
             String errorMsg = bindingResult.getFieldErrors().stream()
@@ -67,18 +66,14 @@ public class OwnerPetController {
                     .collect(Collectors.joining(", "));
             return ResponseEntity.badRequest().body(errorMsg);
         }
-
-        if (ownerId == null) {
-            return ResponseEntity.badRequest().body("ownerId는 null일 수 없습니다.");
-        }
-
-        User user = userRepository.findById(ownerId)
-                .orElseThrow(() -> new RuntimeException("보호자를 찾을 수 없습니다."));
+        User user = userRepository.findByEmail(currentUser.getUsername())
+                .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
 
         Pet pet = ownerPetRegistService.updatePet(petId, ownerPetRequestDTO, user);
         OwnerPetResponseDTO ownerPetResponseDTO = new OwnerPetResponseDTO(pet);
         return ResponseEntity.ok(ownerPetResponseDTO);
     }
+
     //전체 조회
     @GetMapping
     @Operation(summary = "보호자 반려동물 전체 조회", description = "보호자가 반려동물을 등록한것을 전체 조회")
@@ -92,7 +87,7 @@ public class OwnerPetController {
     }
 
 
-    //조회
+    //상세 조회
     @GetMapping("/{petId}")
     @Operation(summary = "보호자 반려동물 상세 조회", description = "보호자가 반려동물을 등록한것을 상세 조회")
     public ResponseEntity<?> findPet(
@@ -102,6 +97,20 @@ public class OwnerPetController {
         OwnerPetResponseDTO ownerPetResponseDTO = new OwnerPetResponseDTO(pet);
         return ResponseEntity.ok(ownerPetResponseDTO);
 
+    }
+
+    //삭제
+    @DeleteMapping("/{petId}")
+    @Operation(summary = "보호자 반려동물 삭제", description = "보호자가 자신의 반려동물을 삭제")
+    public ResponseEntity<?> deletePet(
+            @PathVariable Long petId,
+            @AuthenticationPrincipal UserDetails currentUser) {
+
+        User user = userRepository.findByEmail(currentUser.getUsername())
+                .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
+
+        ownerPetRegistService.deletePet(petId, user);
+        return ResponseEntity.ok("삭제되었습니다.");
     }
 
 

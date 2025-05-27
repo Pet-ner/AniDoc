@@ -40,12 +40,24 @@ export default function NoticesPage() {
   const pageSize = 10;
 
   useEffect(() => {
+    console.group("공지사항 페이지 마운트");
+    console.log("마운트 시점:", new Date().toISOString());
+    console.log("현재 URL:", window.location.href);
+    console.log("pathname:", window.location.pathname);
+    console.log("search:", window.location.search);
+    console.log("SearchParams:", Object.fromEntries(searchParams.entries()));
+    console.log("Current Page:", currentPage);
+    console.groupEnd();
+
+    // 현재 경로를 저장
+    sessionStorage.setItem("prevPath", "/notices");
+
     const fetchNotices = async () => {
       try {
+        console.log("데이터 가져오기 시작");
         setLoading(true);
         setError(null);
 
-        // Search API 또는 일반 목록 API 선택
         const apiUrl = searchQuery
           ? `${
               process.env.NEXT_PUBLIC_API_BASE_URL
@@ -55,6 +67,8 @@ export default function NoticesPage() {
           : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notices?page=${
               currentPage - 1
             }&size=${pageSize}`;
+
+        console.log("API URL:", apiUrl);
 
         const response = await fetch(apiUrl, {
           credentials: "include",
@@ -102,10 +116,21 @@ export default function NoticesPage() {
     );
   };
 
+  useEffect(() => {
+    // 공지사항 목록 페이지에 진입할 때마다 경로 저장
+    sessionStorage.setItem("prevPath", "/notices");
+  }, []); // 마운트 시에만 실행
+
+  const handleNoticeClick = (noticeId: number) => {
+    // 상세 페이지로 이동하기 전에 현재 경로를 저장
+    sessionStorage.setItem("prevPath", "/notices");
+    router.push(`/notices/${noticeId}`);
+  };
+
   return (
     <div className="p-8">
+      {/* 검색 폼과 버튼을 포함한 상단 영역 */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">공지사항</h1>
         <div className="flex gap-4">
           <form onSubmit={handleSearch} className="flex gap-2">
             <input
@@ -122,16 +147,16 @@ export default function NoticesPage() {
               검색
             </button>
           </form>
-          {user?.userRole === "ROLE_ADMIN" && (
-            <Link
-              href="/notices/new"
-              className="inline-flex items-center px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
-            >
-              <PlusCircle className="w-5 h-5 mr-2" />
-              공지사항 작성
-            </Link>
-          )}
         </div>
+        {user?.userRole === "ROLE_ADMIN" && (
+          <Link
+            href="/notices/new"
+            className="inline-flex items-center px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+          >
+            <PlusCircle className="w-5 h-5 mr-2" />
+            공지사항 작성
+          </Link>
+        )}
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -175,7 +200,7 @@ export default function NoticesPage() {
                 <tr
                   key={notice.id}
                   className="hover:bg-gray-50 transition-colors cursor-pointer"
-                  onClick={() => router.push(`/notices/${notice.id}`)}
+                  onClick={() => handleNoticeClick(notice.id)} // 수정된 부분
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {pageData.number * pageData.size +
