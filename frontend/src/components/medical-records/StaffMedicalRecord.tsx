@@ -67,7 +67,6 @@ export default function StaffMedicalRecord({
   );
   const [showDetail, setShowDetail] = useState(false);
 
-  // 오늘 날짜의 예약만 필터링하는 함수
   const getTodayRecords = (records: MedicalRecord[]) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -79,19 +78,13 @@ export default function StaffMedicalRecord({
     });
   };
 
-  // 오늘 날짜의 예약만 필터링
   const todayRecords = getTodayRecords(records);
 
-  useEffect(() => {
-    console.log("✅ records 데이터 확인:", records);
-  }, [records]);
+  useEffect(() => {}, [records]);
 
   const [isChartModalOpen, setChartModalOpen] = useState(false);
 
   const handleClick = async (record: MedicalRecord) => {
-    console.log("🔍 선택된 예약 데이터:", record);
-
-    // 진료기록이 있으면 백엔드에서 진짜 진료기록 데이터 가져오기
     if (record.hasMedicalRecord) {
       try {
         const res = await fetch(
@@ -102,22 +95,12 @@ export default function StaffMedicalRecord({
         );
         const responseBody = await res.json();
         const medicalRecord = responseBody.medicalRecord;
-        console.log("📦 서버에서 받아온 medicalRecord:", medicalRecord);
-        console.log(
-          "📦 서버에서 받아온 검사기록 checkups:",
-          medicalRecord.checkups
-        );
 
         if (!medicalRecord) {
           alert("진료기록을 찾을 수 없습니다.");
           return;
         }
 
-        console.log("✅ selectedRecord에 설정할 값:", {
-          ...record,
-          checkups: medicalRecord.checkups,
-        });
-        // 필드 맞춰서 변환 후 selectedRecord 설정
         const updatedRecord = {
           ...record,
           weight: medicalRecord.currentWeight,
@@ -159,7 +142,6 @@ export default function StaffMedicalRecord({
       const newMedicalRecordData = responseBody.medicalRecord;
 
       if (!newMedicalRecordData) {
-        console.error("❌ 응답에서 medicalRecord 누락:", responseBody);
         return;
       }
 
@@ -217,9 +199,7 @@ export default function StaffMedicalRecord({
 
       setShowDetail(true);
       setChartModalOpen(false);
-    } catch (err) {
-      console.error("❌ 저장 후 진료기록 조회 실패", err);
-    }
+    } catch (err) {}
   };
 
   const handleCloseModal = () => {

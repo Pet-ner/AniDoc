@@ -65,7 +65,6 @@ export default function ChartDetailModal({
             const data = await res.json();
             return data.url;
           } catch (err) {
-            console.error("📛 검사 이미지 presigned URL 조회 실패:", err);
             return null;
           }
         })
@@ -77,7 +76,7 @@ export default function ChartDetailModal({
     fetchCheckupUrls();
   }, [record.checkups]);
 
-  // 입원 사진 S3 프리사인 URL 발급
+  // S3 Presigned URL 발급
   useEffect(() => {
     const originalUrl = record.hospitalization?.imageUrl;
     if (!originalUrl) return;
@@ -92,19 +91,15 @@ export default function ChartDetailModal({
     )
       .then(async (res) => {
         if (!res.ok) {
-          const text = await res.text(); // 실제 응답 확인
-          console.error("❌ 응답 에러 본문:", text);
+          const text = await res.text();
           throw new Error(`서버 오류 상태: ${res.status}`);
         }
-        return res.json(); // 여기는 안전한 JSON 응답일 때만 실행
+        return res.json();
       })
       .then((data) => {
-        console.log("✅ presigned GET URL:", data.url);
         setHospitalImageUrl(data.url);
       })
-      .catch((err) => {
-        console.error("📛 입원 이미지 presigned URL 조회 실패:", err);
-      });
+      .catch((err) => {});
   }, [record.hospitalization?.imageUrl]);
 
   const formattedDate = record.reservationDate
@@ -194,7 +189,6 @@ export default function ChartDetailModal({
           </div>
         </div>
 
-        {/* 검사 기록 */}
         {record.checkups && record.checkups.length > 0 && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-teal-700 mb-4">
@@ -247,7 +241,6 @@ export default function ChartDetailModal({
           </div>
         )}
 
-        {/* 수술 기록 */}
         {record.surgery && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-teal-700 mb-4">
@@ -307,7 +300,6 @@ export default function ChartDetailModal({
           </div>
         )}
 
-        {/* 입원 기록 */}
         {record.hospitalization && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-teal-700 mb-4">

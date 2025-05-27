@@ -1,6 +1,3 @@
-/**
- * ChartModal: presigned-url S3 업로드 적용 (CHECKUPS, HOSPITALIZATION)
- */
 import { useState, useEffect } from "react";
 
 interface MedicalRecord {
@@ -208,7 +205,6 @@ export default function ChartModal({
       );
     } catch (err) {
       alert("검사 파일 업로드 실패");
-      console.error("Test file upload failed:", err);
     }
   };
 
@@ -242,7 +238,6 @@ export default function ChartModal({
       );
     } catch (err) {
       alert("입원 사진 업로드 실패");
-      console.error("Hospital image upload failed:", err);
     }
   };
 
@@ -265,10 +260,6 @@ export default function ChartModal({
       typeof reservationDetails.doctorId !== "number" ||
       typeof reservationDetails.userId !== "number"
     ) {
-      console.error(
-        "저장에 필요한 예약 정보가 부족하거나 형식이 잘못되었습니다.",
-        reservationDetails
-      );
       alert(
         "진료 기록을 저장할 수 없습니다. 필요한 예약 정보가 누락되었습니다."
       );
@@ -918,7 +909,6 @@ export default function ChartModal({
         <div className="flex justify-end gap-2">
           <button
             onClick={() => {
-              console.log("🧪 ChartModal 닫기 버튼 클릭됨");
               onClose();
             }}
             className="px-6 py-3 rounded bg-gray-100 text-gray-700 text-lg"

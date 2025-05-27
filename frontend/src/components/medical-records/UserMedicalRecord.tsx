@@ -70,38 +70,19 @@ export default function UserMedicalRecord({
     const fetchMedicalRecords = async () => {
       setLoading(true);
       try {
-        console.log("🔍 Fetching medical records for userId:", userId);
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/medical-records/by-user/${userId}`,
           { credentials: "include" }
         );
 
         const data = await res.json();
-        console.log("📥 Raw API Response:", data);
-        console.log("🔍 Response status:", res.status);
-        console.log(
-          "🔍 Response headers:",
-          Object.fromEntries(res.headers.entries())
-        );
-
-        // API 응답이 배열인 경우 직접 사용
         const medicalRecords = Array.isArray(data) ? data : data.medicalRecords;
-        console.log("📥 Processed medical records:", medicalRecords);
-        console.log("🔍 Records length:", medicalRecords?.length);
 
         if (!medicalRecords || medicalRecords.length === 0) {
-          console.log("⚠️ No medical records found");
           setRecords([]);
           return;
         }
-
         setRecords(medicalRecords);
-        console.log(
-          "🔍 First record details:",
-          medicalRecords && medicalRecords.length > 0
-            ? medicalRecords[0]
-            : "No records"
-        );
       } catch (err) {
         console.error("❌ 진료기록 목록 조회 실패:", err);
         alert("진료기록을 불러오는 데 실패했습니다.");
@@ -114,7 +95,6 @@ export default function UserMedicalRecord({
   }, [userId]);
 
   const handleClick = async (record: MedicalRecord) => {
-    console.log("🔍 handleClick called with record:", record);
     if (!record.id) return;
 
     try {
@@ -122,10 +102,7 @@ export default function UserMedicalRecord({
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/medical-records/by-reservation/${record.reservationId}?userId=${record.userId}`,
         { credentials: "include" }
       );
-      console.log("🧪 record:", record);
-      console.log("🔍 Detail API response status:", res.status);
       const responseBody = await res.json();
-      console.log("📥 Detail API response body:", responseBody);
       const medicalRecord = responseBody.medicalRecord;
 
       if (!medicalRecord) {
@@ -144,10 +121,6 @@ export default function UserMedicalRecord({
         checkups: medicalRecord.checkups,
       };
 
-      console.log(
-        "✅ Setting selected record and showing detail modal:",
-        updatedRecord
-      );
       setSelectedRecord(updatedRecord);
       setShowDetail(true);
     } catch (err) {
