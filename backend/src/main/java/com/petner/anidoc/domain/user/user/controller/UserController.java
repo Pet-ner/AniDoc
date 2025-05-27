@@ -1,6 +1,7 @@
 package com.petner.anidoc.domain.user.user.controller;
 
 import com.petner.anidoc.domain.user.user.dto.*;
+import com.petner.anidoc.domain.user.user.entity.UserStatus;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import com.petner.anidoc.domain.user.user.service.AuthTokenService;
 import com.petner.anidoc.domain.user.user.service.UserService;
@@ -144,5 +145,23 @@ public class UserController {
         List<StaffResponseDto> staffList = userService.getStaffList(onlyAvailable);
         return ResponseEntity.ok(staffList);
     }
+
+    //📍 STATUS
+
+    @GetMapping("/me/status")
+    public ResponseEntity<UserStatus> getMyStatus(@AuthenticationPrincipal SecurityUser securityUser){
+        UserStatus status = userService.getStatus(securityUser.getId());
+        return ResponseEntity.ok(status);
+    }
+
+
+    @PutMapping("/me/status")
+    public ResponseEntity<String> updateMyStatus(@AuthenticationPrincipal SecurityUser securityUser,
+                                                @RequestParam UserStatus status){
+        userService.updateMyStatus(securityUser.getId(),status);
+        return ResponseEntity.ok("상태 변경이 반영되었습니다.");
+    }
+
+
 
 }

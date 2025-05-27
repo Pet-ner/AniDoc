@@ -262,4 +262,25 @@ public class UserService {
         // 업데이트된 사용자 정보 반환
         return userRepository.findById(userId).orElseThrow();
     }
+
+
+    // 📍 status 관련 service
+
+    // 내 상태 변경
+    public void updateMyStatus(Long id, UserStatus newStatus){
+        User user = userRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("사용자 없음"));
+                user.setStatus(newStatus);
+                userRepository.save(user);
+        }
+
+
+    // 내 상태 조회
+    public UserStatus getStatus(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("사용자를 찾을 수 없습니다."))
+                .getStatus();
+
+    }
+
 }
