@@ -32,5 +32,4 @@ public class Notice extends BaseEntity {
         this.title = noticeRequestDto.getTitle();
         this.content = noticeRequestDto.getContent();
     }
-
 }

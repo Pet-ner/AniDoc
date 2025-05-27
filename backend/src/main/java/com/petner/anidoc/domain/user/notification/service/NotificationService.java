@@ -1,8 +1,12 @@
 package com.petner.anidoc.domain.user.notification.service;
 
+import com.petner.anidoc.domain.user.notification.dto.PetInfoDto;
+import com.petner.anidoc.domain.user.notification.dto.VaccinationNotificationDto;
 import com.petner.anidoc.domain.user.notification.entity.Notification;
 import com.petner.anidoc.domain.user.notification.entity.NotificationType;
 import com.petner.anidoc.domain.user.notification.repository.NotificationRepository;
+import com.petner.anidoc.domain.user.notification.util.VaccinationNotificationHelper;
+import com.petner.anidoc.domain.user.notification.util.VaccinationScheduleManager;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -20,6 +24,7 @@ public class NotificationService {
     private final SseEmitters sseEmitters;
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final VaccinationNotificationHelper vaccinationHelper;
 
     //특정 사용자에게 알림 저장 및 전송
     @Transactional
@@ -89,4 +94,28 @@ public class NotificationService {
 
     }
 
+    /**
+     * 예방접종 알림
+     */
+
+    @Transactional
+    public void sendVaccinationReminder(PetInfoDto petDto){
+        // 예방접종 체크 및 발송
+        if (vaccinationHelper.shouldSendVaccination(petDto)) {
+            VaccinationNotificationDto dto =
+                    vaccinationHelper.createVaccinationDto(petDto);
+            String content = vaccinationHelper.createVaccinationMessage(petDto);
+
+            if (dto != null && content != null) {
+                notifyUser(petDto.getOwnerId(), NotificationType.VACCINATION, content, dto);
+            }
+        }
+
+        // 심장사상충 체크 및 발송
+        if(vaccinationHelper.shouldSendDiro(petDto)){
+            String content = vaccinationHelper.createDiroMessage(petDto);
+            notifyUser(petDto.getOwnerId(), NotificationType.VACCINATION, content, null);
+
+        }
+    }
 }
