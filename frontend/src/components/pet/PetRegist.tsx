@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useUser } from "@/contexts/UserContext";
@@ -44,9 +46,14 @@ const GENDER_MAP = {
 interface PetRegistProps {
   petData?: Pet | null;
   onClose: () => void;
+  isEditMode?: boolean; // 수정 모드 여부 추가
 }
 
-const PetRegist: React.FC<PetRegistProps> = ({ petData, onClose }) => {
+const PetRegist: React.FC<PetRegistProps> = ({
+  petData,
+  onClose,
+  isEditMode = false,
+}) => {
   // userId 상태 제거
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
@@ -272,248 +279,265 @@ const PetRegist: React.FC<PetRegistProps> = ({ petData, onClose }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              이름
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              placeholder="반려동물 이름을 입력하세요"
-              required
-            />
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          {/* 헤더 - 닫기 버튼 제거 */}
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-gray-800">
+              반려동물 {petData ? "수정" : "등록"}
+            </h2>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              생년월일
-            </label>
-            <input
-              type="date"
-              name="birth"
-              value={formData.birth}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              성별
-            </label>
-            <div className="flex gap-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="수컷"
-                  checked={formData.gender === "수컷"}
-                  onChange={handleInputChange}
-                  className="w-4 h-4 text-teal-500 border-gray-300 focus:ring-teal-500"
-                  required
-                />
-                <span className="ml-2">수컷</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="암컷"
-                  checked={formData.gender === "암컷"}
-                  onChange={handleInputChange}
-                  className="w-4 h-4 text-teal-500 border-gray-300 focus:ring-teal-500"
-                />
-                <span className="ml-2">암컷</span>
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              중성화 여부
-            </label>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                name="isNeutered"
-                checked={formData.isNeutered}
-                onChange={handleInputChange}
-                className="w-4 h-4 text-teal-500 border-gray-300 rounded focus:ring-teal-500"
-              />
-              <span className="ml-2">중성화 완료</span>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              종류
-            </label>
-            <select
-              name="species"
-              value={formData.species}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-            >
-              <option value="">동물의 종류를 선택하세요</option>
-              <option value="강아지">강아지</option>
-              <option value="고양이">고양이</option>
-              <option value="고슴도치">고슴도치</option>
-              <option value="햄스터">햄스터</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              품종
-            </label>
-            <input
-              type="text"
-              name="breed"
-              value={formData.breed}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              placeholder="품종을 입력하세요 (예: 말티즈, 페르시안 등)"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              체중 (kg)
-            </label>
-            <input
-              type="number"
-              name="weight"
-              value={formData.weight}
-              onChange={(e) => {
-                const value = Math.max(0, parseFloat(e.target.value) || 0);
-                setFormData((prev) => ({
-                  ...prev,
-                  weight: value,
-                }));
-              }}
-              min="0"
-              step="0.1"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              placeholder="체중을 입력하세요"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              마지막 심장사상충 약 투여일
-            </label>
-            <input
-              type="date"
-              name="lastDiroDate"
-              value={formData.lastDiroDate}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              사진 등록
-            </label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500" />
-                </div>
-              ) : previewUrl ? (
-                <div className="relative w-full aspect-video">
-                  <Image
-                    src={previewUrl}
-                    alt="Preview"
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-lg"
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    이름
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    placeholder="반려동물 이름을 입력하세요"
+                    required
                   />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPreviewUrl("");
-                      setImageUrl("");
-                    }}
-                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                  >
-                    ✕
-                  </button>
                 </div>
-              ) : (
-                <div className="space-y-1 text-center">
-                  <svg
-                    className="mx-auto h-12 w-12 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  <div className="flex text-sm text-gray-600">
-                    <label className="relative cursor-pointer bg-white rounded-md font-medium text-teal-600 hover:text-teal-500">
-                      <span>사진 업로드</span>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    생년월일
+                  </label>
+                  <input
+                    type="date"
+                    name="birth"
+                    value={formData.birth}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    성별
+                  </label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center">
                       <input
-                        type="file"
-                        className="sr-only"
-                        accept="image/*"
-                        onChange={handleImageChange}
+                        type="radio"
+                        name="gender"
+                        value="수컷"
+                        checked={formData.gender === "수컷"}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-teal-500 border-gray-300 focus:ring-teal-500"
+                        required
                       />
+                      <span className="ml-2">수컷</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="gender"
+                        value="암컷"
+                        checked={formData.gender === "암컷"}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-teal-500 border-gray-300 focus:ring-teal-500"
+                      />
+                      <span className="ml-2">암컷</span>
                     </label>
                   </div>
-                  <p className="text-xs text-gray-500">
-                    PNG, JPG, GIF 최대 10MB
-                  </p>
                 </div>
-              )}
-            </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              특이사항
-            </label>
-            <textarea
-              name="specialNote"
-              value={formData.specialNote}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              rows={3}
-              placeholder="반려동물의 특이사항을 입력하세요 (알러지, 질병 등)"
-            />
-          </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    중성화 여부
+                  </label>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="isNeutered"
+                      checked={formData.isNeutered}
+                      onChange={handleInputChange}
+                      className="w-4 h-4 text-teal-500 border-gray-300 rounded focus:ring-teal-500"
+                    />
+                    <span className="ml-2">중성화 완료</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    종류
+                  </label>
+                  <select
+                    name="species"
+                    value={formData.species}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  >
+                    <option value="">동물의 종류를 선택하세요</option>
+                    <option value="강아지">강아지</option>
+                    <option value="고양이">고양이</option>
+                    <option value="고슴도치">고슴도치</option>
+                    <option value="햄스터">햄스터</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    품종
+                  </label>
+                  <input
+                    type="text"
+                    name="breed"
+                    value={formData.breed}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    placeholder="품종을 입력하세요 (예: 말티즈, 페르시안 등)"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    체중 (kg)
+                  </label>
+                  <input
+                    type="number"
+                    name="weight"
+                    value={formData.weight}
+                    onChange={(e) => {
+                      const value = Math.max(
+                        0,
+                        parseFloat(e.target.value) || 0
+                      );
+                      setFormData((prev) => ({
+                        ...prev,
+                        weight: value,
+                      }));
+                    }}
+                    min="0"
+                    step="0.1"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    placeholder="체중을 입력하세요"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    마지막 심장사상충 약 투여일
+                  </label>
+                  <input
+                    type="date"
+                    name="lastDiroDate"
+                    value={formData.lastDiroDate}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    사진 등록
+                  </label>
+                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                    {loading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500" />
+                      </div>
+                    ) : previewUrl ? (
+                      <div className="relative w-full aspect-video">
+                        <Image
+                          src={previewUrl}
+                          alt="Preview"
+                          layout="fill"
+                          objectFit="cover"
+                          className="rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPreviewUrl("");
+                            setImageUrl("");
+                          }}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-1 text-center">
+                        <svg
+                          className="mx-auto h-12 w-12 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                        <div className="flex text-sm text-gray-600">
+                          <label className="relative cursor-pointer bg-white rounded-md font-medium text-teal-600 hover:text-teal-500">
+                            <span>사진 업로드</span>
+                            <input
+                              type="file"
+                              className="sr-only"
+                              accept="image/*"
+                              onChange={handleImageChange}
+                            />
+                          </label>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          PNG, JPG, GIF 최대 10MB
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    특이사항
+                  </label>
+                  <textarea
+                    name="specialNote"
+                    value={formData.specialNote}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    rows={3}
+                    placeholder="반려동물의 특이사항을 입력하세요 (알러지, 질병 등)"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 버튼 순서 변경: 등록하기 버튼이 왼쪽, 취소 버튼이 오른쪽 */}
+            <div className="flex justify-end gap-3">
+              <button
+                type="submit"
+                className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+              >
+                {petData ? "수정하기" : "등록하기"}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                취소
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-
-      <div className="flex justify-end gap-3">
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-        >
-          취소
-        </button>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
-        >
-          {petData ? "수정하기" : "등록하기"}
-        </button>
-      </div>
-    </form>
+    </div>
   );
 };
 
