@@ -34,8 +34,8 @@ public class CheckupRecord extends BaseEntity {
     @Column(name = "checkup_date")
     private LocalDate checkupDate;
 
-    @Enumerated(EnumType.STRING)
-    private CheckupStatus status; //검사상태(검사전, 검사중, 검사완료)
+//    @Enumerated(EnumType.STRING)
+//    private CheckupStatus status; //검사상태(검사전, 검사중, 검사완료)
 
     @Builder.Default
     @Column(name="is_deleted")
@@ -50,7 +50,7 @@ public class CheckupRecord extends BaseEntity {
         this.result = dto.getResult();
         this.resultUrl = dto.getResultUrl();
         this.checkupDate = dto.getCheckupDate();
-        this.status = dto.getStatus();
+//        this.status = dto.getStatus();
     }
 
 }

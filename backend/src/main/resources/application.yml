@@ -82,3 +82,6 @@ aws:
     secret-key: ${AWS_SECRET_ACCESS_KEY}
     region: ${AWS_REGION}
     bucket: ${S3_BUCKET_NAME}
+
+scheduler:
+  enabled: true

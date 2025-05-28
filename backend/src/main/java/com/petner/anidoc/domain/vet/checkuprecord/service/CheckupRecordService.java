@@ -47,7 +47,6 @@ public class CheckupRecordService {
                 .result(checkupRecordRequestDto.getResult())
                 .resultUrl(checkupRecordRequestDto.getResultUrl())
                 .checkupDate(checkupRecordRequestDto.getCheckupDate())
-                .status(checkupRecordRequestDto.getStatus())
                 .build();
 
         CheckupRecord savedResult = checkupRecordRepository.save(checkupRecord);

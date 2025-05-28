@@ -3,6 +3,7 @@ package com.petner.anidoc.domain.user.notification.controller;
 import com.petner.anidoc.domain.user.notification.dto.NotificationDto;
 import com.petner.anidoc.domain.user.notification.entity.Notification;
 import com.petner.anidoc.domain.user.notification.service.NotificationService;
+import com.petner.anidoc.domain.user.pet.repository.PetRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "알림", description = "notification 관련 API")
 public class NotificationController {
     private final NotificationService notificationService;
+    private final PetRepository petRepository;
 
     //알림 전체 목록
     @Operation(summary = "알림 목록 조회", description = "알림 내역을 확인합니다.")

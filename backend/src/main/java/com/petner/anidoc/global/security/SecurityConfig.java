@@ -73,6 +73,9 @@ public class SecurityConfig {
                                 //예방접종 삭제 추가(의료진)
                                 .requestMatchers("/api/vaccins/**").hasRole("STAFF")
 
+                                //s3 이미지 조회
+                                .requestMatchers("/api/s3/presigned-url/view").permitAll()
+
                                 // 임시
                                 .requestMatchers(HttpMethod.GET, "/api/vets/**").permitAll()
 

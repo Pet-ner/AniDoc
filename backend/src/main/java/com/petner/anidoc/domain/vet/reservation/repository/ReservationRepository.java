@@ -37,4 +37,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @Query("SELECT DISTINCT r.reservationDate FROM Reservation r WHERE YEAR(r.reservationDate) = :year AND MONTH(r.reservationDate) = :month")
     List<LocalDate> findReservationDatesByYearAndMonth(@Param("year") int year, @Param("month") int month);
 
+    List<Reservation> findByDoctorIdAndStatus(Long doctorId, ReservationStatus status);
+
+
 }

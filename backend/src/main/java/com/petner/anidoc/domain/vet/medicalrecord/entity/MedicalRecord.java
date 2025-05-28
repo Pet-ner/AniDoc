@@ -16,7 +16,9 @@ import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.annotations.Where;
 
@@ -27,7 +29,7 @@ import org.hibernate.annotations.Where;
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-@Where(clause = "is_deleted = false")
+//@Where(clause = "is_deleted = false")
 @Table(name = "medical_records")
 public class MedicalRecord extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,7 +37,7 @@ public class MedicalRecord extends BaseEntity {
     private Pet pet;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reservation_id", nullable = false)
+    @JoinColumn(name = "reservation_id", nullable = false, unique = true)
     private Reservation reservation;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -75,20 +77,21 @@ public class MedicalRecord extends BaseEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL)
-    private List<CheckupRecord> checkupResults = new ArrayList<>();
+    private Set<CheckupRecord> checkupResults = new HashSet<>();
 
 
-    @Builder.Default
-    @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<Prescription> prescriptions = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<SurgeryRecord> surgeries = new ArrayList<>();
+    private Set<Prescription> prescriptions = new HashSet<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<HospitalizationRecord> hospitalizations = new ArrayList<>();
+    private Set<SurgeryRecord> surgeries = new HashSet<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL,orphanRemoval = true)
+    private Set<HospitalizationRecord> hospitalizations = new HashSet<>();
 
     public void markAsDeleted(){
         this.isDeleted=true;
