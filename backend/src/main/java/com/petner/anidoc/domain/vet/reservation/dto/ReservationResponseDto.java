@@ -31,6 +31,7 @@ public class ReservationResponseDto {
     private ReservationType type;
     private String createdAt;
     private String updatedAt;
+    private boolean hasMedicalRecord;
 
     // 엔티티 -> DTO 변환
     public static ReservationResponseDto fromEntity(Reservation reservation) {
@@ -61,4 +62,35 @@ public class ReservationResponseDto {
                 .updatedAt(reservation.getUpdatedAt().format(formatter))
                 .build();
     }
+
+    public static ReservationResponseDto fromEntity(Reservation reservation, boolean hasMedicalRecord) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        Long doctorId = null;
+        String doctorName = null;
+
+        if (reservation.getDoctor() != null) {
+            doctorId = reservation.getDoctor().getId();
+            doctorName = reservation.getDoctor().getName();
+        }
+
+        return ReservationResponseDto.builder()
+                .id(reservation.getId())
+                .userId(reservation.getUser().getId())
+                .userName(reservation.getUser().getName())
+                .petId(reservation.getPet().getId())
+                .petName(reservation.getPet().getName())
+                .doctorId(doctorId)
+                .doctorName(doctorName)
+                .reservationDate(reservation.getReservationDate())
+                .reservationTime(reservation.getReservationTime())
+                .status(reservation.getStatus())
+                .symptom(reservation.getSymptom())
+                .type(reservation.getType())
+                .createdAt(reservation.getCreatedAt().format(formatter))
+                .updatedAt(reservation.getUpdatedAt().format(formatter))
+                .hasMedicalRecord(hasMedicalRecord)
+                .build();
+    }
+
 }

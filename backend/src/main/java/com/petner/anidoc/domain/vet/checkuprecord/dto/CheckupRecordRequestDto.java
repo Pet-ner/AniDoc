@@ -18,6 +18,6 @@ public class CheckupRecordRequestDto {
     private String result;
     private String resultUrl;
     private LocalDate checkupDate;
-    private CheckupStatus status;
+//    private CheckupStatus status;
 
 }
