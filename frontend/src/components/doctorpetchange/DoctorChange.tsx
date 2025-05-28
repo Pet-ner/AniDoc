@@ -100,7 +100,7 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg w-[800px] p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-semibold">반려동물 상세 정보</h2>
@@ -276,18 +276,19 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({
           />
         </div>
 
+        {/* 버튼 순서 변경: 저장 버튼이 왼쪽, 취소 버튼이 오른쪽 */}
         <div className="flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50"
-          >
-            취소
-          </button>
           <button
             onClick={handleSubmit}
             className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600"
           >
             저장
+          </button>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50"
+          >
+            취소
           </button>
         </div>
       </div>

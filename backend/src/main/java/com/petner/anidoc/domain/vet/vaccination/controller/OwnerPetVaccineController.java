@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/owner/vaccins")
+@RequestMapping("/api/owner/vaccines")
 @Tag(name = "보호자 반려동물 예방접종", description = "OwnerPetVaccin 관련 API")
 public class OwnerPetVaccineController {
     private final OwnerPetVaccineService ownerPetVaccineService;
