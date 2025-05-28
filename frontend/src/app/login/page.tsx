@@ -17,9 +17,14 @@ export default function LoginPage() {
   // 소셜 로그인 체크
   useEffect(() => {
     const checkLoginStatus = async () => {
-      // 이미 UserContext에서 로그인 상태가 true라면 체크하지 않고 리다이렉트
+      // 이미 로그인된 상태라면 메인 페이지로 리다이렉트
       if (isLoggedIn) {
         router.push("/");
+        return;
+      }
+
+      // URL에 isSocialLogin이 있는 경우에만 체크
+      if (!window.location.search.includes("isSocialLogin")) {
         return;
       }
 
@@ -45,7 +50,7 @@ export default function LoginPage() {
     };
 
     checkLoginStatus();
-  }, [isLoggedIn, login, router]); // 의존성 배열에 isLoggedIn 추가
+  }, [isLoggedIn, login, router]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -88,13 +93,13 @@ export default function LoginPage() {
 
   const handleKakaoLogin = () => {
     // 메인 페이지로 리다이렉트
-    const redirectUrl = window.location.origin;
+    const redirectUrl = `${window.location.origin}/login?isSocialLogin=true`;
     window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/kakao?redirectUrl=${redirectUrl}`;
   };
 
   const handleNaverLogin = () => {
     // 메인 페이지로 리다이렉트
-    const redirectUrl = window.location.origin;
+    const redirectUrl = `${window.location.origin}/login?isSocialLogin=true`;
     window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/naver?redirectUrl=${redirectUrl}`;
   };
 
