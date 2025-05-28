@@ -20,7 +20,7 @@ interface User {
   userRole: string;
   email?: string;
   password?: string;
-  vetInfoId?: number;
+  vetId?: VetInfo;
   phoneNumber?: string;
   emergencyContact?: string;
 }
@@ -80,7 +80,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
       if (response.ok) {
         const userData = await response.json();
-        console.log("Fetched user data:", userData);
         setUser(userData);
       } else {
         // 인증 실패 - 로그인 상태 초기화
