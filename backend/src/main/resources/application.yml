@@ -7,11 +7,13 @@ spring:
   profiles:
     active: dev
     include: secret
-  datasource:
-    url: jdbc:mysql://localhost:3306/anidocdb?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: petner
-    password: petner
-    driver-class-name: com.mysql.cj.jdbc.Driver
+  config:
+    import: optional:application-secret.yml
+#  datasource:
+#    url: jdbc:mysql://localhost:3306/anidocdb?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+#    username: petner
+#    password: petner
+#    driver-class-name: com.mysql.cj.jdbc.Driver
 #    url: jdbc:h2:./db_dev;MODE=MySQL
 #    username: sa
 #    password:
