@@ -4,6 +4,7 @@ import com.petner.anidoc.global.rq.Rq;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -25,6 +26,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final CustomOauth2AuthenticationSuccessHandler customAuthenticationSuccessHandler;
+
+    private final CustomAuthorizationRequestResolver customAuthorizationRequestResolver;
     private final Rq rq;
 
     // ✅ JWT 인증 필터 빈 등록
@@ -44,7 +48,15 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .oauth2Login(
+                        oauth2Login -> oauth2Login
+                                .successHandler(customAuthenticationSuccessHandler)
 
+                                .authorizationEndpoint(
+                        authorizationEndpoint ->
+                            authorizationEndpoint.authorizationRequestResolver(customAuthorizationRequestResolver)
+                    )
+                )
                 // ✅ 경로별 인가 정책 설정
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
@@ -54,6 +66,12 @@ public class SecurityConfig {
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/swagger-ui/**").permitAll()
                                 .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
+                                //펫등록 삭제 추가(보호자, 의료진,스태프)
+                                .requestMatchers(HttpMethod.DELETE, "/api/pets/**").hasRole("USER")
+                                .requestMatchers(HttpMethod.DELETE, "/api/doctor/pets/**").hasAnyRole("STAFF", "ADMIN")
+
+                                //예방접종 삭제 추가(의료진)
+                                .requestMatchers("/api/vaccins/**").hasRole("STAFF")
 
                                 // 임시
                                 .requestMatchers(HttpMethod.GET, "/api/vets/**").permitAll()
@@ -82,7 +100,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "http://localhost:8090"  // Swagger UI 주소 추가
+                "http://localhost:8090"
         ));
         configuration.setAllowCredentials(true);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

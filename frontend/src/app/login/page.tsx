@@ -1,19 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useUser();
+  const { login, isLoggedIn } = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // 소셜 로그인 체크
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      // 이미 UserContext에서 로그인 상태가 true라면 체크하지 않고 리다이렉트
+      if (isLoggedIn) {
+        router.push("/");
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/social/me`,
+          {
+            credentials: "include",
+          }
+        );
+
+        if (response.ok) {
+          const userData = await response.json();
+          // 실제 유저 데이터가 있을 때만 로그인 처리
+          if (userData && userData.id) {
+            login();
+            router.push("/");
+          }
+        }
+      } catch (error) {
+        console.error("로그인 상태 확인 실패:", error);
+      }
+    };
+
+    checkLoginStatus();
+  }, [isLoggedIn, login, router]); // 의존성 배열에 isLoggedIn 추가
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -56,12 +88,14 @@ export default function LoginPage() {
 
   const handleKakaoLogin = () => {
     // 메인 페이지로 리다이렉트
-    const redirectUrl = window.location.origin + ""; // TODO: 리다이렉트 url 수정
+    const redirectUrl = window.location.origin;
     window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/kakao?redirectUrl=${redirectUrl}`;
   };
 
   const handleNaverLogin = () => {
-    // TODO: 네이버 로그인
+    // 메인 페이지로 리다이렉트
+    const redirectUrl = window.location.origin;
+    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/naver?redirectUrl=${redirectUrl}`;
   };
 
   return (
@@ -183,7 +217,22 @@ export default function LoginPage() {
               </span>
               카카오 계정으로 로그인
             </button>
-            {/* TODO: 네이버 로그인 버튼 추가 */}
+            {/* 네이버 로그인 버튼 */}
+            <button
+              type="button"
+              onClick={handleNaverLogin}
+              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white bg-[#03C75A] hover:bg-[#02b54d]"
+            >
+              <span className="mr-2">
+                <img
+                  src="/images/naver-login.png"
+                  alt="네이버 로그인"
+                  width="30"
+                  height="30"
+                />
+              </span>
+              네이버 계정으로 로그인
+            </button>
           </div>
         </form>
 

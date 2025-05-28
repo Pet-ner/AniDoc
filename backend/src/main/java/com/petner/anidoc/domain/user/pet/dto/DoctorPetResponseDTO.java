@@ -1,5 +1,6 @@
 package com.petner.anidoc.domain.user.pet.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.petner.anidoc.domain.user.pet.entity.Gender;
 import com.petner.anidoc.domain.user.pet.entity.Pet;
 import lombok.Getter;
@@ -12,22 +13,26 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 public class DoctorPetResponseDTO {
+    private Long id;
+
     private String name;
 
     private Gender gender;
 
-    private boolean isNeutered;
+    private Boolean isNeutered;
 
     private String species;
 
     private String breed;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate birth;
 
     private BigDecimal weight;
 
 //    protected LocalDate lastVisitDate;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate lastDiroDate;
 
     private String specialNote;
@@ -39,6 +44,7 @@ public class DoctorPetResponseDTO {
     private LocalDate lastVisitDate;
 
     public DoctorPetResponseDTO(Pet pet){
+        this.id = pet.getId();
         this.name = pet.getName();
         this.gender = pet.getGender();
         this.species = pet.getSpecies();
@@ -46,7 +52,7 @@ public class DoctorPetResponseDTO {
         this.birth = pet.getBirth();
         this.weight = pet.getWeight();
         this.lastVisitDate = pet.getLastDiroDate();
-        this.isNeutered = pet.isNeutered();
+        this.isNeutered = pet.getIsNeutered();
         this.specialNote = pet.getSpecialNote();
         this.neuteredDate = pet.getNeuteredDate();
         this.isDeceased = pet.isDeceased();

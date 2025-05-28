@@ -1,16 +1,22 @@
 package com.petner.anidoc.domain.user.notification.service;
 
+import com.petner.anidoc.domain.user.notification.dto.PetInfoDto;
+import com.petner.anidoc.domain.user.notification.dto.VaccinationNotificationDto;
 import com.petner.anidoc.domain.user.notification.entity.Notification;
 import com.petner.anidoc.domain.user.notification.entity.NotificationType;
 import com.petner.anidoc.domain.user.notification.repository.NotificationRepository;
+import com.petner.anidoc.domain.user.notification.util.VaccinationNotificationHelper;
+import com.petner.anidoc.domain.user.notification.util.VaccinationScheduleManager;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
+
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +24,7 @@ public class NotificationService {
     private final SseEmitters sseEmitters;
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final VaccinationNotificationHelper vaccinationHelper;
 
     //특정 사용자에게 알림 저장 및 전송
     @Transactional
@@ -57,4 +64,58 @@ public class NotificationService {
         return content;
     }
 
+    //전체 목록 조회
+    @Transactional
+    public Page<Notification> getNotifications(Long userId, Pageable pageable){
+        return notificationRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
+    }
+
+
+    //알림 읽음 처리(1개)
+    @Transactional
+    public void markAsRead(Long notificationId){
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 알림입니다."));
+        notification.markAsRead();
+        notificationRepository.save(notification);
+
+    }
+
+
+    //알림 읽음 처리(전체)
+    @Transactional
+    public void markAllAsRead(Long userId) {
+        List<Notification> notifications = notificationRepository.findByUserIdAndIsReadFalse(userId);
+
+        //읽음 처리
+        notifications.forEach(Notification::markAsRead);
+
+        notificationRepository.saveAll(notifications);
+
+    }
+
+    /**
+     * 예방접종 알림
+     */
+
+    @Transactional
+    public void sendVaccinationReminder(PetInfoDto petDto){
+        // 예방접종 체크 및 발송
+        if (vaccinationHelper.shouldSendVaccination(petDto)) {
+            VaccinationNotificationDto dto =
+                    vaccinationHelper.createVaccinationDto(petDto);
+            String content = vaccinationHelper.createVaccinationMessage(petDto);
+
+            if (dto != null && content != null) {
+                notifyUser(petDto.getOwnerId(), NotificationType.VACCINATION, content, dto);
+            }
+        }
+
+        // 심장사상충 체크 및 발송
+        if(vaccinationHelper.shouldSendDiro(petDto)){
+            String content = vaccinationHelper.createDiroMessage(petDto);
+            notifyUser(petDto.getOwnerId(), NotificationType.VACCINATION, content, null);
+
+        }
+    }
 }

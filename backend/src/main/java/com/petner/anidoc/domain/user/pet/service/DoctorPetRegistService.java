@@ -39,6 +39,13 @@ public class DoctorPetRegistService {
         return petRepository.findById(petId)
                 .orElseThrow(()-> new EntityNotFoundException("반려동물을 찾을수 없습니다."));
     }
+    //삭제
+    @Transactional
+    public void deletePet(Long petId) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new EntityNotFoundException("반려동물을 찾을 수 없습니다."));
+        petRepository.delete(pet);
+    }
 
 }
 

@@ -56,7 +56,7 @@ public class NoticeService {
             notificationService.notifyUser(
                     u.getId(),
                     NotificationType.NOTICE,
-                    "공지사항 등록: "+ noticeNotificationDto.getTitle(),
+                    "공지사항: "+ noticeNotificationDto.getTitle(),
                     noticeNotificationDto
             );
         }
@@ -87,7 +87,7 @@ public class NoticeService {
         // 이벤트명 추가(선택), 프론트에 push
         notificationService.notifyAll(
                 NotificationType.NOTICE,
-                "[수정]공지사항 등록: " + dto.getTitle(),
+                "[수정]공지사항: " + dto.getTitle(),
                 dto
         );
 
@@ -119,14 +119,14 @@ public class NoticeService {
     // 공지사항 전체 조회 (페이징)
     @Transactional
     public Page<NoticeResponseDto> getAllNotices(Pageable pageable) {
-        return noticeRepository.findAllByOrderByCreatedAtDesc(pageable)
-                .map(NoticeResponseDto::from);
+        Page<Notice> noticePage = noticeRepository.findAllByOrderByCreatedAtDesc(pageable);
+        return noticePage.map(NoticeResponseDto::from);
     }
 
     // 공지사항 검색 (페이징)
     @Transactional
     public Page<NoticeResponseDto> searchNotices(String title, Pageable pageable) {
-        return noticeRepository.findByTitleContainingOrderByCreatedAtDesc(title, pageable)
-                .map(NoticeResponseDto::from);
+        Page<Notice> searchPage = noticeRepository.findByTitleContainingOrderByCreatedAtDesc(title, pageable);
+        return searchPage.map(NoticeResponseDto::from);
     }
 }

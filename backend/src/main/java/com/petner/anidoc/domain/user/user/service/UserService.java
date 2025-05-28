@@ -1,9 +1,7 @@
 package com.petner.anidoc.domain.user.user.service;
 
-import com.petner.anidoc.domain.user.user.dto.LoginRequestDto;
-import com.petner.anidoc.domain.user.user.dto.StaffResponseDto;
-import com.petner.anidoc.domain.user.user.dto.UserResponseDto;
-import com.petner.anidoc.domain.user.user.dto.UserSignUpRequestDto;
+import com.petner.anidoc.domain.user.user.dto.*;
+import com.petner.anidoc.domain.user.user.entity.SsoProvider;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.entity.UserRole;
 import com.petner.anidoc.domain.user.user.entity.UserStatus;
@@ -12,6 +10,7 @@ import com.petner.anidoc.domain.vet.vet.entity.VetInfo;
 import com.petner.anidoc.domain.vet.vet.repository.VetInfoRepository;
 import com.petner.anidoc.global.exception.CustomException;
 import com.petner.anidoc.global.exception.ErrorCode;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -174,6 +173,10 @@ public class UserService {
         return userRepository.findByRefreshToken(refreshToken);
     }
 
+    public Optional<User> findByEmail(String email){
+        return userRepository.findByEmail(email);
+    }
+
     // ✅ ID로 사용자 조회
     @Transactional(readOnly = true)
     public User getUserById(Long id) {
@@ -199,4 +202,66 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    public void modify(User user, @NotBlank String email){
+        user.setEmail(email);
+    }
+
+    public User join(String email, String socialId, SsoProvider provider){
+        userRepository
+                .findByEmail(email)
+                .ifPresent(user -> {
+                    throw new RuntimeException("해당 email은 이미 사용중입니다.");
+                });
+
+        User user = User.builder()
+                .name("Temp_name")
+                .email(email)
+                .password("SOCIALPASSWORD")
+                .phoneNumber("test")
+                .socialId(socialId)
+                .ssoProvider(provider)
+                .role(UserRole.ROLE_USER)
+                .build();
+        return userRepository.save(user);
+    }
+
+    public User modifyOrJoin(String email, String socialId, SsoProvider provider) {
+        Optional<User> opUser = findByEmail(email);
+
+        if (opUser.isPresent()) {
+            User user = opUser.get();
+            modify(user, email);
+            return user;
+        }
+        return join(email,socialId,provider);
+    }
+
+
+
+    @Transactional
+    public User updateUser(Long userId, SocialSignUpRequestDto updateDto) {
+        // userId로 User 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // VetInfo 조회
+        VetInfo vetInfo = null;
+        if (updateDto.getVetInfo() != null) {
+            vetInfo = vetInfoRepository.findById(updateDto.getVetInfo().getId())
+                    .orElseThrow(() -> new RuntimeException("병원 정보를 찾을 수 없습니다."));
+        }
+
+        // Repository의 업데이트 메서드 사용
+        userRepository.updateUserBasicInfo(
+                userId,
+                updateDto.getName(),
+                updateDto.getPhoneNumber(),
+                updateDto.getEmergencyContact(),
+                updateDto.getRole(),
+                updateDto.getVetInfo()
+        );
+
+        // 업데이트된 사용자 정보 반환
+        return userRepository.findById(userId).orElseThrow();
+    }
 }

@@ -34,7 +34,8 @@ public class DoctorPetController {
     public ResponseEntity<?> updatePetByDoctor(
             @PathVariable Long petId,
             @Valid @RequestBody DoctorPetRequestDTO doctorPetRequestDTO,
-            BindingResult bindingResult) {
+            BindingResult bindingResult,
+            @AuthenticationPrincipal User user) {
 
         if (bindingResult.hasErrors()) {
             String errorMsg = bindingResult.getFieldErrors().stream()
@@ -67,6 +68,16 @@ public class DoctorPetController {
         Pet pet = doctorPetRegistService.findPetByDoctor(petId);
         DoctorPetResponseDTO doctorPetResponseDTO = new DoctorPetResponseDTO(pet);
         return ResponseEntity.ok(doctorPetResponseDTO);
+    }
+
+    //삭제
+    @DeleteMapping("/{petId}")
+    @Operation(summary = "의료진 반려동물 삭제", description = "의료진이 반려동물을 삭제")
+    public ResponseEntity<?> deletePet(
+            @PathVariable Long petId) {
+
+        doctorPetRegistService.deletePet(petId);
+        return ResponseEntity.ok("삭제되었습니다.");
     }
 
 }
