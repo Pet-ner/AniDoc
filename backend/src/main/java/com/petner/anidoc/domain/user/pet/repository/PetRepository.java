@@ -8,4 +8,8 @@ import java.util.List;
 @Repository
 public interface PetRepository extends JpaRepository<Pet, Long> {
     List<Pet> findByOwnerId(Long ownerId);
+
+    //살아있는 반려동물 조회
+    List<Pet> findByIsDeceasedFalse();
+
 }
