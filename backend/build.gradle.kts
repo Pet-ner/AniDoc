@@ -64,6 +64,7 @@ dependencies {
 	implementation("software.amazon.awssdk:auth:2.25.7")
 	implementation("software.amazon.awssdk:regions:2.25.7")
 
+
 }
 
 tasks.withType<Test> {
