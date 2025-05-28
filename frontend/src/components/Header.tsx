@@ -58,6 +58,7 @@ export default function Header() {
       "/ownerpet": "반려동물 관리",
       "/doctorpet": "반려동물 관리",
       "/medical-records": "진료 기록",
+      "/doctorpetvaccine": "접종 관리",
       "/chats": "1:1 채팅",
       "/admin/reservations": "예약 관리",
     };

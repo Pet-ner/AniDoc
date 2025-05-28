@@ -33,8 +33,13 @@ public class DoctorPetVaccineService {
         Pet pet = petRepository.findById(petId)
                 .orElseThrow(()-> new EntityNotFoundException("존재하지 않는 반려동물입니다."));
 
+//        Reservation reservation = reservationRepository.findById(doctorPetVaccineRequestDTO.getReservationId())
+//                .orElseThrow(()-> new EntityNotFoundException("존재하지 않는 예약입니다."));
         Reservation reservation = reservationRepository.findById(doctorPetVaccineRequestDTO.getReservationId())
-                .orElseThrow(()-> new EntityNotFoundException("존재하지 않는 예약입니다."));
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 예약입니다."));
+        if (!reservation.getPet().getId().equals(petId)) {
+            throw new IllegalArgumentException("해당 예약은 이 반려동물의 예약이 아닙니다.");
+        }
 
         Vaccination vaccination = Vaccination.builder()
                 .doctor(doctor)
@@ -43,6 +48,7 @@ public class DoctorPetVaccineService {
                 .vaccineName(doctorPetVaccineRequestDTO.getVaccineName())
                 .currentDose(doctorPetVaccineRequestDTO.getCurrentDose())
                 .totalDoses(doctorPetVaccineRequestDTO.getTotalDoses())
+                .vaccinationDate(doctorPetVaccineRequestDTO.getVaccinationDate()) //추가
                 .nextDueDate(doctorPetVaccineRequestDTO.getNextDueDate())
                 .status(doctorPetVaccineRequestDTO.getStatus())
                 .notes(doctorPetVaccineRequestDTO.getNotes())
