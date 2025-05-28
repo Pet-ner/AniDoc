@@ -13,7 +13,10 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   const pathname = usePathname();
 
   // 로그인 페이지 여부 확인
-  const isAuthPage = pathname === "/login" || pathname.includes("/register");
+  const isAuthPage =
+    pathname === "/login" ||
+    pathname.includes("/register") ||
+    pathname.includes("/auth-register");
 
   // 로그인 페이지는 Sidebar와 Header 표시하지 않음
   if (isAuthPage) {
