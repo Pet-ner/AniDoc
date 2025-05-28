@@ -22,19 +22,19 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/doctor/vaccins")
-@Tag(name = "의료진 반려동물 예방접종", description = "DoctorPetVaccin 관련 API")
+@RequestMapping("/api/doctor/vaccines")
+@Tag(name = "의료진 반려동물 예방접종", description = "DoctorPetVaccine 관련 API")
 public class DoctorPetVaccineController {
-    @Autowired
+//    @Autowired
     private final DoctorPetVaccineService doctorPetVaccineService;
     private final UserRepository userRepository;
 
     //반려동물 등록(예방접종)
-    @PostMapping("/{petId}/vaccinreg")
+    @PostMapping("/{petId}/vaccinereg")
     @Operation(summary = "의료진 반려동물 예방접종 등록", description = "의료진 반려동물 예방접종 등록")
     public ResponseEntity<?> registerPetVaccine(
             @PathVariable Long petId,
-            @Valid @RequestBody DoctorPetVaccineRequestDTO doctorPetVaccinRequestDTO,
+            @Valid @RequestBody DoctorPetVaccineRequestDTO doctorPetVaccineRequestDTO,
             BindingResult bindingResult,
             @AuthenticationPrincipal UserDetails currentUser){
         if (bindingResult.hasErrors()) {
@@ -46,7 +46,7 @@ public class DoctorPetVaccineController {
         User doctor = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
 
-        Vaccination vaccination = doctorPetVaccineService.registerVaccination(petId, doctorPetVaccinRequestDTO, doctor);;
+        Vaccination vaccination = doctorPetVaccineService.registerVaccination(petId, doctorPetVaccineRequestDTO, doctor);;
         DoctorPetVaccineResponseDTO doctorPetVaccinResponseDTO = new DoctorPetVaccineResponseDTO(vaccination);
 
         return ResponseEntity.ok(doctorPetVaccinResponseDTO);

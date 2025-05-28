@@ -36,6 +36,4 @@ public class OwnerPetVaccineService {
         return new OwnerPetVaccineDTO(vaccination);
     }
 
-    // 알림기능 여기다 생성(7일전)
-
 }
