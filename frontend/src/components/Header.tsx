@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
-import { Bell, Calendar, Megaphone, User, ChevronDown } from "lucide-react";
+import { Bell, Calendar, Megaphone, User, ChevronDown, Syringe } from "lucide-react"; // Syringe 아이콘 추가
 import NotificationsModal from "./NotificationsModal";
 import NotificationsList from "@/components/NotificationsList";
 import { formatTimeForNotification } from "@/utils/formatTimeForNotification";
@@ -21,6 +21,13 @@ interface NotificationDto {
     reservationId?: number;
     reservationDate?: string; // LocalDate 형식
     reservationTime?: string; // LocalTime 형식
+    // 예방접종 알림 데이터 추가
+    petId?: number;
+    petName?: string;
+    vaccineName?: string;
+    nextDueDate?: string;
+    round?: number;
+    scheduleWeeks?: string;
   };
 }
 
@@ -314,6 +321,22 @@ export default function Header() {
           }
           break;
 
+        case "VACCINATION":
+          // 예방접종 알림 처리
+          try {
+            if (notification.data?.petId) {
+              // 반려동물 상세 페이지로 이동
+              await router.push(`/ownerpet/${notification.data.petId}`);
+            } else {
+              // 반려동물 관리 페이지로 이동
+              await router.push("/ownerpet");
+            }
+          } catch (error) {
+            console.error("반려동물 페이지 이동 중 오류:", error);
+            await router.push("/ownerpet");
+          }
+          break;
+
         default:
           break;
       }
@@ -411,6 +434,7 @@ export default function Header() {
     }
   }, [showAllNotifications]); // currentPage 제거, showAllNotifications만 감지
 
+  // 알림 아이콘 함수 (예방접종 알림 추가)
   const getNotificationIcon = (notification: NotificationDto) => {
     if (notification.type === "NOTICE") {
       return <Megaphone className="text-blue-500" size={20} />;
@@ -418,7 +442,59 @@ export default function Header() {
     if (notification.type === "RESERVATION") {
       return <Calendar className="text-teal-500" size={20} />;
     }
+    if (notification.type === "VACCINATION") {
+      return <Syringe className="text-purple-500" size={20} />; // 백신 알림 아이콘을 보라색 주사기로 변경
+    }
     return <Bell className="text-gray-500" size={20} />;
+  };
+
+  // 알림 내용 렌더링 함수 (예방접종 알림 상세 정보 표시)
+  const renderNotificationContent = (notification: NotificationDto) => {
+    if (notification.type === "VACCINATION" && notification.data) {
+      return (
+        <div>
+          <p
+            className={`text-sm ${
+              notification.isRead ? "text-gray-500" : "text-gray-800"
+            }`}
+          >
+            {notification.content}
+          </p>
+          {notification.data.nextDueDate && (
+            <p className="text-xs text-gray-600 mt-1">
+              예정일: {notification.data.nextDueDate}
+            </p>
+          )}
+          {notification.data.scheduleWeeks && (
+            <p className="text-xs text-gray-600">
+              {notification.data.scheduleWeeks}
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <p
+        className={`text-sm ${
+          notification.isRead ? "text-gray-500" : "text-gray-800"
+        }`}
+      >
+        {notification.content}
+      </p>
+    );
+  };
+
+  // 알림 스타일 함수 (예방접종 알림 강조)
+  const getNotificationStyle = (notification: NotificationDto) => {
+    const baseStyle =
+      "p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer";
+
+    if (notification.type === "VACCINATION" && !notification.isRead) {
+      return `${baseStyle} bg-green-50 border-l-4 border-l-green-500`;
+    }
+
+    return baseStyle;
   };
 
   if (!user) return null;
@@ -491,7 +567,7 @@ export default function Header() {
                           .map((notification) => (
                             <div
                               key={notification.id}
-                              className="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                              className={getNotificationStyle(notification)}
                               onClick={() =>
                                 handleNotificationClick(notification)
                               }
@@ -501,9 +577,7 @@ export default function Header() {
                                   {getNotificationIcon(notification)}
                                 </div>
                                 <div className="flex-1">
-                                  <p className="text-sm text-gray-800">
-                                    {notification.content}
-                                  </p>
+                                  {renderNotificationContent(notification)}
                                   <p className="text-xs text-gray-500 mt-1">
                                     {formatTimeForNotification(
                                       notification.createdAt
@@ -539,9 +613,7 @@ export default function Header() {
                                   {getNotificationIcon(notification)}
                                 </div>
                                 <div className="flex-1">
-                                  <p className="text-sm text-gray-500">
-                                    {notification.content}
-                                  </p>
+                                  {renderNotificationContent(notification)}
                                   <p className="text-xs text-gray-500 mt-1">
                                     {formatTimeForNotification(
                                       notification.createdAt
