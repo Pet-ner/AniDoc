@@ -23,6 +23,8 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     return <>{children}</>;
   }
 
+  const isProfilePage = pathname.includes("/profile");
+
   // 프로필 페이지는 Sidebar만 숨김
   if (isProfilePage) {
     return (

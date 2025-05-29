@@ -146,6 +146,15 @@ public class UserController {
         return ResponseEntity.ok(staffList);
     }
 
+    // ✅ 프로필용 유저 조회
+    @Operation(summary = "프로필 정보 조회", description = "프로필 업데이트용 정보를 조회합니다.")
+    @GetMapping("/me/profile")
+    public ResponseEntity<UserUpdateResponseDto> getUpdateUser(@AuthenticationPrincipal SecurityUser securityUser) {
+        User user = userService.getUserById(securityUser.getId());
+        return ResponseEntity.ok(UserUpdateResponseDto.fromEntity(user));
+    }
+
+
     //📍 STATUS
 
     @GetMapping("/me/status")
@@ -164,7 +173,7 @@ public class UserController {
 
     // ✅ 현재 사용자 정보 업데이트
     @Operation(summary = "현재 사용자 정보 업데이트", description = "현재 인증된 사용자의 정보를 업데이트합니다.")
-    @PutMapping("/me")
+    @PutMapping("/me/update")
     public ResponseEntity<UserResponseDto> updateCurrentUser(
             @AuthenticationPrincipal SecurityUser securityUser,
             @Valid @RequestBody UserUpdateResponseDto updateDto) {

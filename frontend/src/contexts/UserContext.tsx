@@ -20,7 +20,7 @@ interface User {
   userRole: string;
   email?: string;
   password?: string;
-  vetId?: VetInfo;
+  vetInfoId?: number;
   phoneNumber?: string;
   emergencyContact?: string;
 }

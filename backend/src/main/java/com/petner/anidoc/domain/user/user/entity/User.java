@@ -54,7 +54,7 @@ public class User extends BaseEntity implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private UserStatus status= UserStatus.ON_DUTY;;
+    private UserStatus status;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "sso_provider")

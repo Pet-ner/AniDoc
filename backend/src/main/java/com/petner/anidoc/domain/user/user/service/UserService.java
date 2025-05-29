@@ -243,7 +243,11 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        user.setPassword(dto.getPassword());
+        // password가 null이거나 비어있으면 기존 비밀번호 유지
+        String password = dto.getPassword();
+        if (password != null && !password.isEmpty()) {
+            user.setPassword(password);
+        }
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setEmergencyContact(dto.getEmergencyContact());
 

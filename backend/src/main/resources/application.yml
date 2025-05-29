@@ -10,12 +10,6 @@ spring:
   config:
     import: optional:application-secret.yml
 
-  datasource:
-    url: jdbc:mysql://localhost:3306/anidocdb?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: petner
-    password: petner
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
   jpa:
     open-in-view: false
     hibernate:
