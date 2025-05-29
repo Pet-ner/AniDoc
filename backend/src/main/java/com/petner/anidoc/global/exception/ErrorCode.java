@@ -31,7 +31,24 @@ public enum ErrorCode {
     VET_NOT_FOUND(HttpStatus.NOT_FOUND,"병원이 존재하지 않습니다."),
 
     // 채팅 관련 오류
-    ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방이 존재하지 않습니다.");
+    ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방이 존재하지 않습니다."),
+
+    // 진료 기록 관련 오류
+    MEDICAL_RECORD_NOT_FOUND(HttpStatus.NOT_FOUND, "진료 기록이 존재하지 않습니다."),
+    NO_MEDICAL_RECORD_MANAGE_PERMISSION(HttpStatus.FORBIDDEN, "진료 기록 관리 권한이 없습니다."),
+
+    // 처방전 관련 오류
+    PRESCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "처방전이 존재하지 않습니다."),
+    NO_PRESCRIPTION_MANAGE_PERMISSION(HttpStatus.FORBIDDEN, "처방전 관리 권한이 없습니다."),
+
+    // 약품 관련 오류
+    MEDICINE_NOT_FOUND(HttpStatus.NOT_FOUND, "약품이 존재하지 않습니다."),
+    NO_MEDICINE_MANAGE_PERMISSION(HttpStatus.FORBIDDEN, "약품 관리 권한이 없습니다."),
+    MEDICINE_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 등록된 약품입니다."),
+    INVALID_STOCK_VALUE(HttpStatus.BAD_REQUEST, "재고는 0 이상이어야 합니다."),
+    INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "재고가 부족합니다."),
+    INVALID_DECREASE_AMOUNT(HttpStatus.BAD_REQUEST, "차감할 수량은 0보다 커야 합니다."),
+    INVALID_INCREASE_AMOUNT(HttpStatus.BAD_REQUEST, "증가할 수량은 0보다 커야 합니다.");
 
     // HTTP 상태 코드와 메시지
     private final HttpStatus httpStatus;
