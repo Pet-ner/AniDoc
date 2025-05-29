@@ -237,9 +237,22 @@ public class UserService {
     }
 
 
+    @Transactional
+    public User updateuser(Long userId, UserUpdateResponseDto dto){
+        // userId로 User 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        user.setPassword(dto.getPassword());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setEmergencyContact(dto.getEmergencyContact());
+
+        return user;
+    }
+
 
     @Transactional
-    public User updateUser(Long userId, SocialSignUpRequestDto updateDto) {
+    public User updateSocialUser(Long userId, SocialSignUpRequestDto updateDto) {
         // userId로 User 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));

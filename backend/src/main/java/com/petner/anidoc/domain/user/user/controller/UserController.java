@@ -2,7 +2,6 @@ package com.petner.anidoc.domain.user.user.controller;
 
 import com.petner.anidoc.domain.user.user.dto.*;
 import com.petner.anidoc.domain.user.user.entity.UserStatus;
-import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import com.petner.anidoc.domain.user.user.service.AuthTokenService;
 import com.petner.anidoc.domain.user.user.service.UserService;
 import com.petner.anidoc.domain.user.user.entity.User;
@@ -136,6 +135,7 @@ public class UserController {
         return ResponseEntity.ok(UserResponseDto.fromEntity(user));
     }
 
+
     // ✅ 의료진 조회
     @Operation(summary = "의료진 목록 조회", description = "근무 중인 의료진 목록을 조회합니다.")
     @GetMapping("/staff")
@@ -162,6 +162,16 @@ public class UserController {
         return ResponseEntity.ok("상태 변경이 반영되었습니다.");
     }
 
+    // ✅ 현재 사용자 정보 업데이트
+    @Operation(summary = "현재 사용자 정보 업데이트", description = "현재 인증된 사용자의 정보를 업데이트합니다.")
+    @PutMapping("/me")
+    public ResponseEntity<UserResponseDto> updateCurrentUser(
+            @AuthenticationPrincipal SecurityUser securityUser,
+            @Valid @RequestBody UserUpdateResponseDto updateDto) {
+
+        User updatedUser = userService.updateuser(securityUser.getId(), updateDto);
+        return ResponseEntity.ok(UserResponseDto.fromEntity(updatedUser));
+    }
 
 
 }
