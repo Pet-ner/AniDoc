@@ -19,4 +19,7 @@ public interface SurgeryRecordRepository extends JpaRepository<SurgeryRecord, Lo
 
     Optional<SurgeryRecord> findByMedicalRecordId(Long medicalRecordId);
 
+    Optional<SurgeryRecord> findByMedicalRecordIdAndIsDeletedFalse(Long medicalRecordId);
+
+
 }

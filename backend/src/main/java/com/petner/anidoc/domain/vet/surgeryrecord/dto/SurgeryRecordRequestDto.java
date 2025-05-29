@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SurgeryRecordRequestDto {
+    private Long id;
     private Long medicalRecordId;
     private Long petId;
 
