@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login, isLoggedIn } = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +25,8 @@ export default function LoginPage() {
       }
 
       // URL에 isSocialLogin이 있는 경우에만 체크
-      if (!window.location.search.includes("isSocialLogin")) {
+      const isSocialLogin = searchParams.get("isSocialLogin") === "true";
+      if (!isSocialLogin) {
         return;
       }
 
