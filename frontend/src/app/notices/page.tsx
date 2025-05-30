@@ -4,7 +4,7 @@ import { useUser } from "@/contexts/UserContext";
 import { PlusCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 
 interface Notice {
   id: number;
@@ -21,7 +21,8 @@ interface PageResponse<T> {
   number: number;
 }
 
-export default function NoticesPage() {
+// 공지사항 컨텐츠 컴포넌트
+function NoticesContent() {
   const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -273,5 +274,22 @@ export default function NoticesPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// 메인 컴포넌트
+export default function NoticesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 flex justify-center items-center">
+          <div className="text-center text-gray-600">
+            공지사항을 불러오는 중...
+          </div>
+        </div>
+      }
+    >
+      <NoticesContent />
+    </Suspense>
   );
 }
