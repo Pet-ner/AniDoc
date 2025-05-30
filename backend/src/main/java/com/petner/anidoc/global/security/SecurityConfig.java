@@ -29,6 +29,7 @@ public class SecurityConfig {
     private final CustomOauth2AuthenticationSuccessHandler customAuthenticationSuccessHandler;
 
     private final CustomAuthorizationRequestResolver customAuthorizationRequestResolver;
+    @Lazy
     private final Rq rq;
 
     // ✅ JWT 인증 필터 빈 등록
