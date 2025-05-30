@@ -55,6 +55,11 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        if ("OPTIONS".equals(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String uri = request.getRequestURI();
 
         // 필터를 적용하지 않을 조건
