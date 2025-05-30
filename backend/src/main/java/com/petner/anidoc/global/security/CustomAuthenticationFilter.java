@@ -57,24 +57,20 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
 
-       try {
-           // 필터를 적용하지 않을 조건
-           if (!uri.startsWith("/api/") ||
-                   List.of("/api/users/signup", "/api/users/login", "/api/users/register").contains(uri)) {
-               filterChain.doFilter(request, response);
-               return;
-           }
+        // 필터를 적용하지 않을 조건
+        if (!uri.startsWith("/api/") || uri.startsWith("/api/vets") ||
+                List.of("/api/users/signup", "/api/users/login", "/api/users/register").contains(uri)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-           // 토큰 처리 및 사용자 인증
-           Optional.ofNullable(getAuthTokensFromRequest())
-                   .ifPresent(authTokens ->
-                           Optional.ofNullable(rq.getUserByAccessToken(authTokens.accessToken))
-                                   .or(() -> Optional.ofNullable(refreshAccessTokenByRefreshToken(authTokens.refreshToken)))
-                                   .ifPresent(rq::setLogin)
-                   );
-       }catch (Exception e){
-           e.printStackTrace();
-       }
+        // 토큰 처리 및 사용자 인증
+        Optional.ofNullable(getAuthTokensFromRequest())
+                .ifPresent(authTokens ->
+                        Optional.ofNullable(rq.getUserByAccessToken(authTokens.accessToken))
+                                .or(() -> Optional.ofNullable(refreshAccessTokenByRefreshToken(authTokens.refreshToken)))
+                                .ifPresent(rq::setLogin)
+                );
         // 다음 필터로 요청 전달
         filterChain.doFilter(request, response);
     }
