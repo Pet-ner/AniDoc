@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
 
-// useSearchParams 로직을 사용하는 컴포넌트
-function LoginContent() {
+export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, isLoggedIn } = useUser();
@@ -53,8 +52,7 @@ function LoginContent() {
     };
 
     checkLoginStatus();
-  }, [isLoggedIn, login, router, searchParams]);
-
+  }, [isLoggedIn, login, router]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -108,164 +106,155 @@ function LoginContent() {
   };
 
   return (
-    <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-lg shadow-md">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-[#49BEB7] mb-2">ANIDOC</h1>
-        <h2 className="text-gray-600 text-sm">동물병원 관리 시스템</h2>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-          {error}
-        </div>
-      )}
-
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm text-gray-700 mb-1"
-            >
-              아이디
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="이메일을 입력해주세요"
-              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-[#49BEB7] focus:border-[#49BEB7] focus:z-10 sm:text-sm"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm text-gray-700 mb-1"
-            >
-              비밀번호
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호를 입력해주세요"
-              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-[#49BEB7] focus:border-[#49BEB7] focus:z-10 sm:text-sm"
-            />
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-lg shadow-md">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-[#49BEB7] mb-2">ANIDOC</h1>
+          <h2 className="text-gray-600 text-sm">동물병원 관리 시스템</h2>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <input
-              id="remember-me"
-              name="remember-me"
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 text-[#49BEB7] focus:ring-[#49BEB7] border-gray-300 rounded"
-            />
-            <label
-              htmlFor="remember-me"
-              className="ml-2 block text-sm text-gray-700"
-            >
-              로그인 상태 유지
-            </label>
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+            {error}
           </div>
-          <div className="text-sm">
-            <a
-              href="#"
+        )}
+
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm text-gray-700 mb-1"
+              >
+                아이디
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="이메일을 입력해주세요"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-[#49BEB7] focus:border-[#49BEB7] focus:z-10 sm:text-sm"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm text-gray-700 mb-1"
+              >
+                비밀번호
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="비밀번호를 입력해주세요"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-[#49BEB7] focus:border-[#49BEB7] focus:z-10 sm:text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 text-[#49BEB7] focus:ring-[#49BEB7] border-gray-300 rounded"
+              />
+              <label
+                htmlFor="remember-me"
+                className="ml-2 block text-sm text-gray-700"
+              >
+                로그인 상태 유지
+              </label>
+            </div>
+            <div className="text-sm">
+              <a
+                href="#"
+                className="font-medium text-[#49BEB7] hover:text-[#3ea9a2]"
+              >
+                비밀번호를 잊으셨나요?
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#49BEB7] hover:bg-[#3ea9a2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#49BEB7] disabled:bg-gray-400"
+            >
+              {isLoading ? "로그인 중..." : "로그인"}
+            </button>
+          </div>
+
+          <div className="relative flex items-center py-2">
+            <div className="flex-grow border-t border-gray-300"></div>
+            <span className="flex-shrink mx-4 text-sm text-gray-600">또는</span>
+            <div className="flex-grow border-t border-gray-300"></div>
+          </div>
+
+          <div className="flex flex-col space-y-3">
+            <button
+              type="button"
+              onClick={handleKakaoLogin}
+              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-black bg-[#FEE500] hover:bg-[#F0D800]"
+            >
+              <span className="mr-2">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 18 18"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M9 1.5C4.30875 1.5 0.5 4.30875 0.5 7.75C0.5 10.025 2.01875 12.0187 4.35625 13.0812C4.16875 13.7125 3.7125 15.6625 3.6375 16.0375C3.54375 16.5125 3.825 16.5063 4.0625 16.3563C4.24375 16.2437 6.625 14.625 7.525 14.0125C8.00625 14.075 8.5 14.1125 9 14.1125C13.6913 14.1125 17.5 11.3037 17.5 7.8625C17.5 4.4212 13.6913 1.5 9 1.5Z"
+                    fill="black"
+                  />
+                </svg>
+              </span>
+              카카오 계정으로 로그인
+            </button>
+            {/* 네이버 로그인 버튼 */}
+            <button
+              type="button"
+              onClick={handleNaverLogin}
+              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white bg-[#03C75A] hover:bg-[#02b54d]"
+            >
+              <span className="mr-2">
+                <img
+                  src="/images/naver-login.png"
+                  alt="네이버 로그인"
+                  width="30"
+                  height="30"
+                />
+              </span>
+              네이버 계정으로 로그인
+            </button>
+          </div>
+        </form>
+
+        <div className="text-center mt-4">
+          <p className="text-sm text-gray-600">
+            아직 계정이 없으신가요?{" "}
+            <Link
+              href="/register"
               className="font-medium text-[#49BEB7] hover:text-[#3ea9a2]"
             >
-              비밀번호를 잊으셨나요?
-            </a>
-          </div>
+              회원가입
+            </Link>
+          </p>
         </div>
-
-        <div>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#49BEB7] hover:bg-[#3ea9a2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#49BEB7] disabled:bg-gray-400"
-          >
-            {isLoading ? "로그인 중..." : "로그인"}
-          </button>
-        </div>
-
-        <div className="relative flex items-center py-2">
-          <div className="flex-grow border-t border-gray-300"></div>
-          <span className="flex-shrink mx-4 text-sm text-gray-600">또는</span>
-          <div className="flex-grow border-t border-gray-300"></div>
-        </div>
-
-        <div className="flex flex-col space-y-3">
-          <button
-            type="button"
-            onClick={handleKakaoLogin}
-            className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-black bg-[#FEE500] hover:bg-[#F0D800]"
-          >
-            <span className="mr-2">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 18 18"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M9 1.5C4.30875 1.5 0.5 4.30875 0.5 7.75C0.5 10.025 2.01875 12.0187 4.35625 13.0812C4.16875 13.7125 3.7125 15.6625 3.6375 16.0375C3.54375 16.5125 3.825 16.5063 4.0625 16.3563C4.24375 16.2437 6.625 14.625 7.525 14.0125C8.00625 14.075 8.5 14.1125 9 14.1125C13.6913 14.1125 17.5 11.3037 17.5 7.8625C17.5 4.4212 13.6913 1.5 9 1.5Z"
-                  fill="black"
-                />
-              </svg>
-            </span>
-            카카오 계정으로 로그인
-          </button>
-          {/* 네이버 로그인 버튼 */}
-          <button
-            type="button"
-            onClick={handleNaverLogin}
-            className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white bg-[#03C75A] hover:bg-[#02b54d]"
-          >
-            <span className="mr-2">
-              <img
-                src="/images/naver-login.png"
-                alt="네이버 로그인"
-                width="30"
-                height="30"
-              />
-            </span>
-            네이버 계정으로 로그인
-          </button>
-        </div>
-      </form>
-
-      <div className="text-center mt-4">
-        <p className="text-sm text-gray-600">
-          아직 계정이 없으신가요?{" "}
-          <Link
-            href="/register"
-            className="font-medium text-[#49BEB7] hover:text-[#3ea9a2]"
-          >
-            회원가입
-          </Link>
-        </p>
       </div>
-    </div>
-  );
-}
-
-// 메인 컴포넌트
-export default function LoginPage() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Suspense fallback={<div>Loading...</div>}>
-        <LoginContent />
-      </Suspense>
     </div>
   );
 }
