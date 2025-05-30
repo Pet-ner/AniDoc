@@ -103,7 +103,9 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "http://localhost:8090"
+                "http://localhost:8090",
+                "https://www.anidoc.site",
+                "https://anidoc.site"
         ));
         configuration.setAllowCredentials(true);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
