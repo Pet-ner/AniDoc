@@ -80,7 +80,6 @@ public class Rq {
     public void setCookie(String name, String value){
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .path("/")
-                .domain("localhost")
                 .sameSite("Strict")
                 .secure(true)
                 .httpOnly(true)
