@@ -181,6 +181,7 @@ export default function MedicalRecordPage() {
                   )
                 );
               }}
+              userId={user.id}
             />
           ) : user?.userRole === "ROLE_USER" ? (
             <UserMedicalRecord

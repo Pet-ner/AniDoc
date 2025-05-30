@@ -1,49 +1,47 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ChartModal from "./ChartModal";
+import { MedicalRecord } from "../../types/medicalRecordTypes";
 
 interface ChartDetailModalProps {
   onClose: () => void;
-  record: {
-    petName: string;
-    weight?: number;
-    age?: number;
-    diagnosis?: string;
-    treatment?: string;
-    surgery?: {
-      surgeryName?: string;
-      surgeryDate?: string;
-      anesthesiaType?: string;
-      surgeryNote?: string;
-      resultUrl?: string;
-    };
-    hospitalization?: {
-      admissionDate?: string;
-      dischargeDate?: string;
-      reason?: string;
-      imageUrl?: string;
-    };
-    checkups?: {
-      checkupType?: string;
-      checkupDate?: string;
-      result?: string;
-      resultUrl?: string;
-    }[];
-    doctorName: string;
-    userName?: string;
-    reservationDate?: string;
-    reservationTime: string;
-  };
+  record: MedicalRecord;
+  onUpdate?: (record: MedicalRecord) => void;
 }
 
 export default function ChartDetailModal({
   onClose,
+  onUpdate,
   record,
 }: ChartDetailModalProps) {
   const [hospitalImageUrl, setHospitalImageUrl] = useState<string | null>(null);
   const [checkupImageUrls, setCheckupImageUrls] = useState<(string | null)[]>(
     []
   );
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  // State to hold hospitalization and surgery IDs from record prop
+  const [hospitalizationIdState, setHospitalizationIdState] = useState<
+    number | undefined
+  >(record.hospitalization?.id);
+  const [surgeryIdState, setSurgeryIdState] = useState<number | undefined>(
+    record.surgery?.id
+  );
+
+  // Effect to update IDs when record prop changes
+  useEffect(() => {
+    setHospitalizationIdState(record.hospitalization?.id);
+    setSurgeryIdState(record.surgery?.id);
+    console.log(
+      "Debug ChartDetailModal useEffect: Updated hospitalizationIdState",
+      record.hospitalization?.id
+    );
+    console.log(
+      "Debug ChartDetailModal useEffect: Updated surgeryIdState",
+      record.surgery?.id
+    );
+  }, [record.hospitalization?.id, record.surgery?.id]); // Depend on nested IDs
 
   useEffect(() => {
     const fetchCheckupUrls = async () => {
@@ -113,6 +111,16 @@ export default function ChartDetailModal({
   const formattedTime = record.reservationTime
     ? record.reservationTime.split(":").slice(0, 2).join(":")
     : "";
+
+  // Debug logs before rendering ChartModal
+  console.log(
+    "Debug ChartDetailModal: hospitalzation.id before passing to ChartModal",
+    hospitalizationIdState
+  );
+  console.log(
+    "Debug ChartDetailModal: surgery.id before passing to ChartModal",
+    surgeryIdState
+  );
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -348,7 +356,15 @@ export default function ChartDetailModal({
           </div>
         )}
 
-        <div className="flex justify-end">
+        <div className="flex justify-between">
+          <button
+            onClick={() => {
+              setShowEditModal(true);
+            }}
+            className="px-6 py-3 rounded bg-teal-600 text-white text-lg hover:bg-teal-700"
+          >
+            수정
+          </button>
           <button
             onClick={onClose}
             className="px-6 py-3 rounded bg-gray-100 text-gray-700 text-lg hover:bg-gray-200"
@@ -357,6 +373,104 @@ export default function ChartDetailModal({
           </button>
         </div>
       </div>
+
+      {showEditModal && record && (
+        <>
+          <ChartModal
+            onClose={() => setShowEditModal(false)}
+            record={{
+              id: record.id,
+              petName: record.petName,
+              weight: record.weight,
+              age: record.age,
+              diagnosis: record.diagnosis,
+              treatment: record.treatment,
+              doctorName: record.doctorName,
+              userName: record.userName,
+              reservationDate: record.reservationDate,
+              reservationTime: record.reservationTime,
+              userId: record.userId,
+              doctorId: record.doctorId,
+              reservationId: record.reservationId,
+              symptom: record.symptom,
+              status: record.status,
+              hasMedicalRecord: record.hasMedicalRecord,
+              petId: record.petId,
+              surgery: record.surgery
+                ? {
+                    id: surgeryIdState,
+                    surgeryName: record.surgery.surgeryName,
+                    surgeryDate: record.surgery.surgeryDate,
+                    anesthesiaType: record.surgery.anesthesiaType,
+                    surgeryNote: record.surgery.surgeryNote,
+                    resultUrl: record.surgery.resultUrl,
+                  }
+                : undefined,
+              hospitalization: record.hospitalization
+                ? {
+                    id: hospitalizationIdState,
+                    admissionDate: record.hospitalization.admissionDate,
+                    dischargeDate: record.hospitalization.dischargeDate,
+                    reason: record.hospitalization.reason,
+                    imageUrl: record.hospitalization.imageUrl,
+                  }
+                : undefined,
+              checkups: record.checkups
+                ? record.checkups.map((checkup) => ({
+                    id: checkup.id,
+                    checkupType: checkup.checkupType,
+                    checkupDate: checkup.checkupDate,
+                    result: checkup.result,
+                    resultUrl: checkup.resultUrl,
+                  }))
+                : undefined,
+            }}
+            currentUserId={record.doctorId || 0}
+            mode="edit"
+            hospitalizationId={hospitalizationIdState}
+            surgeryId={surgeryIdState}
+            onSaved={(id: number, reservationId: number) => {
+              setShowEditModal(false);
+              onClose();
+              if (onUpdate) {
+                const updatedRecord: MedicalRecord = {
+                  ...record,
+                  id: id,
+                  reservationId: reservationId,
+                  petName: record.petName,
+                  weight: record.weight,
+                  age: record.age,
+                  diagnosis: record.diagnosis,
+                  treatment: record.treatment,
+                  doctorName: record.doctorName,
+                  userName: record.userName,
+                  reservationDate: record.reservationDate,
+                  reservationTime: record.reservationTime,
+                  userId: record.userId,
+                  doctorId: record.doctorId,
+                  symptom: record.symptom,
+                  status: record.status,
+                  hasMedicalRecord: true,
+                  petId: record.petId,
+                  surgery: record.surgery
+                    ? { ...record.surgery, id: surgeryIdState }
+                    : undefined,
+                  hospitalization: record.hospitalization
+                    ? { ...record.hospitalization, id: hospitalizationIdState }
+                    : undefined,
+                  checkups: record.checkups
+                    ? record.checkups.map((checkup) => ({
+                        ...checkup,
+                        id: checkup.id,
+                      }))
+                    : undefined,
+                };
+                onUpdate(updatedRecord);
+              }
+            }}
+          />
+        </>
+      )}
     </div>
   );
 }
