@@ -39,61 +39,71 @@ export default function CreateReservation() {
     setSelectedDate(today);
   }, []);
 
-  // 유저의 반려동물 목록 조회
+  // 유저의 반려동물 목록 조회 (API 연동)
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
 
     const fetchPets = async () => {
       try {
         setLoading(true);
-        // 펫 조회 API 호출 (일단 샘플 데이터로..)
-        // const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/pets/user/${user.id}`);
-        // if (!response.ok) throw new Error("반려동물 정보를 불러오는데 실패했습니다.");
-        // const data = await response.json();
+        console.log("반려동물 목록 조회 시작, userId:", user.id);
 
-        // 샘플 데이터
-        const mockData = [
-          { id: 1, name: "몽이", species: "강아지", breed: "비숑" },
-          { id: 2, name: "나비", species: "고양이", breed: "샴" },
-        ];
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/pets?ownerId=${user.id}`,
+          {
+            credentials: "include",
+          }
+        );
 
-        setPets(mockData);
-        if (mockData.length > 0) {
-          setSelectedPet(mockData[0].id);
+        if (!response.ok) {
+          throw new Error("반려동물 정보를 불러오는데 실패했습니다.");
+        }
+
+        const data = await response.json();
+        console.log("반려동물 목록:", data);
+
+        setPets(data);
+        if (data.length > 0) {
+          setSelectedPet(data[0].id);
         }
       } catch (error) {
         console.error("반려동물 정보 로드 오류:", error);
+        alert("반려동물 정보를 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchPets();
-  }, [user]);
+  }, [user?.id]);
 
-  // 날짜 선택 시 해당 날짜의 예약 가능 시간 조회
+  // 날짜 선택 시 해당 날짜의 예약 가능 시간 조회 (API 연동)
   useEffect(() => {
     if (!selectedDate) return;
 
     const fetchTimeSlots = async () => {
       try {
         setLoading(true);
-        // 예약 가능 시간 조회 API 호출
+        console.log("예약 가능 시간 조회 시작, date:", selectedDate);
+
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/reservations/available-slots/${selectedDate}`,
           {
             credentials: "include",
           }
         );
-        if (!response.ok)
+
+        if (!response.ok) {
           throw new Error("예약 가능 시간을 불러오는데 실패했습니다.");
+        }
+
         const data = await response.json();
-        console.log(data);
+        console.log("예약 가능 시간:", data);
+
         setTimeSlots(data);
 
         // 가능한 시간 중에 가장 첫 번째 슬롯 기본 선택
-        // @ts-ignore
-        const firstAvailable = data.find((slot) => slot.available);
+        const firstAvailable = data.find((slot: TimeSlot) => slot.available);
         if (firstAvailable) {
           setSelectedTime(firstAvailable.time);
         } else {
@@ -101,6 +111,7 @@ export default function CreateReservation() {
         }
       } catch (error) {
         console.error("예약 가능 시간 로드 오류:", error);
+        alert("예약 가능 시간을 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
@@ -109,12 +120,17 @@ export default function CreateReservation() {
     fetchTimeSlots();
   }, [selectedDate]);
 
-  // 예약 등록
+  // 예약 등록 (API 연동)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!selectedPet || !selectedDate || !selectedTime || !type) {
       alert("모든 필수 항목을 입력해주세요.");
+      return;
+    }
+
+    if (!user?.id) {
+      alert("사용자 정보가 없습니다.");
       return;
     }
 
@@ -129,10 +145,9 @@ export default function CreateReservation() {
         type,
       };
 
-      // 예약 등록 API 호출
       console.log("예약 등록 데이터:", requestData);
+
       const response = await fetch(
-        // @ts-ignore
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/reservations?userId=${user.id}`,
         {
           method: "POST",
@@ -150,6 +165,8 @@ export default function CreateReservation() {
       }
 
       const data = await response.json();
+      console.log("예약 등록 성공:", data);
+
       alert("예약 등록에 성공했습니다.");
       router.push("/");
     } catch (error: any) {
@@ -160,7 +177,15 @@ export default function CreateReservation() {
     }
   };
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-yellow-700">로그인이 필요합니다.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -178,14 +203,20 @@ export default function CreateReservation() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <Dog className="mr-2 text-teal-500" size={18} />
-              반려동물 선택
+              반려동물 선택 <span className="text-red-500 ml-1">*</span>
             </label>
-            {pets.length === 0 ? (
+            {loading && pets.length === 0 ? (
+              <div className="bg-gray-50 p-4 rounded-md">
+                <p className="text-sm text-gray-600">
+                  반려동물 목록을 불러오는 중...
+                </p>
+              </div>
+            ) : pets.length === 0 ? (
               <div className="bg-yellow-50 p-4 rounded-md">
                 <p className="text-sm text-yellow-700">
                   등록된 반려동물이 없습니다.{" "}
                   <Link
-                    href="/pets"
+                    href="/ownerpet"
                     className="font-medium text-teal-600 hover:text-teal-500"
                   >
                     반려동물 등록하기
@@ -227,7 +258,7 @@ export default function CreateReservation() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <FileText className="mr-2 text-teal-500" size={18} />
-              진료 유형
+              진료 유형 <span className="text-red-500 ml-1">*</span>
             </label>
             <div className="grid grid-cols-2 gap-3">
               <div
@@ -281,7 +312,7 @@ export default function CreateReservation() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                 <CalendarIcon className="mr-2 text-teal-500" size={18} />
-                예약 날짜
+                예약 날짜 <span className="text-red-500 ml-1">*</span>
               </label>
               <div className="relative">
                 <input
@@ -290,6 +321,7 @@ export default function CreateReservation() {
                   onChange={(e) => setSelectedDate(e.target.value)}
                   min={formatDate(new Date())}
                   className="w-full border-gray-300 rounded-md shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                  required
                 />
               </div>
             </div>
@@ -298,27 +330,41 @@ export default function CreateReservation() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                 <Clock className="mr-2 text-teal-500" size={18} />
-                예약 시간
+                예약 시간 <span className="text-red-500 ml-1">*</span>
               </label>
-              <div className="grid grid-cols-4 gap-2">
-                {timeSlots.map((slot) => (
-                  <button
-                    key={slot.time}
-                    type="button"
-                    disabled={!slot.available}
-                    onClick={() => setSelectedTime(slot.time)}
-                    className={`py-2 px-3 rounded-md text-center text-sm transition-colors duration-200 ${
-                      selectedTime === slot.time
-                        ? "bg-teal-500 text-white"
-                        : slot.available
-                        ? "bg-white border border-gray-300 hover:border-teal-500 text-gray-700"
-                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    }`}
-                  >
-                    {slot.time.substring(0, 5)}
-                  </button>
-                ))}
-              </div>
+              {loading && timeSlots.length === 0 ? (
+                <div className="bg-gray-50 p-4 rounded-md">
+                  <p className="text-sm text-gray-600">
+                    예약 가능 시간을 불러오는 중...
+                  </p>
+                </div>
+              ) : timeSlots.length === 0 ? (
+                <div className="bg-yellow-50 p-4 rounded-md">
+                  <p className="text-sm text-yellow-700">
+                    선택한 날짜에 예약 가능한 시간이 없습니다.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-4 gap-2">
+                  {timeSlots.map((slot) => (
+                    <button
+                      key={slot.time}
+                      type="button"
+                      disabled={!slot.available}
+                      onClick={() => setSelectedTime(slot.time)}
+                      className={`py-2 px-3 rounded-md text-center text-sm transition-colors duration-200 ${
+                        selectedTime === slot.time
+                          ? "bg-teal-500 text-white"
+                          : slot.available
+                          ? "bg-white border border-gray-300 hover:border-teal-500 text-gray-700"
+                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    >
+                      {slot.time.substring(0, 5)}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

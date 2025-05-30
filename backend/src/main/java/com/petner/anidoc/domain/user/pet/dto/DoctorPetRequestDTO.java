@@ -21,7 +21,7 @@ public class DoctorPetRequestDTO{
     private Gender gender;
 
     @NotNull(message = "중성화 여부를 선택하세요.")
-    private boolean isNeutered;
+    private Boolean isNeutered;
 
     private String species;
 
@@ -40,8 +40,8 @@ public class DoctorPetRequestDTO{
     @Size(message = "반려동물의 특이사항 입력해주세요.(알러지, 질병 등)")
     private String specialNote;
     private LocalDate neuteredDate;     //중성화 일자
-    private Boolean isDeceased;     //사명여부
-    private LocalDate deceasedDate;     //사명일자
+    private Boolean isDeceased;     //사망여부
+    private LocalDate deceasedDate;     //사망일자
     private Integer surgeryCount;     //수술횟수
     private Integer hospitalizationCount;     //입원횟수
     private LocalDate lastVisitDate;     //마지막내원일자

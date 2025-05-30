@@ -21,7 +21,7 @@ interface PageResponse<T> {
   number: number;
 }
 
-// 검색 파라미터를 사용하는 컴포넌트
+// 공지사항 컨텐츠 컴포넌트
 function NoticesContent() {
   const { user } = useUser();
   const router = useRouter();
@@ -280,7 +280,15 @@ function NoticesContent() {
 // 메인 컴포넌트
 export default function NoticesPage() {
   return (
-    <Suspense fallback={<div className="p-8">로딩 중...</div>}>
+    <Suspense
+      fallback={
+        <div className="p-8 flex justify-center items-center">
+          <div className="text-center text-gray-600">
+            공지사항을 불러오는 중...
+          </div>
+        </div>
+      }
+    >
       <NoticesContent />
     </Suspense>
   );

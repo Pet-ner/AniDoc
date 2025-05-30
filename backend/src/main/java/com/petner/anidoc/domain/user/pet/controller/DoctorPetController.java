@@ -34,8 +34,7 @@ public class DoctorPetController {
     public ResponseEntity<?> updatePetByDoctor(
             @PathVariable Long petId,
             @Valid @RequestBody DoctorPetRequestDTO doctorPetRequestDTO,
-            BindingResult bindingResult,
-            @AuthenticationPrincipal User user) {
+            BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
             String errorMsg = bindingResult.getFieldErrors().stream()

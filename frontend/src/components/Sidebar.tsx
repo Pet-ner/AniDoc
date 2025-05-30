@@ -12,6 +12,8 @@ import {
   FilePen,
   ChevronRight,
   Megaphone,
+  Package,
+  Syringe,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -104,7 +106,7 @@ export default function Sidebar() {
                   "/doctorpetvaccine"
                 )}`}
               >
-                <FilePen size={20} className="mr-3" />
+                <Syringe size={20} className="mr-3" />
                 <span>접종 관리</span>
               </Link>
             )}

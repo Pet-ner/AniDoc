@@ -3,9 +3,9 @@ server:
 custom:
   site:
     name: "AniDoc"
-    cookieDomain: "localhost"
-    frontUrl: "http://localhost:3000"
-    backUrl: "$http://localhost:8080"
+    cookieDomain: "anidoc.site"
+    frontUrl: "https://anidoc.site"
+    backUrl: "https://api.anidoc.site"
 
 
 spring:
