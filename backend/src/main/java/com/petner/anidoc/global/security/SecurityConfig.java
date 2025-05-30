@@ -98,7 +98,7 @@ public class SecurityConfig {
                 );
 
         // ✅ JWT 필터 등록
-        http.addFilterBefore(customAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+//        http.addFilterBefore(customAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
