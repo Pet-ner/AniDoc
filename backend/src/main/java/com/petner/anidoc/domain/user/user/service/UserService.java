@@ -244,10 +244,13 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         // password가 null이거나 비어있으면 기존 비밀번호 유지
+
         String password = dto.getPassword();
         if (password != null && !password.isEmpty()) {
-            user.setPassword(password);
+            // 비밀번호 해싱 후 저장
+            user.setPassword(passwordEncoder.encode(password));
         }
+
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setEmergencyContact(dto.getEmergencyContact());
 
