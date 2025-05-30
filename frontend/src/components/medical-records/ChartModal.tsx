@@ -125,9 +125,7 @@ export default function ChartModal({
         testResult: checkup.result || "",
         testFile: null,
         testFileUrl: checkup.resultUrl,
-        testFilePreview: checkup.resultUrl?.startsWith("http")
-          ? checkup.resultUrl
-          : undefined,
+        testFilePreview: undefined,
       })
     ) || []
   );
@@ -149,7 +147,7 @@ export default function ChartModal({
     reason: record?.hospitalization?.reason ?? "",
     imageUrl: record?.hospitalization?.imageUrl ?? null,
     imageFile: null as File | null,
-    imagePreview: record?.hospitalization?.imageUrl ?? null,
+    imagePreview: null as string | null,
   });
 
   const handleSurgeryChange = (
@@ -174,6 +172,87 @@ export default function ChartModal({
       hospitalizationRecord
     );
   }, [testRecords, surgeryRecord, hospitalizationRecord]);
+
+  useEffect(() => {
+    const fetchPresignedUrls = async () => {
+      // Fetch hospitalization image URL
+      const originalHospitalImageUrl = record?.hospitalization?.imageUrl;
+      if (originalHospitalImageUrl) {
+        const s3Key = originalHospitalImageUrl.split(".com/")[1];
+        if (s3Key) {
+          try {
+            const res = await fetch(
+              `${
+                process.env.NEXT_PUBLIC_API_BASE_URL
+              }/api/s3/presigned-url/view?s3Key=${encodeURIComponent(s3Key)}`,
+              { credentials: "include" }
+            );
+            if (res.ok) {
+              const data = await res.json();
+              setHospitalizationRecord((prev) => ({
+                ...prev,
+                imagePreview: data.url,
+              }));
+            } else {
+              console.error(
+                "Failed to fetch hospitalization presigned URL",
+                res.status
+              );
+            }
+          } catch (error) {
+            console.error(
+              "Error fetching hospitalization presigned URL",
+              error
+            );
+          }
+        }
+      }
+
+      // Fetch checkup image URLs
+      if (record?.checkups && record.checkups.length > 0) {
+        const fetchUrls = await Promise.all(
+          record.checkups.map(async (checkup) => {
+            if (!checkup.resultUrl) return undefined; // Return undefined if no URL
+            const s3Key = checkup.resultUrl.split(".com/")[1];
+            if (!s3Key) return undefined; // Return undefined if s3Key is invalid
+
+            try {
+              const res = await fetch(
+                `${
+                  process.env.NEXT_PUBLIC_API_BASE_URL
+                }/api/s3/presigned-url/view?s3Key=${encodeURIComponent(s3Key)}`,
+                { credentials: "include" }
+              );
+              if (res.ok) {
+                const data = await res.json();
+                return data.url; // Return the presigned URL
+              } else {
+                console.error(
+                  `Failed to fetch checkup presigned URL for ${s3Key}`,
+                  res.status
+                );
+                return undefined; // Return undefined on fetch error
+              }
+            } catch (error) {
+              console.error(
+                `Error fetching checkup presigned URL for ${s3Key}`,
+                error
+              );
+              return undefined; // Return undefined on exception
+            }
+          })
+        );
+        setTestRecords((prevRecords) =>
+          prevRecords.map((rec, index) => ({
+            ...rec,
+            testFilePreview: fetchUrls[index], // Update preview URL
+          }))
+        );
+      }
+    };
+
+    fetchPresignedUrls();
+  }, [record?.hospitalization?.imageUrl, record?.checkups]); // Re-run effect if original URLs or checkups array change
 
   const handleTestFileUpload = async (idx: number, file: File | null) => {
     if (!file) return;
