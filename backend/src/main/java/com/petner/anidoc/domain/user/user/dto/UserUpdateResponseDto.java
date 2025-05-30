@@ -22,6 +22,8 @@ public class UserUpdateResponseDto {
         private Long vetInfoId; // 소속 병원 ID
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
+        private boolean isSocialLogin; // 소셜 로그인 여부
+
 
 
 
@@ -36,6 +38,7 @@ public class UserUpdateResponseDto {
                     .vetInfoId(user.getVetInfo().getId())
                     .createdAt(user.getCreatedAt())
                     .updatedAt(user.getUpdatedAt())
+                    .isSocialLogin(user.getSocialId() != null)
                     .build();
         }
 

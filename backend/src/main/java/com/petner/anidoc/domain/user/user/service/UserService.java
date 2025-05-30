@@ -283,6 +283,22 @@ public class UserService {
     }
 
 
+    // 비밀번호 체크
+    @Transactional
+    public boolean verifyCurrentPassword(User user, String inputPassword) {
+
+        // 소셜 로그인 사용자는 비밀번호 확인 불가
+        if (user.getSocialId() != null) {
+            throw new RuntimeException("소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다.");
+        }
+
+        // 현재 비밀번호와 입력된 비밀번호 비교
+        return passwordEncoder.matches(inputPassword, user.getPassword());
+    }
+
+
+
+
     // 📍 status 관련 service
 
     // 내 상태 변경

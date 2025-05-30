@@ -12,6 +12,7 @@ import com.petner.anidoc.global.security.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,7 +22,9 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ✅ UserController
@@ -50,6 +53,7 @@ public class UserController {
     private final AuthTokenService authTokenService;
     private final Rq rq;
 
+    // 📍 회원 가입 및 로그인 로직
     // ✅ 회원가입
     @Operation(summary = "회원 가입", description = "필수 정보 입력해 회원가입을 진행합니다.")
     @PostMapping("/register")
@@ -127,12 +131,23 @@ public class UserController {
         return ResponseEntity.ok("회원 탈퇴 성공");
     }
 
+
+    // 📍 사용자 정보 조회 로직
     // ✅ 현재 인증된 사용자 정보 조회
     @Operation(summary = "현재 사용자 정보 조회", description = "현재 인증된 사용자의 정보를 조회합니다.")
     @GetMapping("/me")
     public ResponseEntity<UserResponseDto> getCurrentUser(@AuthenticationPrincipal SecurityUser securityUser) {
         User user = userService.getUserById(securityUser.getId());
         return ResponseEntity.ok(UserResponseDto.fromEntity(user));
+    }
+
+
+    // ✅ 유저 프로필용 조회
+    @Operation(summary = "프로필 정보 조회", description = "프로필 업데이트용 정보를 조회합니다.")
+    @GetMapping("/me/profile")
+    public ResponseEntity<UserUpdateResponseDto> getUserProfile(@AuthenticationPrincipal SecurityUser securityUser) {
+        User user = userService.getUserById(securityUser.getId());
+        return ResponseEntity.ok(UserUpdateResponseDto.fromEntity(user));
     }
 
 
@@ -146,12 +161,32 @@ public class UserController {
         return ResponseEntity.ok(staffList);
     }
 
-    // ✅ 프로필용 유저 조회
-    @Operation(summary = "프로필 정보 조회", description = "프로필 업데이트용 정보를 조회합니다.")
-    @GetMapping("/me/profile")
-    public ResponseEntity<UserUpdateResponseDto> getUpdateUser(@AuthenticationPrincipal SecurityUser securityUser) {
-        User user = userService.getUserById(securityUser.getId());
-        return ResponseEntity.ok(UserUpdateResponseDto.fromEntity(user));
+
+    //✅ 비밀번호 일치 확인
+    @PostMapping("/verify-password")
+    public ResponseEntity<Map<String, Object>> verifyCurrentPassword(
+            @RequestBody PasswordVerificationRequest request,
+            @AuthenticationPrincipal SecurityUser securityUser) {
+            User user = userService.getUserById(securityUser.getId());
+            try {
+            boolean isValid = userService.verifyCurrentPassword(user, request.getPassword());
+
+            Map<String, Object> response = new HashMap<>();
+            if (isValid) {
+                response.put("success", true);
+                response.put("message", "비밀번호가 확인되었습니다.");
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "현재 비밀번호가 일치하지 않습니다.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "비밀번호 확인 중 오류가 발생했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
 

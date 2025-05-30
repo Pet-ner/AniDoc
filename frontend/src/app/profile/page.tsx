@@ -10,19 +10,25 @@ type ProfileData = {
   phoneNumber: string;
   emergencyContact: string;
   vetInfoId: number;
+  isSocialLogin?: boolean; // 소셜 로그인 여부
 };
 
 export default function ProfilePage() {
   const { user } = useUser();
   const [isEditing, setIsEditing] = useState(false);
   const [vetInfo, setVetInfo] = useState<{ vetName: string } | null>(null);
-  const [isChangingPassword, setIsChangingPassword] = useState(false); // 비밀번호 변경 모드
-  const [profileData, setProfileData] = useState<ProfileData | null>(null); // 프로필 데이터 저장용 추가
+  const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [formData, setFormData] = useState({
+    currentPassword: "",
     password: user?.password || "",
     phoneNumber: user?.phoneNumber || "",
     emergencyContact: user?.emergencyContact || "",
   });
+
+  // 소셜 로그인 여부 판단
+  const isSocialLogin = profileData?.isSocialLogin === true;
 
   // 프로필 전용 유저 정보 조회 함수
   const fetchProfileInfo = async () => {
@@ -35,13 +41,12 @@ export default function ProfilePage() {
       );
       if (response.ok) {
         const data = await response.json();
-        console.log("Fetched profile data:", data); // 디버깅용
+        console.log("Fetched profile data:", data);
 
-        // 프로필 데이터 저장
         setProfileData(data);
 
-        // 폼 데이터 업데이트
         setFormData({
+          currentPassword: "",
           password: "",
           phoneNumber: data.phoneNumber || "",
           emergencyContact: data.emergencyContact || "",
@@ -53,14 +58,14 @@ export default function ProfilePage() {
     }
   };
 
-  // 병원 정보 조회 - profileData.vetInfoId 사용
+  // 병원 정보 조회
   useEffect(() => {
     const fetchVetInfo = async () => {
-      const vetInfoId = profileData?.vetInfoId || user?.vetInfoId; // 두 소스 모두 확인
+      const vetInfoId = profileData?.vetInfoId || user?.vetInfoId;
 
       if (vetInfoId) {
         try {
-          console.log("Fetching vet info with ID:", vetInfoId); // 디버깅용
+          console.log("Fetching vet info with ID:", vetInfoId);
           const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/vets/${vetInfoId}`,
             {
@@ -78,12 +83,12 @@ export default function ProfilePage() {
           console.error("Error fetching vet info:", error);
         }
       } else {
-        console.log("No vetInfoId found"); // 디버깅용
+        console.log("No vetInfoId found");
         setVetInfo(null);
       }
     };
     fetchVetInfo();
-  }, [profileData?.vetInfoId, user?.vetInfoId]); // profileData도 의존성에 추가
+  }, [profileData?.vetInfoId, user?.vetInfoId]);
 
   // 비밀번호 유효성 상태
   const [passwordChecks, setPasswordChecks] = useState({
@@ -93,7 +98,40 @@ export default function ProfilePage() {
   });
   const [passwordScore, setPasswordScore] = useState(0);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [currentPasswordError, setCurrentPasswordError] = useState<
+    string | null
+  >(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  // 현재 비밀번호 확인 API 호출
+  const verifyCurrentPassword = async () => {
+    setCurrentPasswordError(null);
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/verify-password`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ currentPassword: formData.currentPassword }),
+        }
+      );
+
+      if (response.ok) {
+        setIsVerifyingPassword(false);
+        setIsChangingPassword(true);
+      } else {
+        const errorData = await response.json();
+        setCurrentPasswordError(
+          errorData.message || "현재 비밀번호가 일치하지 않습니다."
+        );
+      }
+    } catch (error) {
+      console.error("Error verifying password:", error);
+      setCurrentPasswordError("비밀번호 확인 중 오류가 발생했습니다.");
+    }
+  };
 
   // 비밀번호 강도 체크
   const checkPasswordStrength = (password: string) => {
@@ -136,12 +174,18 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setSaveError(null);
 
-    // 비밀번호 변경 시에만 유효성 검사
-    if (isChangingPassword && formData.password && passwordScore < 3) {
+    // 일반 로그인이고 비밀번호 변경 시에만 유효성 검사
+    if (
+      !isSocialLogin &&
+      isChangingPassword &&
+      formData.password &&
+      passwordScore < 3
+    ) {
       setSaveError("비밀번호가 보안 요구사항을 충족하지 않습니다.");
       setPasswordError("안전한 비밀번호를 위해 모든 조건을 충족해주세요.");
       return;
     }
+
     try {
       const requestBody = {
         password: "",
@@ -149,8 +193,8 @@ export default function ProfilePage() {
         emergencyContact: formData.emergencyContact,
       };
 
-      // 비밀번호 변경이 활성화되고 실제로 입력된 경우에만 포함
-      if (isChangingPassword && formData.password) {
+      // 일반 로그인이고 비밀번호 변경이 활성화되고 실제로 입력된 경우에만 포함
+      if (!isSocialLogin && isChangingPassword && formData.password) {
         requestBody.password = formData.password;
       }
 
@@ -169,11 +213,12 @@ export default function ProfilePage() {
       if (response.ok) {
         await fetchProfileInfo();
         setIsEditing(false);
-        setIsChangingPassword(false); // 비밀번호 변경 모드 해제
+        setIsVerifyingPassword(false);
+        setIsChangingPassword(false);
 
-        // 저장 성공 시 비밀번호 관련 상태 초기화
         setFormData((prev) => ({
           ...prev,
+          currentPassword: "",
           password: "",
         }));
         setPasswordScore(0);
@@ -183,6 +228,7 @@ export default function ProfilePage() {
           numbers: false,
         });
         setPasswordError(null);
+        setCurrentPasswordError(null);
       } else {
         const errorData = await response.json();
         setSaveError(errorData.message || "프로필 업데이트에 실패했습니다.");
@@ -195,15 +241,37 @@ export default function ProfilePage() {
 
   const handleCancel = () => {
     setFormData({
+      currentPassword: "",
       password: "",
       phoneNumber: profileData?.phoneNumber || user?.phoneNumber || "",
       emergencyContact:
         profileData?.emergencyContact || user?.emergencyContact || "",
     });
     setIsEditing(false);
-    setIsChangingPassword(false); // 비밀번호 변경 모드 해제
+    setIsVerifyingPassword(false);
+    setIsChangingPassword(false);
     setPasswordError(null);
+    setCurrentPasswordError(null);
     setSaveError(null);
+  };
+
+  // 비밀번호 변경 취소
+  const handlePasswordChangeCancel = () => {
+    setIsVerifyingPassword(false);
+    setIsChangingPassword(false);
+    setFormData((prev) => ({
+      ...prev,
+      currentPassword: "",
+      password: "",
+    }));
+    setPasswordError(null);
+    setCurrentPasswordError(null);
+    setPasswordScore(0);
+    setPasswordChecks({
+      length: false,
+      cases: false,
+      numbers: false,
+    });
   };
 
   // 컴포넌트 마운트 시 프로필 정보 조회
@@ -237,206 +305,249 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            {/* Password */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-gray-700">
-                  비밀번호
-                </label>
-                {isEditing && !isChangingPassword && (
-                  <button
-                    onClick={() => setIsChangingPassword(true)}
-                    className="text-sm text-[#49BEB7] hover:text-[#3ea9a2] font-medium"
-                  >
-                    비밀번호 변경
-                  </button>
-                )}
-                {isEditing && isChangingPassword && (
-                  <button
-                    onClick={() => {
-                      setIsChangingPassword(false);
-                      setFormData((prev) => ({ ...prev, password: "" }));
-                      setPasswordError(null);
-                      setPasswordScore(0);
-                      setPasswordChecks({
-                        length: false,
-                        cases: false,
-                        numbers: false,
-                      });
-                    }}
-                    className="text-sm text-gray-500 hover:text-gray-700 font-medium"
-                  >
-                    취소
-                  </button>
-                )}
-              </div>
-
-              {!isChangingPassword ? (
-                <div>
-                  <input
-                    type="password"
-                    value="********"
-                    className="w-full p-2 border rounded-md bg-gray-50 text-gray-500"
-                    readOnly
-                  />
-                  {!isEditing && (
-                    <p className="mt-1 text-sm text-gray-500">
-                      비밀번호를 변경하려면 수정 버튼을 눌러주세요.
-                    </p>
+            {/* Password - 소셜 로그인 여부에 따라 다르게 렌더링 */}
+            {!isSocialLogin ? (
+              // 일반 로그인: 비밀번호 변경 가능
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    비밀번호
+                  </label>
+                  {isEditing && !isVerifyingPassword && !isChangingPassword && (
+                    <button
+                      onClick={() => setIsVerifyingPassword(true)}
+                      className="text-sm text-[#49BEB7] hover:text-[#3ea9a2] font-medium"
+                    >
+                      비밀번호 변경
+                    </button>
+                  )}
+                  {isEditing && (isVerifyingPassword || isChangingPassword) && (
+                    <button
+                      onClick={handlePasswordChangeCancel}
+                      className="text-sm text-gray-500 hover:text-gray-700 font-medium"
+                    >
+                      취소
+                    </button>
                   )}
                 </div>
-              ) : (
-                <div className="relative">
-                  <input
-                    type="password"
-                    placeholder="새 비밀번호 입력"
-                    value={formData.password}
-                    onChange={(e) => {
-                      const newPassword = e.target.value;
-                      setFormData({ ...formData, password: newPassword });
-                      checkPasswordStrength(newPassword);
-                    }}
-                    className={`w-full p-2 border rounded-md ${
-                      passwordScore === 3
-                        ? "border-green-300 focus:ring-green-500 focus:border-green-500"
-                        : passwordError
-                        ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                        : "border-gray-300 focus:ring-[#49BEB7] focus:border-[#49BEB7]"
-                    }`}
-                  />
 
-                  <div className="mt-2 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div
-                          className={`h-2.5 rounded-full ${getPasswordStrengthColor()} transition-all duration-300 ${getPasswordStrengthWidth()}`}
-                        ></div>
-                      </div>
-                    </div>
-
-                    <ul className="space-y-1 text-xs">
-                      <li
-                        className={`flex items-center ${
-                          passwordChecks.length
-                            ? "text-green-600"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {passwordChecks.length ? (
-                          <svg
-                            className="w-4 h-4 mr-1.5 text-green-500 flex-shrink-0"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        ) : (
-                          <svg
-                            className="w-4 h-4 mr-1.5 text-gray-400 flex-shrink-0"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        )}
-                        <span>8자 이상</span>
-                      </li>
-                      <li
-                        className={`flex items-center ${
-                          passwordChecks.cases
-                            ? "text-green-600"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {passwordChecks.cases ? (
-                          <svg
-                            className="w-4 h-4 mr-1.5 text-green-500 flex-shrink-0"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        ) : (
-                          <svg
-                            className="w-4 h-4 mr-1.5 text-gray-400 flex-shrink-0"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        )}
-                        <span>영문 대소문자 포함</span>
-                      </li>
-                      <li
-                        className={`flex items-center ${
-                          passwordChecks.numbers
-                            ? "text-green-600"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {passwordChecks.numbers ? (
-                          <svg
-                            className="w-4 h-4 mr-1.5 text-green-500 flex-shrink-0"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        ) : (
-                          <svg
-                            className="w-4 h-4 mr-1.5 text-gray-400 flex-shrink-0"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        )}
-                        <span>숫자 포함</span>
-                      </li>
-                    </ul>
-
-                    {passwordError && (
-                      <p className="text-sm text-red-600">{passwordError}</p>
-                    )}
-                    {passwordScore === 3 && (
-                      <p className="text-sm text-green-600">
-                        안전한 비밀번호입니다!
+                {!isVerifyingPassword && !isChangingPassword ? (
+                  <div>
+                    <input
+                      type="password"
+                      value="********"
+                      className="w-full p-2 border rounded-md bg-gray-50 text-gray-500"
+                      readOnly
+                    />
+                    {!isEditing && (
+                      <p className="mt-1 text-sm text-gray-500">
+                        비밀번호를 변경하려면 수정 버튼을 눌러주세요.
                       </p>
                     )}
                   </div>
-                </div>
-              )}
-            </div>
+                ) : isVerifyingPassword ? (
+                  // 현재 비밀번호 확인 단계
+                  <div className="space-y-3">
+                    <input
+                      type="password"
+                      placeholder="현재 비밀번호를 입력하세요"
+                      value={formData.currentPassword}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          currentPassword: e.target.value,
+                        });
+                        setCurrentPasswordError(null);
+                      }}
+                      className={`w-full p-2 border rounded-md ${
+                        currentPasswordError
+                          ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                          : "border-gray-300 focus:ring-[#49BEB7] focus:border-[#49BEB7]"
+                      }`}
+                    />
+                    {currentPasswordError && (
+                      <p className="text-sm text-red-600">
+                        {currentPasswordError}
+                      </p>
+                    )}
+                    <button
+                      onClick={verifyCurrentPassword}
+                      disabled={!formData.currentPassword}
+                      className="px-4 py-2 bg-[#49BEB7] hover:bg-[#3ea9a2] disabled:bg-gray-300 text-white rounded-md transition-colors text-sm"
+                    >
+                      확인
+                    </button>
+                  </div>
+                ) : (
+                  // 새 비밀번호 입력 단계
+                  <div className="relative">
+                    <input
+                      type="password"
+                      placeholder="새 비밀번호 입력"
+                      value={formData.password}
+                      onChange={(e) => {
+                        const newPassword = e.target.value;
+                        setFormData({ ...formData, password: newPassword });
+                        checkPasswordStrength(newPassword);
+                      }}
+                      className={`w-full p-2 border rounded-md ${
+                        passwordScore === 3
+                          ? "border-green-300 focus:ring-green-500 focus:border-green-500"
+                          : passwordError
+                          ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                          : "border-gray-300 focus:ring-[#49BEB7] focus:border-[#49BEB7]"
+                      }`}
+                    />
+
+                    <div className="mt-2 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div
+                            className={`h-2.5 rounded-full ${getPasswordStrengthColor()} transition-all duration-300 ${getPasswordStrengthWidth()}`}
+                          ></div>
+                        </div>
+                      </div>
+
+                      <ul className="space-y-1 text-xs">
+                        <li
+                          className={`flex items-center ${
+                            passwordChecks.length
+                              ? "text-green-600"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {passwordChecks.length ? (
+                            <svg
+                              className="w-4 h-4 mr-1.5 text-green-500 flex-shrink-0"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          ) : (
+                            <svg
+                              className="w-4 h-4 mr-1.5 text-gray-400 flex-shrink-0"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
+                          <span>8자 이상</span>
+                        </li>
+                        <li
+                          className={`flex items-center ${
+                            passwordChecks.cases
+                              ? "text-green-600"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {passwordChecks.cases ? (
+                            <svg
+                              className="w-4 h-4 mr-1.5 text-green-500 flex-shrink-0"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          ) : (
+                            <svg
+                              className="w-4 h-4 mr-1.5 text-gray-400 flex-shrink-0"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
+                          <span>영문 대소문자 포함</span>
+                        </li>
+                        <li
+                          className={`flex items-center ${
+                            passwordChecks.numbers
+                              ? "text-green-600"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {passwordChecks.numbers ? (
+                            <svg
+                              className="w-4 h-4 mr-1.5 text-green-500 flex-shrink-0"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          ) : (
+                            <svg
+                              className="w-4 h-4 mr-1.5 text-gray-400 flex-shrink-0"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
+                          <span>숫자 포함</span>
+                        </li>
+                      </ul>
+
+                      {passwordError && (
+                        <p className="text-sm text-red-600">{passwordError}</p>
+                      )}
+                      {passwordScore === 3 && (
+                        <p className="text-sm text-green-600">
+                          안전한 비밀번호입니다!
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // 소셜 로그인: 비밀번호 필드 비활성화
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  비밀번호
+                </label>
+                <input
+                  type="password"
+                  value="소셜 로그인 계정"
+                  className="w-full p-2 border rounded-md bg-gray-50 text-gray-500"
+                  readOnly
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  소셜 로그인 계정은 비밀번호를 변경할 수 없습니다.
+                </p>
+              </div>
+            )}
 
             {/* Hospital */}
             <div>

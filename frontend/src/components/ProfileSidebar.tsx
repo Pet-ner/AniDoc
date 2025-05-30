@@ -15,7 +15,7 @@ export default function ProfileSidebar() {
 
   const statusInfo = {
     online: { text: "온라인", color: "bg-green-500" },
-    away: { text: "자리 비움움", color: "bg-yellow-500" },
+    away: { text: "자리 비움", color: "bg-yellow-500" },
     offline: { text: "오프라인", color: "bg-red-500" },
   };
 
