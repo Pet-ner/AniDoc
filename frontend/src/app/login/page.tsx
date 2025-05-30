@@ -5,27 +5,19 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
 
-// useSearchParams 로직을 사용하는 컴포넌트
-function LoginContent() {
-  const router = useRouter();
+// 소셜 로그인 체크를 위한 별도 컴포넌트
+function SocialLoginCheck() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { login, isLoggedIn } = useUser();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  // 소셜 로그인 체크
   useEffect(() => {
     const checkLoginStatus = async () => {
-      // 이미 로그인된 상태라면 메인 페이지로 리다이렉트
       if (isLoggedIn) {
         router.push("/");
         return;
       }
 
-      // URL에 isSocialLogin이 있는 경우에만 체크
       const isSocialLogin = searchParams.get("isSocialLogin") === "true";
       if (!isSocialLogin) {
         return;
@@ -41,7 +33,6 @@ function LoginContent() {
 
         if (response.ok) {
           const userData = await response.json();
-          // 실제 유저 데이터가 있을 때만 로그인 처리
           if (userData && userData.id) {
             login();
             router.push("/");
@@ -54,6 +45,20 @@ function LoginContent() {
 
     checkLoginStatus();
   }, [isLoggedIn, login, router, searchParams]);
+
+  return null;
+}
+
+// 로그인 폼 컴포넌트
+function LoginForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { login, isLoggedIn } = useUser();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,10 +128,7 @@ function LoginContent() {
       <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm text-gray-700 mb-1"
-            >
+            <label htmlFor="email" className="block text-sm text-gray-700 mb-1">
               아이디
             </label>
             <input
@@ -259,13 +261,25 @@ function LoginContent() {
   );
 }
 
+// LoginForm을 감싸는 새로운 컴포넌트
+function LoginFormWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
 // 메인 컴포넌트
 export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Suspense fallback={<div>Loading...</div>}>
-        <LoginContent />
-      </Suspense>
+      <div className="relative w-full max-w-md">
+        <Suspense fallback={<div>Loading...</div>}>
+          <SocialLoginCheck />
+        </Suspense>
+        <LoginFormWrapper />
+      </div>
     </div>
   );
 }
