@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
 
-export default function LoginPage() {
+// 로그인 컨텐츠 컴포넌트
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, isLoggedIn } = useUser();
@@ -52,7 +53,7 @@ export default function LoginPage() {
     };
 
     checkLoginStatus();
-  }, [isLoggedIn, login, router]);
+  }, [isLoggedIn, login, router, searchParams]); // searchParams 의존성 추가
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -256,5 +257,20 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 메인 컴포넌트
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center text-gray-600">로딩 중...</div>
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }
