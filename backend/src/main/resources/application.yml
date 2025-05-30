@@ -10,6 +10,13 @@ spring:
   config:
     import: optional:application-secret.yml
 
+  # 개발환경용 H2 데이터베이스 설정 (권장)
+  datasource:
+    url: jdbc:h2:./db_dev;MODE=MySQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
   jpa:
     open-in-view: false
     hibernate:

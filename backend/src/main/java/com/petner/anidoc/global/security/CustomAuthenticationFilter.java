@@ -55,11 +55,19 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        if ("OPTIONS".equals(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String uri = request.getRequestURI();
 
         // 필터를 적용하지 않을 조건
+        // 필터를 적용하지 않을 조건 - /api/vets 추가
         if (!uri.startsWith("/api/") ||
-                List.of("/api/users/signup", "/api/users/login", "/api/users/register").contains(uri)) {
+                List.of("/api/users/signup", "/api/users/login", "/api/users/register",
+                        "/api/users/emailCheck").contains(uri) ||
+                uri.startsWith("/api/vets/")) { // /api/vets로 시작하는 모든 경로
             filterChain.doFilter(request, response);
             return;
         }
@@ -71,7 +79,6 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
                                 .or(() -> Optional.ofNullable(refreshAccessTokenByRefreshToken(authTokens.refreshToken)))
                                 .ifPresent(rq::setLogin)
                 );
-
         // 다음 필터로 요청 전달
         filterChain.doFilter(request, response);
     }

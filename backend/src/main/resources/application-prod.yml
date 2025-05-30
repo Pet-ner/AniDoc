@@ -4,7 +4,7 @@ custom:
   site:
     name: "AniDoc"
     cookieDomain: "anidoc.site"
-    frontUrl: "https://anidoc.site"
+    frontUrl: "https://www.anidoc.site"
     backUrl: "https://api.anidoc.site"
 
 

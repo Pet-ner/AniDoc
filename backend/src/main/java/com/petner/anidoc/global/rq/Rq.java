@@ -41,7 +41,7 @@ public class Rq {
     private final UserService userService;
     private final AuthTokenService authTokenService;
 
-    @Value("${custom.cookieDomain}")
+    @Value("${custom.site.cookieDomain}")
     private String cookieDomain;
 
     // ✅ SecurityContextHolder에 인증 정보 등록
@@ -80,7 +80,6 @@ public class Rq {
     public void setCookie(String name, String value){
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .path("/")
-                .domain("localhost")
                 .sameSite("Strict")
                 .secure(true)
                 .httpOnly(true)
