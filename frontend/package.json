@@ -16,11 +16,8 @@
     "next": "15.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-<<<<<<< HEAD
-    "react-hot-toast": "^2.5.2",
-=======
     "react-easy-crop": "^5.4.2",
->>>>>>> dev
+    "react-hot-toast": "^2.5.2",
     "sockjs-client": "^1.6.1",
     "stompjs": "^2.3.3"
   },

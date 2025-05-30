@@ -414,6 +414,7 @@ export default function StaffMedicalRecord({
       {showDetail && selectedRecord && (
         <ChartDetailModal
           onClose={handleCloseModal}
+          userRole="ROLE_STAFF"
           record={{
             id: selectedRecord.id,
             reservationId: selectedRecord.reservationId,

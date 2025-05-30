@@ -1036,6 +1036,7 @@ export default function ChartModal({
                         e.target.value
                       )
                     }
+                    max={hospitalizationRecord.dischargeDate || undefined}
                     className="w-full bg-white border border-gray-300 rounded px-2 py-2 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400"
                   />
                 </div>
@@ -1052,6 +1053,7 @@ export default function ChartModal({
                         e.target.value
                       )
                     }
+                    min={hospitalizationRecord.admissionDate || undefined}
                     className="w-full bg-white border border-gray-300 rounded px-2 py-2 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400"
                   />
                 </div>

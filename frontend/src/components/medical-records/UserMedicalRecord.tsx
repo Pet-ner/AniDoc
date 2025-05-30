@@ -65,6 +65,8 @@ export default function UserMedicalRecord({
     null
   );
   const [showDetail, setShowDetail] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 10;
 
   useEffect(() => {
     const fetchMedicalRecords = async () => {
@@ -197,6 +199,19 @@ export default function UserMedicalRecord({
                 .filter((r) =>
                   r.petName.toLowerCase().includes(search.toLowerCase())
                 )
+                .sort((a, b) => {
+                  const dateA = new Date(
+                    `${a.reservationDate} ${a.reservationTime}`
+                  );
+                  const dateB = new Date(
+                    `${b.reservationDate} ${b.reservationTime}`
+                  );
+                  return dateB.getTime() - dateA.getTime();
+                })
+                .slice(
+                  (currentPage - 1) * recordsPerPage,
+                  currentPage * recordsPerPage
+                )
                 .map((r) => (
                   <tr key={r.id} className="hover:bg-gray-50">
                     <td className="px-4 py-4 text-sm text-gray-700">
@@ -243,9 +258,70 @@ export default function UserMedicalRecord({
         </table>
       </div>
 
+      {/* Pagination */}
+      <div className="flex justify-center items-center gap-2 mt-4">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className="px-3 py-1 rounded-md bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
+        >
+          이전
+        </button>
+        <div className="flex gap-1">
+          {Array.from(
+            {
+              length: Math.ceil(
+                records.filter((r) =>
+                  r.petName.toLowerCase().includes(search.toLowerCase())
+                ).length / recordsPerPage
+              ),
+            },
+            (_, i) => i + 1
+          ).map((pageNum) => (
+            <button
+              key={pageNum}
+              onClick={() => setCurrentPage(pageNum)}
+              className={`px-3 py-1 rounded-md ${
+                currentPage === pageNum
+                  ? "bg-[#49BEB7] text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {pageNum}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() =>
+            setCurrentPage((prev) =>
+              Math.min(
+                prev + 1,
+                Math.ceil(
+                  records.filter((r) =>
+                    r.petName.toLowerCase().includes(search.toLowerCase())
+                  ).length / recordsPerPage
+                )
+              )
+            )
+          }
+          disabled={
+            currentPage >=
+            Math.ceil(
+              records.filter((r) =>
+                r.petName.toLowerCase().includes(search.toLowerCase())
+              ).length / recordsPerPage
+            )
+          }
+          className="px-3 py-1 rounded-md bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
+        >
+          다음
+        </button>
+      </div>
+
       {showDetail && selectedRecord && (
         <ChartDetailModal
           onClose={handleCloseModal}
+          userRole="ROLE_USER"
           record={{
             petName: selectedRecord.petName,
             weight: selectedRecord.weight || 0,

@@ -8,12 +8,14 @@ interface ChartDetailModalProps {
   onClose: () => void;
   record: MedicalRecord;
   onUpdate?: (record: MedicalRecord) => void;
+  userRole?: string;
 }
 
 export default function ChartDetailModal({
   onClose,
   onUpdate,
   record,
+  userRole,
 }: ChartDetailModalProps) {
   const [hospitalImageUrl, setHospitalImageUrl] = useState<string | null>(null);
   const [checkupImageUrls, setCheckupImageUrls] = useState<(string | null)[]>(
@@ -357,17 +359,21 @@ export default function ChartDetailModal({
         )}
 
         <div className="flex justify-between">
-          <button
-            onClick={() => {
-              setShowEditModal(true);
-            }}
-            className="px-6 py-3 rounded bg-teal-600 text-white text-lg hover:bg-teal-700"
-          >
-            수정
-          </button>
+          {userRole !== "ROLE_USER" && (
+            <button
+              onClick={() => {
+                setShowEditModal(true);
+              }}
+              className="px-6 py-3 rounded bg-teal-600 text-white text-lg hover:bg-teal-700"
+            >
+              수정
+            </button>
+          )}
           <button
             onClick={onClose}
-            className="px-6 py-3 rounded bg-gray-100 text-gray-700 text-lg hover:bg-gray-200"
+            className={`px-6 py-3 rounded bg-gray-100 text-gray-700 text-lg hover:bg-gray-200 ${
+              userRole === "ROLE_USER" ? "w-full" : ""
+            }`}
           >
             닫기
           </button>
