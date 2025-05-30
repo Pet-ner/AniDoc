@@ -48,25 +48,6 @@ export default function ChartModal({
   hospitalizationId,
   surgeryId,
 }: ChartModalProps) {
-  console.log("ChartModal - Initial Record:", record);
-  console.log("ChartModal - Mode:", mode);
-  console.log(
-    "ChartModal - Received hospitalizationId prop:",
-    hospitalizationId
-  );
-  console.log("ChartModal - Received surgeryId prop:", surgeryId);
-
-  // Log IDs right before state initialization
-  console.log("Debug: IDs before state init - Surgery", surgeryId);
-  console.log(
-    "Debug: IDs before state init - Hospitalization",
-    hospitalizationId
-  );
-  console.log(
-    "Debug: IDs before state init - Checkups",
-    record?.checkups?.map((c) => c.id)
-  );
-
   const reservationDetails = record
     ? {
         reservationId: record.reservationId || record.id,
@@ -164,14 +145,7 @@ export default function ChartModal({
     setHospitalizationRecord((prev) => ({ ...prev, [field]: value }));
   };
 
-  useEffect(() => {
-    console.log("ChartModal - Effect - testRecords:", testRecords);
-    console.log("ChartModal - Effect - surgeryRecord:", surgeryRecord);
-    console.log(
-      "ChartModal - Effect - hospitalizationRecord:",
-      hospitalizationRecord
-    );
-  }, [testRecords, surgeryRecord, hospitalizationRecord]);
+  useEffect(() => {}, [testRecords, surgeryRecord, hospitalizationRecord]);
 
   useEffect(() => {
     const fetchPresignedUrls = async () => {
@@ -351,7 +325,6 @@ export default function ChartModal({
     : "";
 
   const handleSave = async () => {
-    console.log("Debug - reservationDetails:", reservationDetails);
     if (
       !reservationDetails ||
       typeof reservationDetails.reservationId !== "number" ||
@@ -366,14 +339,6 @@ export default function ChartModal({
 
     const isEditMode = record?.id !== undefined && mode === "edit";
     const medicalRecordId = record?.id;
-
-    console.log("Debug - Record data:", {
-      record,
-      isEditMode,
-      medicalRecordId,
-      mode,
-      hasMedicalRecord: record?.hasMedicalRecord,
-    });
 
     try {
       const medicalPayload = {
@@ -490,8 +455,6 @@ export default function ChartModal({
         onSaved(newMedicalRecordId, record.reservationId);
       }
 
-      console.log("Saving records for medicalRecordId:", newMedicalRecordId);
-
       const petIdToSave = reservationDetails.petId;
       if (!petIdToSave) {
         console.warn(
@@ -508,22 +471,12 @@ export default function ChartModal({
         surgeryRecord.surgeryNote
       ) {
         const surgeryRecordId = surgeryId;
-        console.log("Surgery Save Debug: Before Fetch", {
-          surgeryRecordId,
-          surgeryRecord,
-          record,
-        });
         const method = surgeryRecordId ? "PUT" : "POST";
         const url = `${
           process.env.NEXT_PUBLIC_API_BASE_URL
         }/api/medical-records/${newMedicalRecordId}/surgery${
           surgeryRecordId ? `/${surgeryRecordId}` : ""
         }?userId=${currentUserId}`;
-
-        console.log("Surgery Save Debug: Fetch URL and Method", {
-          url,
-          method,
-        });
 
         const surgeryRes = await fetch(url, {
           method: method,
@@ -552,22 +505,12 @@ export default function ChartModal({
         hospitalizationRecord.reason
       ) {
         const hospitalizationRecordId = hospitalizationId;
-        console.log("Hospitalization Save Debug: Before Fetch", {
-          hospitalizationRecordId,
-          hospitalizationRecord,
-          record,
-        });
         const method = hospitalizationRecordId ? "PUT" : "POST";
         const url = `${
           process.env.NEXT_PUBLIC_API_BASE_URL
         }/api/medical-records/${newMedicalRecordId}/hospitalization${
           hospitalizationRecordId ? `/${hospitalizationRecordId}` : ""
         }?userId=${currentUserId}`;
-
-        console.log("Hospitalization Save Debug: Fetch URL and Method", {
-          url,
-          method,
-        });
 
         const hospitalizationRes = await fetch(url, {
           method: method,
@@ -603,21 +546,13 @@ export default function ChartModal({
             continue;
           }
           const checkupRecordId = rec.id;
-          console.log("Checkup Save Debug: Before Fetch", {
-            checkupRecordId,
-            rec,
-          });
+
           const method = checkupRecordId ? "PUT" : "POST";
           const url = `${
             process.env.NEXT_PUBLIC_API_BASE_URL
           }/api/medical-records/${newMedicalRecordId}/checkup${
             checkupRecordId ? `/${checkupRecordId}` : ""
           }?userId=${currentUserId}`;
-
-          console.log("Checkup Save Debug: Fetch URL and Method", {
-            url,
-            method,
-          });
 
           const checkupRes = await fetch(url, {
             method: method,

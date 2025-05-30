@@ -83,7 +83,6 @@ export default function StaffMedicalRecord({
   const handleClick = async (record: MedicalRecord) => {
     if (record.hasMedicalRecord) {
       try {
-        console.log("Debug - Original record:", record);
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/medical-records/by-reservation/${record.id}?userId=${record.userId}`,
           {
@@ -92,8 +91,6 @@ export default function StaffMedicalRecord({
         );
         const responseBody = await res.json();
         const medicalRecord = responseBody.medicalRecord;
-
-        console.log("Debug - Fetched medical record:", medicalRecord);
 
         if (!medicalRecord) {
           alert("진료기록을 찾을 수 없습니다.");
@@ -114,8 +111,6 @@ export default function StaffMedicalRecord({
           hasMedicalRecord: true,
           petId: medicalRecord.petId ?? record.petId,
         };
-
-        console.log("Debug - Updated record:", updatedRecord);
 
         setSelectedRecord(updatedRecord);
         setShowDetail(true);

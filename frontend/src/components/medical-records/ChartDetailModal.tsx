@@ -35,14 +35,6 @@ export default function ChartDetailModal({
   useEffect(() => {
     setHospitalizationIdState(record.hospitalization?.id);
     setSurgeryIdState(record.surgery?.id);
-    console.log(
-      "Debug ChartDetailModal useEffect: Updated hospitalizationIdState",
-      record.hospitalization?.id
-    );
-    console.log(
-      "Debug ChartDetailModal useEffect: Updated surgeryIdState",
-      record.surgery?.id
-    );
   }, [record.hospitalization?.id, record.surgery?.id]); // Depend on nested IDs
 
   useEffect(() => {
@@ -113,16 +105,6 @@ export default function ChartDetailModal({
   const formattedTime = record.reservationTime
     ? record.reservationTime.split(":").slice(0, 2).join(":")
     : "";
-
-  // Debug logs before rendering ChartModal
-  console.log(
-    "Debug ChartDetailModal: hospitalzation.id before passing to ChartModal",
-    hospitalizationIdState
-  );
-  console.log(
-    "Debug ChartDetailModal: surgery.id before passing to ChartModal",
-    surgeryIdState
-  );
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
