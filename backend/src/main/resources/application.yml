@@ -11,15 +11,13 @@ spring:
     include: secret
   config:
     import: optional:application-secret.yml
-#  datasource:
-#    url: jdbc:mysql://localhost:3306/anidocdb?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-#    username: petner
-#    password: petner
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:h2:./db_dev;MODE=MySQL
-#    username: sa
-#    password:
-#    driver-class-name: org.h2.Driver
+
+  # 개발환경용 H2 데이터베이스 설정 (권장)
+  datasource:
+    url: jdbc:h2:./db_dev;MODE=MySQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
 
   jpa:
     open-in-view: false
@@ -76,7 +74,7 @@ custom:
     frontUrl: "http://${custom.dev.cookieDomain}:3000"
     backUrl: "http://${custom.dev.cookieDomain}:${server.port}"
   prod:
-    cookieDomain: NEED_TO_INPUT
+    cookieDomain: anidoc.site
     frontUrl: "https://www.${custom.prod.cookieDomain}"
     backUrl: "https://api.${custom.prod.cookieDomain}"
   site:

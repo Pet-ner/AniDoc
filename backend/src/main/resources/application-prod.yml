@@ -1,15 +1,31 @@
+server:
+  port: 8080
 custom:
   site:
     name: "AniDoc"
-    cookieDomain: "${custom.prod.cookieDomain}"
-    frontUrl: "${custom.prod.frontUrl}"
-    backUrl: "${custom.prod.backUrl}"
+    cookieDomain: "anidoc.site"
+    frontUrl: "https://www.anidoc.site"
+    backUrl: "https://api.anidoc.site"
 
-  cookieDomain: NEED_TO_INPUT
 
 spring:
   datasource:
     url: jdbc:mysql://mysql_1:3306/anidocdb
-    username: ll_local
-    password: ${custom.prod.db.password}
+    username: petner
+    password: petner
     driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: false
+        highlight_sql: false
+        use_sql_comments: false
+logging:
+  level:
+    com.back: INFO
+    org.hibernate.SQL: INFO
+    org.hibernate.orm.jdbc.bind: INFO
+    org.hibernate.orm.jdbc.extract: INFO
+    org.springframework.transaction.interceptor: INFO

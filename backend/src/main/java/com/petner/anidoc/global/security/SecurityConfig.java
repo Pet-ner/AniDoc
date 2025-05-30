@@ -29,6 +29,7 @@ public class SecurityConfig {
     private final CustomOauth2AuthenticationSuccessHandler customAuthenticationSuccessHandler;
 
     private final CustomAuthorizationRequestResolver customAuthorizationRequestResolver;
+    @Lazy
     private final Rq rq;
 
     // ✅ JWT 인증 필터 빈 등록
@@ -41,9 +42,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                .csrf(AbstractHttpConfigurer::disable)
 
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -60,32 +61,36 @@ public class SecurityConfig {
                 // ✅ 경로별 인가 정책 설정
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/h2-console/**").permitAll()
-                                .requestMatchers("/api/users/register", "/api/users/login", "/api/users/logout").permitAll()
-                                .requestMatchers("/api/users/emailCheck").permitAll()
-                                .requestMatchers("/auth/**").permitAll()
-                                .requestMatchers("/swagger-ui/**").permitAll()
-                                .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
-                                //펫등록 삭제 추가(보호자, 의료진,스태프)
-                                .requestMatchers(HttpMethod.DELETE, "/api/pets/**").hasRole("USER")
-                                .requestMatchers(HttpMethod.DELETE, "/api/doctor/pets/**").hasAnyRole("STAFF", "ADMIN")
-
-                                //예방접종 삭제 추가(의료진)
-                                .requestMatchers("/api/vaccins/**").hasRole("STAFF")
-
-                                //s3 이미지 조회
-                                .requestMatchers("/api/s3/presigned-url/view").permitAll()
-
-                                // 임시
-                                .requestMatchers(HttpMethod.GET, "/api/vets/**").permitAll()
-
-                                .requestMatchers("/api/**").authenticated()
-
-
-
-
-                                // TODO: 추후 인증 필요 경로 설정 예정
-                                .anyRequest().permitAll()
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                .anyRequest().permitAll() // 임시로 모든 요청 허용
+//                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+//                                .requestMatchers("/api/vets", "/api/vets/**").permitAll()
+//                                .requestMatchers("/h2-console/**").permitAll()
+//                                .requestMatchers("/api/users/register", "/api/users/login", "/api/users/logout").permitAll()
+//                                .requestMatchers("/api/users/emailCheck").permitAll()
+//                                .requestMatchers("/auth/**").permitAll()
+//                                .requestMatchers("/swagger-ui/**").permitAll()
+//                                .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
+//                                //펫등록 삭제 추가(보호자, 의료진,스태프)
+//                                .requestMatchers(HttpMethod.DELETE, "/api/pets/**").hasRole("USER")
+//                                .requestMatchers(HttpMethod.DELETE, "/api/doctor/pets/**").hasAnyRole("STAFF", "ADMIN")
+//
+//                                //예방접종 삭제 추가(의료진)
+//                                .requestMatchers("/api/vaccins/**").hasRole("STAFF")
+//
+//                                //s3 이미지 조회
+//                                .requestMatchers("/api/s3/presigned-url/view").permitAll()
+//
+//                                // 임시
+//                                .requestMatchers(HttpMethod.GET, "/api/vets/**").permitAll()
+//
+//                                .requestMatchers("/api/**").authenticated()
+//
+//
+//
+//
+//                                // TODO: 추후 인증 필요 경로 설정 예정
+//                                .anyRequest().permitAll()
                 )
 
                 .headers(headers -> headers
@@ -93,7 +98,7 @@ public class SecurityConfig {
                 );
 
         // ✅ JWT 필터 등록
-        http.addFilterBefore(customAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+//        http.addFilterBefore(customAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -101,15 +106,21 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",
-                "http://localhost:8090"
-        ));
+
+
+        // 또는 구체적인 도메인 설정
+         configuration.setAllowedOrigins(List.of(
+             "http://localhost:3000",
+             "http://localhost:8090",
+             "https://www.anidoc.site",
+             "https://anidoc.site"
+         ));
+
         configuration.setAllowCredentials(true);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
-        configuration.setExposedHeaders(List.of("Authorization"));  // 응답에서 Authorization 헤더 노출
-        configuration.setMaxAge(3600L);  // 브라우저가 preflight 요청 결과를 캐시하는 시간(초)
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

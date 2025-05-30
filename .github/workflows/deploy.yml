@@ -9,6 +9,7 @@ on:
       - "backend/Dockerfile"
     branches:
       - main
+      - dev
 jobs:
   makeTagAndRelease:
     runs-on: ubuntu-latest
@@ -38,7 +39,7 @@ jobs:
     needs: makeTagAndRelease
     runs-on: ubuntu-latest
     env:
-      DOCKER_IMAGE_NAME: AniDoc ###!!!팀 프로젝트 이미지 네임!!!###
+      DOCKER_IMAGE_NAME: anidoc ###!!!팀 프로젝트 이미지 네임!!!###
     outputs:
       DOCKER_IMAGE_NAME: ${{ env.DOCKER_IMAGE_NAME }}
       OWNER_LC: ${{ env.OWNER_LC }}
@@ -106,3 +107,4 @@ jobs:
             docker rm app1 2>/dev/null
             docker run -d --network common --name app1 -p 8080:8080 ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
             docker rmi $(docker images -f "dangling=true" -q)
+            echo "ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest"

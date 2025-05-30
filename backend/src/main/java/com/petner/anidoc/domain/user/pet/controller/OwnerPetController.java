@@ -78,8 +78,12 @@ public class OwnerPetController {
     @GetMapping
     @Operation(summary = "보호자 반려동물 전체 조회", description = "보호자가 반려동물을 등록한것을 전체 조회")
     public ResponseEntity<?> findByOwnerAllPets(
-            @RequestParam("ownerId") Long ownerId){
-        List<Pet> pets = ownerPetRegistService.findAllPetsByOwner(ownerId);
+            @AuthenticationPrincipal UserDetails currentUser){
+
+        User user = userRepository.findByEmail(currentUser.getUsername())
+                .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
+
+        List<Pet> pets = ownerPetRegistService.findAllPetsByOwner(user.getId());
         List<OwnerPetResponseDTO> ownerPetResponseDTO = pets.stream()
                 .map(OwnerPetResponseDTO::new)
                 .collect(Collectors.toList());
@@ -92,8 +96,12 @@ public class OwnerPetController {
     @Operation(summary = "보호자 반려동물 상세 조회", description = "보호자가 반려동물을 등록한것을 상세 조회")
     public ResponseEntity<?> findPet(
             @PathVariable Long petId,
-            @RequestParam("ownerId") Long ownerId){
-        Pet pet = ownerPetRegistService.findPetByOwner(petId, ownerId);
+            @AuthenticationPrincipal UserDetails currentUser){
+
+        User user = userRepository.findByEmail(currentUser.getUsername())
+                .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
+
+        Pet pet = ownerPetRegistService.findPetByOwner(petId, user.getId());
         OwnerPetResponseDTO ownerPetResponseDTO = new OwnerPetResponseDTO(pet);
         return ResponseEntity.ok(ownerPetResponseDTO);
 

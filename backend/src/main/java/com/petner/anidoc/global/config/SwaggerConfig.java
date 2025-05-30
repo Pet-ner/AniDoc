@@ -5,8 +5,11 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 /**
  * ✅ Swagger 설정 클래스
@@ -19,9 +22,12 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI openAPI() {
-
+        Server server = new Server();
+        server.setUrl("https://api.anidoc.site");
+        server.setDescription("Production Server");
         return new OpenAPI()
                 .info(new Info().title("API 문서").version("v1"))
+                .servers(List.of(server))
                 .components(new Components()
                         .addSecuritySchemes("BearerAuth",
                                 new SecurityScheme()

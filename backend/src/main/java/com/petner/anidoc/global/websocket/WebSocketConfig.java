@@ -26,7 +26,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // 웹소켓 연결 엔드포인트 설정
         registry.addEndpoint("/ws-stomp")
-                .setAllowedOriginPatterns("*")
+                .setAllowedOriginPatterns("https://www.anidoc.site", "http://localhost:3000")
                 .addInterceptors(webSocketAuthInterceptor) // 인터셉터 적용
                 .withSockJS(); // SockJs 지원
     }
