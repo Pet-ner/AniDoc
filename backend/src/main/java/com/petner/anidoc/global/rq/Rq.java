@@ -41,7 +41,7 @@ public class Rq {
     private final UserService userService;
     private final AuthTokenService authTokenService;
 
-    @Value("${custom.cookieDomain}")
+    @Value("${custom.site.cookieDomain}")
     private String cookieDomain;
 
     // ✅ SecurityContextHolder에 인증 정보 등록
