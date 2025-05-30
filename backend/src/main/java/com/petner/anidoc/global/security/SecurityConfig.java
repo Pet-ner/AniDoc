@@ -60,6 +60,8 @@ public class SecurityConfig {
                 // ✅ 경로별 인가 정책 설정
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                .requestMatchers("/api/vets", "/api/vets/**").permitAll()
                                 .requestMatchers("/h2-console/**").permitAll()
                                 .requestMatchers("/api/users/register", "/api/users/login", "/api/users/logout").permitAll()
                                 .requestMatchers("/api/users/emailCheck").permitAll()
