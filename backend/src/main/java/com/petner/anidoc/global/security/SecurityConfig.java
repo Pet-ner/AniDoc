@@ -63,34 +63,34 @@ public class SecurityConfig {
                         authorizeRequests
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .anyRequest().permitAll() // 임시로 모든 요청 허용
-                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                .requestMatchers("/api/vets", "/api/vets/**").permitAll()
-                                .requestMatchers("/h2-console/**").permitAll()
-                                .requestMatchers("/api/users/register", "/api/users/login", "/api/users/logout").permitAll()
-                                .requestMatchers("/api/users/emailCheck").permitAll()
-                                .requestMatchers("/auth/**").permitAll()
-                                .requestMatchers("/swagger-ui/**").permitAll()
-                                .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
-                                //펫등록 삭제 추가(보호자, 의료진,스태프)
-                                .requestMatchers(HttpMethod.DELETE, "/api/pets/**").hasRole("USER")
-                                .requestMatchers(HttpMethod.DELETE, "/api/doctor/pets/**").hasAnyRole("STAFF", "ADMIN")
-
-                                //예방접종 삭제 추가(의료진)
-                                .requestMatchers("/api/vaccins/**").hasRole("STAFF")
-
-                                //s3 이미지 조회
-                                .requestMatchers("/api/s3/presigned-url/view").permitAll()
-
-                                // 임시
-                                .requestMatchers(HttpMethod.GET, "/api/vets/**").permitAll()
-
-                                .requestMatchers("/api/**").authenticated()
-
-
-
-
-                                // TODO: 추후 인증 필요 경로 설정 예정
-                                .anyRequest().permitAll()
+//                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+//                                .requestMatchers("/api/vets", "/api/vets/**").permitAll()
+//                                .requestMatchers("/h2-console/**").permitAll()
+//                                .requestMatchers("/api/users/register", "/api/users/login", "/api/users/logout").permitAll()
+//                                .requestMatchers("/api/users/emailCheck").permitAll()
+//                                .requestMatchers("/auth/**").permitAll()
+//                                .requestMatchers("/swagger-ui/**").permitAll()
+//                                .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
+//                                //펫등록 삭제 추가(보호자, 의료진,스태프)
+//                                .requestMatchers(HttpMethod.DELETE, "/api/pets/**").hasRole("USER")
+//                                .requestMatchers(HttpMethod.DELETE, "/api/doctor/pets/**").hasAnyRole("STAFF", "ADMIN")
+//
+//                                //예방접종 삭제 추가(의료진)
+//                                .requestMatchers("/api/vaccins/**").hasRole("STAFF")
+//
+//                                //s3 이미지 조회
+//                                .requestMatchers("/api/s3/presigned-url/view").permitAll()
+//
+//                                // 임시
+//                                .requestMatchers(HttpMethod.GET, "/api/vets/**").permitAll()
+//
+//                                .requestMatchers("/api/**").authenticated()
+//
+//
+//
+//
+//                                // TODO: 추후 인증 필요 경로 설정 예정
+//                                .anyRequest().permitAll()
                 )
 
                 .headers(headers -> headers
