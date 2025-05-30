@@ -41,7 +41,8 @@ export default function HospitalCombobox({
       setLoading(true);
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/vets`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/vets`,
+          { credentials: "include" }
         );
 
         if (!response.ok) {
