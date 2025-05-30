@@ -101,23 +101,18 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // 모든 Origin 허용 (임시)
         configuration.setAllowedOriginPatterns(List.of("*"));
-
-        // 또는 구체적인 도메인 설정
-        // configuration.setAllowedOrigins(List.of(
-        //     "http://localhost:3000",
-        //     "http://localhost:8090",
-        //     "https://www.anidoc.site",
-        //     "https://anidoc.site"
-        // ));
-
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://localhost:8090",
+                "https://www.anidoc.site",
+                "https://anidoc.site"
+        ));
         configuration.setAllowCredentials(true);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
-        configuration.setMaxAge(3600L);
+        configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));  // 응답에서 Authorization 헤더 노출
+        configuration.setMaxAge(3600L);  // 브라우저가 preflight 요청 결과를 캐시하는 시간(초)
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
