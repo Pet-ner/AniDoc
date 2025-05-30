@@ -42,28 +42,14 @@ export default function HospitalCombobox({
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/vets`,
-          {
-            credentials: "include",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-          }
+          { credentials: "include" }
         );
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => null);
-          throw new Error(
-            errorData?.message ||
-              `서버 오류가 발생했습니다. (${response.status})`
-          );
+          throw new Error("병원 목록을 불러오는데 실패했습니다.");
         }
 
         const data = await response.json();
-        if (!Array.isArray(data)) {
-          throw new Error("잘못된 데이터 형식입니다");
-        }
-
         setHospitals(data);
 
         // 초기값이 있으면 선택된 병원 설정
@@ -75,7 +61,6 @@ export default function HospitalCombobox({
         }
       } catch (error) {
         console.error("병원 목록 로드 오류:", error);
-        setHospitals([]); // 빈 배열로 초기화
       } finally {
         setLoading(false);
       }
