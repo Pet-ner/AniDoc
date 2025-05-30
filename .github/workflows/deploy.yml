@@ -9,7 +9,7 @@ on:
       - "backend/Dockerfile"
     branches:
       - main
-      - feat/87
+      - dev
 jobs:
   makeTagAndRelease:
     runs-on: ubuntu-latest
