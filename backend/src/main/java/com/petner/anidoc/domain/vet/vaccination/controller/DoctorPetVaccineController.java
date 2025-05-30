@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/doctor/vaccines")
 @Tag(name = "의료진 반려동물 예방접종", description = "DoctorPetVaccine 관련 API")
 public class DoctorPetVaccineController {
-//    @Autowired
     private final DoctorPetVaccineService doctorPetVaccineService;
     private final UserRepository userRepository;
 

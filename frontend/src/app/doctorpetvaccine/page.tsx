@@ -267,7 +267,6 @@ const DoctorPetVaccineManagement = () => {
       if (dateString.includes(".") && dateString.includes(" ")) {
         return dateString;
       }
-
       // ISO 형식 체크 (2025-05-27T00:00:00)
       if (dateString.includes("T")) {
         date = new Date(dateString);
@@ -863,21 +862,15 @@ const DoctorPetVaccineManagement = () => {
         />
       )}
 
-      {/* 백신 기록 조회 모달 - 수정/삭제 버튼 추가 */}
+      {/* 백신 기록 조회 모달 - X 버튼 제거됨 */}
       {isHistoryModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-96 overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-start items-center mb-4">
               <h3 className="text-lg font-semibold">
                 {selectedPetName}의 백신 접종 기록 (총{" "}
                 {selectedPetHistory.length}건)
               </h3>
-              <button
-                onClick={() => setIsHistoryModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700 text-xl"
-              >
-                ✕
-              </button>
             </div>
 
             {historyLoading ? (
@@ -951,12 +944,6 @@ const DoctorPetVaccineManagement = () => {
                         <span className="font-medium">담당의사:</span>{" "}
                         {vaccine.doctorName}
                       </div>
-                      {vaccine.reservationId && (
-                        <div>
-                          <span className="font-medium">예약 ID:</span>{" "}
-                          {vaccine.reservationId}
-                        </div>
-                      )}
                     </div>
 
                     {vaccine.notes && (
