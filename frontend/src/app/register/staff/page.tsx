@@ -280,6 +280,7 @@ export default function StaffRegisterPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(registerData),
+          credentials: "include", // 쿠키를 포함하여 요청
         }
       );
 
