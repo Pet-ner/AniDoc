@@ -1,16 +1,16 @@
 "use client";
 
-import { Search, Plus } from "lucide-react";
+import { Search, Eye, Trash2, Edit } from "lucide-react";
 import { useState, useEffect } from "react";
 import PetDetailModal from "@/components/doctorpetchange/DoctorChange";
 
 // Gender enum 추가
-enum Gender {
+export enum Gender {
   MALE = "MALE",
   FEMALE = "FEMALE",
 }
 
-// Pet 인터페이스 수정
+// Pet 인터페이스 export (다른 컴포넌트에서 import 가능하도록)
 export interface Pet {
   id: number;
   name: string;
@@ -40,19 +40,39 @@ const DoctorPetManagement = () => {
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
-  const [pets, setPets] = useState<Pet[]>([]); // 반려동물 목록 상태 추가
+  const [pets, setPets] = useState<Pet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 10; // 페이지당 표시할 항목 수
-  const [searchTerm, setSearchTerm] = useState(""); // 검색어 상태 추가
+  const itemsPerPage = 10;
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // 전체 반려동물 조회 수정
+  // 날짜 포맷 함수 개선
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "-";
+
+    try {
+      // ISO 문자열인 경우 처리
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "-";
+
+      return date.toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+    } catch (error) {
+      console.error("Date formatting error:", error);
+      return "-";
+    }
+  };
+
+  // 전체 반려동물 조회 수정 - 백엔드에서 자동 계산된 lastVisitDate 수신
   useEffect(() => {
     const fetchPets = async () => {
       try {
-        console.log("Fetching pets..."); // 디버깅용 로그
+        console.log("Fetching pets...");
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/doctor/pets`,
           {
@@ -65,25 +85,91 @@ const DoctorPetManagement = () => {
           }
         );
 
-        console.log("Response status:", response.status); // 디버깅용 로그
-
         if (!response.ok) {
           const errorText = await response.text();
-          console.error("Error response:", errorText); // 디버깅용 로그
           throw new Error(`Failed to fetch pets: ${errorText}`);
         }
 
         const data = await response.json();
-        console.log("Fetched data:", data);
+        console.log("Raw API response:", data);
 
-        // 데이터 형식 확인 및 변환
-        const formattedPets = Array.isArray(data) ? data : data.content || [];
-        // owner 속성이 없는 경우 기본값 추가
-        const petsWithDefaults = formattedPets.map((pet: Partial<Pet>) => ({
-          ...pet,
-          owner: pet.owner || { id: 0, name: "정보 없음" },
-        }));
-        setPets(petsWithDefaults as Pet[]);
+        // 타입 명시적 선언으로 오류 해결
+        const formattedPets: any[] = Array.isArray(data)
+          ? data
+          : data.content || [];
+
+        const petsWithDefaults: Pet[] = formattedPets.map((pet: any) => {
+          console.log(`Processing Pet ${pet.name}:`);
+          console.log(`- Backend calculated lastVisitDate:`, pet.lastVisitDate);
+          console.log(
+            `- Raw isNeutered:`,
+            pet.isNeutered,
+            typeof pet.isNeutered
+          );
+
+          // 강력한 boolean 변환
+          const isNeutered =
+            pet.isNeutered === true ||
+            pet.isNeutered === "true" ||
+            pet.isNeutered === 1 ||
+            pet.isNeutered === "1";
+
+          const isDeceased =
+            pet.isDeceased === true ||
+            pet.isDeceased === "true" ||
+            pet.isDeceased === 1 ||
+            pet.isDeceased === "1";
+
+          // 날짜 필드 처리 - 백엔드에서 계산된 값 그대로 사용
+          const lastVisitDate =
+            pet.lastVisitDate && pet.lastVisitDate !== ""
+              ? pet.lastVisitDate
+              : null;
+          const lastDiroDate =
+            pet.lastDiroDate && pet.lastDiroDate !== ""
+              ? pet.lastDiroDate
+              : null;
+          const neuteredDate =
+            pet.neuteredDate && pet.neuteredDate !== ""
+              ? pet.neuteredDate
+              : null;
+          const deceasedDate =
+            pet.deceasedDate && pet.deceasedDate !== ""
+              ? pet.deceasedDate
+              : null;
+
+          return {
+            id: pet.id,
+            name: pet.name || "",
+            gender: pet.gender || Gender.MALE,
+            species: pet.species || "",
+            breed: pet.breed || "",
+            birth: pet.birth || "",
+            weight: pet.weight || 0,
+            isNeutered: isNeutered,
+            neuteredDate: neuteredDate,
+            isDeceased: isDeceased,
+            deceasedDate: deceasedDate,
+            surgeryCount: pet.surgeryCount || 0,
+            hospitalizationCount: pet.hospitalizationCount || 0,
+            lastDiroDate: lastDiroDate,
+            lastVisitDate: lastVisitDate, // 백엔드에서 자동 계산된 값
+            profileUrl: pet.profileUrl || null,
+            specialNote: pet.specialNote || "",
+            owner: pet.owner || { id: 0, name: "정보 없음" },
+          };
+        });
+
+        console.log(
+          "Final formatted pets with backend calculated lastVisitDate:",
+          petsWithDefaults.map((p: Pet) => ({
+            name: p.name,
+            lastVisitDate: p.lastVisitDate,
+            isNeutered: p.isNeutered,
+          }))
+        );
+
+        setPets(petsWithDefaults);
       } catch (error) {
         console.error("Error fetching pets:", error);
         setError("반려동물 데이터를 불러오는데 실패했습니다.");
@@ -95,14 +181,10 @@ const DoctorPetManagement = () => {
     fetchPets();
   }, []);
 
-  // 디버깅용 로그 추가
-  useEffect(() => {
-    console.log("Current pets state:", pets);
-  }, [pets]);
-
-  // 반려동물 상세 조회
-  const fetchPetDetail = async (petId: number) => {
+  // 반려동물 상세 조회 - 백엔드에서 자동 계산된 데이터 수신
+  const fetchPetDetail = async (petId: number): Promise<Pet> => {
     try {
+      console.log(`Fetching detail for pet ID: ${petId}`);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/doctor/pets/${petId}`,
         {
@@ -119,7 +201,57 @@ const DoctorPetManagement = () => {
       }
 
       const data = await response.json();
-      return data;
+      console.log("Raw pet detail data:", data);
+      console.log("Backend calculated lastVisitDate:", data.lastVisitDate);
+
+      // 강력한 boolean 변환
+      const isNeutered =
+        data.isNeutered === true ||
+        data.isNeutered === "true" ||
+        data.isNeutered === 1 ||
+        data.isNeutered === "1";
+
+      const isDeceased =
+        data.isDeceased === true ||
+        data.isDeceased === "true" ||
+        data.isDeceased === 1 ||
+        data.isDeceased === "1";
+
+      // 날짜 필드 처리 - 백엔드에서 계산된 값 그대로 사용
+      const lastVisitDate =
+        data.lastVisitDate && data.lastVisitDate !== ""
+          ? data.lastVisitDate
+          : null;
+      const lastDiroDate =
+        data.lastDiroDate && data.lastDiroDate !== ""
+          ? data.lastDiroDate
+          : null;
+      const neuteredDate =
+        data.neuteredDate && data.neuteredDate !== ""
+          ? data.neuteredDate
+          : null;
+      const deceasedDate =
+        data.deceasedDate && data.deceasedDate !== ""
+          ? data.deceasedDate
+          : null;
+
+      const formattedData: Pet = {
+        ...data,
+        isNeutered: isNeutered,
+        isDeceased: isDeceased,
+        lastVisitDate: lastVisitDate, // 백엔드에서 자동 계산된 값
+        lastDiroDate: lastDiroDate,
+        neuteredDate: neuteredDate,
+        deceasedDate: deceasedDate,
+        owner: data.owner || { id: 0, name: "정보 없음" },
+      };
+
+      console.log(
+        "Formatted pet detail with backend calculated lastVisitDate:",
+        formattedData
+      );
+
+      return formattedData;
     } catch (error) {
       console.error("Error fetching pet detail:", error);
       throw error;
@@ -129,6 +261,12 @@ const DoctorPetManagement = () => {
   // handleEditClick 수정
   const handleEditClick = async (pet: Pet) => {
     try {
+      console.log(
+        "Opening edit modal for pet:",
+        pet.name,
+        "lastVisitDate:",
+        pet.lastVisitDate
+      );
       const petDetail = await fetchPetDetail(pet.id);
       setSelectedPet(petDetail);
       setIsModalOpen(true);
@@ -137,13 +275,14 @@ const DoctorPetManagement = () => {
     }
   };
 
-  // handleSavePetData 함수 수정
-  const handleSavePetData = async (updatedData: Pet): Promise<void> => {
+  // handleSavePetData 함수 수정 - 타입 시그니처 명시적 정의
+  const handleSavePetData: (data: Pet) => Promise<void> = async (
+    updatedData: Pet
+  ) => {
     try {
       if (selectedPet) {
-        console.log("Updating pet data:", updatedData); // 디버깅용 로그
+        console.log("Saving pet data:", updatedData);
 
-        // DoctorPetRequestDTO 형식에 맞게 데이터 변환 및 기본값 설정
         const requestData = {
           name: updatedData.name,
           gender: updatedData.gender,
@@ -151,19 +290,21 @@ const DoctorPetManagement = () => {
           breed: updatedData.breed,
           birth: updatedData.birth,
           weight: updatedData.weight,
-          isNeutered: updatedData.isNeutered || false, // 기본값 설정
+          isNeutered: updatedData.isNeutered === true,
           neuteredDate: updatedData.neuteredDate,
-          isDeceased: updatedData.isDeceased || false, // 기본값 설정
+          isDeceased: updatedData.isDeceased === true,
           deceasedDate: updatedData.deceasedDate,
-          surgeryCount: updatedData.surgeryCount || 0, // 기본값 설정
-          hospitalizationCount: updatedData.hospitalizationCount || 0, // 기본값 설정
+          surgeryCount: updatedData.surgeryCount || 0,
+          hospitalizationCount: updatedData.hospitalizationCount || 0,
           lastDiroDate: updatedData.lastDiroDate,
-          lastVisitDate: updatedData.lastVisitDate,
-          specialNote: updatedData.specialNote || "", // 기본값 설정
+          // lastVisitDate는 백엔드에서 자동 계산하므로 전송하지 않음
+          specialNote: updatedData.specialNote || "",
         };
 
-        // 요청 전 데이터 확인
-        console.log("Request data:", requestData);
+        console.log(
+          "Request data being sent to server (without lastVisitDate):",
+          requestData
+        );
 
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/doctor/pets/${selectedPet.id}`,
@@ -177,25 +318,71 @@ const DoctorPetManagement = () => {
           }
         );
 
-        console.log("Response status:", response.status); // 디버깅용 로그
-
         if (!response.ok) {
           const errorText = await response.text();
-          console.error("Error response:", errorText); // 디버깅용 로그
           throw new Error(errorText || "Failed to update pet data");
         }
 
         const updatedPetData = await response.json();
-        console.log("Updated pet data:", updatedPetData); // 디버깅용 로그
+        console.log("Response from server:", updatedPetData);
+        console.log(
+          "Backend calculated lastVisitDate:",
+          updatedPetData.lastVisitDate
+        );
 
-        // 목록 업데이트
-        setPets((prevPets) =>
-          prevPets.map((pet) =>
-            pet.id === selectedPet.id ? { ...pet, ...updatedPetData } : pet
+        // 서버 응답 데이터의 boolean 값 강력 변환
+        const serverIsNeutered =
+          updatedPetData.isNeutered === true ||
+          updatedPetData.isNeutered === "true" ||
+          updatedPetData.isNeutered === 1 ||
+          updatedPetData.isNeutered === "1";
+
+        const serverIsDeceased =
+          updatedPetData.isDeceased === true ||
+          updatedPetData.isDeceased === "true" ||
+          updatedPetData.isDeceased === 1 ||
+          updatedPetData.isDeceased === "1";
+
+        // 완전히 새로운 객체로 상태 업데이트
+        const newPetData: Pet = {
+          id: selectedPet.id,
+          name: updatedData.name,
+          gender: updatedData.gender,
+          species: updatedData.species,
+          breed: updatedData.breed,
+          birth: updatedData.birth,
+          weight: updatedData.weight,
+          isNeutered: serverIsNeutered,
+          neuteredDate: updatedData.neuteredDate,
+          isDeceased: serverIsDeceased,
+          deceasedDate: updatedData.deceasedDate,
+          surgeryCount: updatedData.surgeryCount || 0,
+          hospitalizationCount: updatedData.hospitalizationCount || 0,
+          lastDiroDate: updatedData.lastDiroDate,
+          // 백엔드에서 계산된 lastVisitDate 사용
+          lastVisitDate: updatedPetData.lastVisitDate || null,
+          profileUrl: selectedPet.profileUrl,
+          specialNote: updatedData.specialNote || "",
+          owner: selectedPet.owner,
+        };
+
+        console.log(
+          "New pet data with backend calculated lastVisitDate:",
+          newPetData
+        );
+
+        // 상태 업데이트
+        setPets((prevPets: Pet[]) =>
+          prevPets.map((pet: Pet) =>
+            pet.id === selectedPet.id ? newPetData : pet
           )
         );
 
+        setSelectedPet(newPetData);
         setIsModalOpen(false);
+        console.log(
+          "Pet data updated successfully with backend calculated lastVisitDate"
+        );
       }
     } catch (error) {
       console.error("Error saving pet data:", error);
@@ -206,14 +393,14 @@ const DoctorPetManagement = () => {
   // handleSelectAll 함수 추가
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectAll(e.target.checked);
-    setSelectedItems(e.target.checked ? pets.map((pet) => pet.id) : []);
+    setSelectedItems(e.target.checked ? pets.map((pet: Pet) => pet.id) : []);
   };
 
   // handleSelectOne 함수 추가
   const handleSelectOne = (id: number) => {
-    setSelectedItems((prev) => {
+    setSelectedItems((prev: number[]) => {
       const newSelected = prev.includes(id)
-        ? prev.filter((itemId) => itemId !== id)
+        ? prev.filter((itemId: number) => itemId !== id)
         : [...prev, id];
       setSelectAll(newSelected.length === pets.length);
       return newSelected;
@@ -221,8 +408,8 @@ const DoctorPetManagement = () => {
   };
 
   // 검색된 데이터 필터링 함수
-  const getFilteredData = () => {
-    return pets.filter((pet) =>
+  const getFilteredData = (): Pet[] => {
+    return pets.filter((pet: Pet) =>
       [pet.name, pet.owner.name, pet.breed, pet.species]
         .join(" ")
         .toLowerCase()
@@ -231,7 +418,7 @@ const DoctorPetManagement = () => {
   };
 
   // 페이지네이션된 데이터 계산 수정
-  const getPaginatedData = () => {
+  const getPaginatedData = (): Pet[] => {
     const filteredData = getFilteredData();
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -255,8 +442,8 @@ const DoctorPetManagement = () => {
   };
 
   // 페이지 번호 배열 생성 함수 추가
-  const getPageNumbers = () => {
-    const pages = [];
+  const getPageNumbers = (): number[] => {
+    const pages: number[] = [];
     for (let i = 1; i <= totalPages; i++) {
       pages.push(i);
     }
@@ -274,8 +461,7 @@ const DoctorPetManagement = () => {
     }
 
     try {
-      // 선택된 모든 항목에 대해 삭제 요청
-      const deletePromises = selectedItems.map(async (petId) => {
+      const deletePromises = selectedItems.map(async (petId: number) => {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/doctor/pets/${petId}`,
           {
@@ -294,9 +480,8 @@ const DoctorPetManagement = () => {
 
       await Promise.all(deletePromises);
 
-      // 삭제 성공 후 상태 업데이트
-      setPets((prevPets) =>
-        prevPets.filter((pet) => !selectedItems.includes(pet.id))
+      setPets((prevPets: Pet[]) =>
+        prevPets.filter((pet: Pet) => !selectedItems.includes(pet.id))
       );
       setSelectedItems([]);
       setSelectAll(false);
@@ -307,11 +492,39 @@ const DoctorPetManagement = () => {
     }
   };
 
+  // 기본 Pet 데이터 정의
+  const defaultPetData: Pet = {
+    id: 0,
+    name: "",
+    gender: Gender.MALE,
+    species: "",
+    breed: "",
+    birth: "",
+    weight: 0,
+    isNeutered: false,
+    neuteredDate: null,
+    isDeceased: false,
+    deceasedDate: null,
+    surgeryCount: 0,
+    hospitalizationCount: 0,
+    lastDiroDate: null,
+    lastVisitDate: null,
+    profileUrl: null,
+    specialNote: "",
+    owner: {
+      id: 0,
+      name: "",
+    },
+  };
+
   // 로딩 상태 표시
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-        <div className="text-gray-500">데이터를 불러오는 중...</div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mx-auto mb-4"></div>
+          <div className="text-gray-500">데이터를 불러오는 중...</div>
+        </div>
       </div>
     );
   }
@@ -320,192 +533,233 @@ const DoctorPetManagement = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-        <div className="text-red-500">{error}</div>
+        <div className="text-center">
+          <div className="text-red-500 text-lg font-medium mb-2">오류 발생</div>
+          <div className="text-red-400">{error}</div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
+      {/* 헤더 섹션 */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">반려동물 관리</h1>
+        <p className="text-gray-600">
+          등록된 반려동물 정보를 조회하고 관리할 수 있습니다.
+        </p>
+      </div>
+
       {/* 검색 및 필터 섹션 */}
-      <div className="bg-white rounded-xl p-6 shadow-sm">
+      <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
         <div className="flex justify-between items-center mb-6">
+          {/* 검색 영역 */}
           <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
             <input
               type="text"
               placeholder="반려동물/보호자/품종 검색"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-            <Search
-              className="absolute left-3 top-2.5 text-gray-400"
-              size={20}
+              className="pl-10 pr-4 py-3 border border-gray-200 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
             />
           </div>
-          <div className="flex gap-2">
+
+          {/* 액션 버튼 영역 */}
+          <div className="flex gap-3">
             <button
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                 selectedItems.length > 0
-                  ? "bg-red-500 text-white hover:bg-red-600 border-red-500"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                  ? "bg-red-500 text-white hover:bg-red-600 shadow-md hover:shadow-lg"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
               }`}
               disabled={selectedItems.length === 0}
               onClick={handleDeleteSelected}
             >
-              <i className="fas fa-trash"></i>
+              <Trash2 className="h-4 w-4" />
               선택 삭제 ({selectedItems.length})
             </button>
           </div>
         </div>
 
+        {/* 검색 결과 정보 */}
+        {searchTerm && (
+          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-blue-700 text-sm">
+              <span className="font-medium">"{searchTerm}"</span> 검색 결과:{" "}
+              {getFilteredData().length}건
+            </p>
+          </div>
+        )}
+
         {/* 테이블 */}
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                <input
-                  type="checkbox"
-                  checked={selectAll}
-                  onChange={handleSelectAll}
-                  className="w-4 h-4 rounded border-gray-300 text-teal-500 focus:ring-teal-500"
-                />
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                이름
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                종
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                품종
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                생년월일
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                성별
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                체중
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                중성화여부
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                보호자
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                마지막방문일
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                편집
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {getPaginatedData().map((pet: Pet) => (
-              <tr
-                key={pet.id}
-                className="border-b border-gray-100 hover:bg-gray-50"
-              >
-                <td className="py-3 px-4">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className="text-left py-4 px-4 font-medium text-gray-600">
                   <input
                     type="checkbox"
-                    checked={selectedItems.includes(pet.id)}
-                    onChange={() => handleSelectOne(pet.id)}
+                    checked={selectAll}
+                    onChange={handleSelectAll}
                     className="w-4 h-4 rounded border-gray-300 text-teal-500 focus:ring-teal-500"
                   />
-                </td>
-                <td className="py-3 px-4">{pet.name}</td>
-                <td className="py-3 px-4">{pet.species}</td>
-                <td className="py-3 px-4">{pet.breed}</td>
-                <td className="py-3 px-4">{pet.birth}</td>
-                <td className="py-3 px-4">
-                  {pet.gender === Gender.MALE ? "수컷" : "암컷"}
-                </td>
-                <td className="py-3 px-4">{pet.weight}kg</td>
-                <td className="py-3 px-4">
-                  {pet.isNeutered ? "완료" : "미완료"}
-                </td>
-                <td className="py-3 px-4">{pet.owner?.name || "정보 없음"}</td>
-                <td className="py-3 px-4">{pet.lastVisitDate || "-"}</td>
-                <td className="py-3 px-4">
-                  <button
-                    className="text-blue-500 hover:text-blue-700"
-                    onClick={() => handleEditClick(pet)}
-                  >
-                    ✏️
-                  </button>
-                </td>
+                </th>
+                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                  이름
+                </th>
+                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                  종
+                </th>
+                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                  품종
+                </th>
+                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                  생년월일
+                </th>
+                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                  성별
+                </th>
+                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                  체중
+                </th>
+                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                  중성화여부
+                </th>
+                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                  보호자
+                </th>
+                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                  마지막방문일
+                </th>
+                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                  편집
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {getPaginatedData().length === 0 ? (
+                <tr>
+                  <td colSpan={11} className="py-12 text-center text-gray-500">
+                    {searchTerm
+                      ? "검색 결과가 없습니다."
+                      : "등록된 반려동물이 없습니다."}
+                  </td>
+                </tr>
+              ) : (
+                getPaginatedData().map((pet: Pet) => (
+                  <tr
+                    key={pet.id}
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150"
+                  >
+                    <td className="py-4 px-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.includes(pet.id)}
+                        onChange={() => handleSelectOne(pet.id)}
+                        className="w-4 h-4 rounded border-gray-300 text-teal-500 focus:ring-teal-500"
+                      />
+                    </td>
+                    <td className="py-4 px-4 font-medium text-gray-800">
+                      {pet.name}
+                    </td>
+                    <td className="py-4 px-4 text-gray-600">{pet.species}</td>
+                    <td className="py-4 px-4 text-gray-600">{pet.breed}</td>
+                    <td className="py-4 px-4 text-gray-600">
+                      {formatDate(pet.birth)}
+                    </td>
+                    <td className="py-4 px-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          pet.gender === Gender.MALE
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-pink-100 text-pink-800"
+                        }`}
+                      >
+                        {pet.gender === Gender.MALE ? "수컷" : "암컷"}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 text-gray-600">{pet.weight}kg</td>
+                    <td className="py-4 px-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          pet.isNeutered === true
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {pet.isNeutered === true ? "완료" : "미완료"}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 text-gray-600">
+                      {pet.owner?.name || "정보 없음"}
+                    </td>
+                    <td className="py-4 px-4 text-gray-600">
+                      {/* 백엔드에서 자동 계산된 마지막방문일 표시 */}
+                      {pet.lastVisitDate ? formatDate(pet.lastVisitDate) : "-"}
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex gap-2">
+                        <button
+                          className="p-2 text-green-500 hover:text-green-700 hover:bg-green-50 rounded-lg transition-all duration-200"
+                          onClick={() => handleEditClick(pet)}
+                          title="편집"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {/* 페이지네이션 */}
-        <div className="flex justify-center items-center gap-2 mt-6">
-          <button
-            className="px-3 py-1 border border-gray-200 rounded hover:bg-gray-50"
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            이전
-          </button>
-
-          {getPageNumbers().map((pageNum) => (
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-6">
             <button
-              key={pageNum}
-              className={`px-3 py-1 rounded ${
-                currentPage === pageNum
-                  ? "bg-teal-500 text-white"
-                  : "border border-gray-200 hover:bg-gray-50"
-              }`}
-              onClick={() => handlePageChange(pageNum)}
+              className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
             >
-              {pageNum}
+              이전
             </button>
-          ))}
 
-          <button
-            className="px-3 py-1 border border-gray-200 rounded hover:bg-gray-50"
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            다음
-          </button>
-        </div>
+            {getPageNumbers().map((pageNum: number) => (
+              <button
+                key={pageNum}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                  currentPage === pageNum
+                    ? "bg-teal-500 text-white shadow-md"
+                    : "border border-gray-200 hover:bg-gray-50"
+                }`}
+                onClick={() => handlePageChange(pageNum)}
+              >
+                {pageNum}
+              </button>
+            ))}
+
+            <button
+              className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              다음
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* 모달 컴포넌트 수정 */}
+      {/* 모달 컴포넌트 - 타입 오류 해결 */}
       <PetDetailModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        petData={
-          selectedPet || {
-            id: 0,
-            name: "",
-            gender: Gender.MALE,
-            species: "",
-            breed: "",
-            birth: "",
-            weight: 0,
-            isNeutered: false,
-            neuteredDate: null,
-            isDeceased: false,
-            deceasedDate: null,
-            surgeryCount: 0,
-            hospitalizationCount: 0,
-            lastDiroDate: null,
-            lastVisitDate: null,
-            profileUrl: null,
-            specialNote: "",
-            owner: {
-              id: 0,
-              name: "",
-            },
-          }
-        }
+        petData={selectedPet || defaultPetData}
         onSave={handleSavePetData}
       />
     </div>
