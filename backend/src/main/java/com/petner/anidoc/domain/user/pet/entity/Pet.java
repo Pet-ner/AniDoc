@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -46,14 +47,13 @@ public class Pet extends BaseEntity {
     private BigDecimal weight;
 
     @Column(name = "is_neutered", nullable = false) //중성화 여부
-//    @JsonProperty("isNeutered")
     private Boolean isNeutered;
 
     @Column(name = "neutered_date") //중성화 날짜
     private LocalDate neuteredDate;
 
     @Column(name = "is_deceased", nullable = false) //사망 여부
-    private boolean isDeceased;
+    private Boolean isDeceased;
 
     @Column(name = "deceased_date") //사망 날짜
     private LocalDate deceasedDate;
@@ -76,8 +76,6 @@ public class Pet extends BaseEntity {
     @Column(name = "special_note", columnDefinition = "TEXT") //특이사항
     private String specialNote;
 
-
-
     //Pet이 여러 개의 예약, 진료기록, 예방접종을 가질수있음
     @Builder.Default
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL)
@@ -98,16 +96,17 @@ public class Pet extends BaseEntity {
         this.breed = dto.getBreed();
         this.birth = dto.getBirth();
         this.weight = dto.getWeight();
-        this.isNeutered = dto.isNeutered();
+        // 중성화 여부 명시적 처리
+        this.isNeutered = dto.getIsNeutered() != null ? dto.getIsNeutered() : false;
         this.lastDiroDate = dto.getLastDiroDate();
         this.specialNote = dto.getSpecialNote();
 
         this.neuteredDate = dto.getNeuteredDate();
-        this.isDeceased = dto.getIsDeceased();
+        // 사망 여부 명시적 처리
+        this.isDeceased = dto.getIsDeceased() != null ? dto.getIsDeceased() : false;
         this.deceasedDate = dto.getDeceasedDate();
         this.surgeryCount = dto.getSurgeryCount();
         this.hospitalizationCount = dto.getHospitalizationCount();
-        this.lastVisitDate = dto.getLastVisitDate();
     }
 
     public void updatePet(OwnerPetRequestDTO dto){
@@ -118,11 +117,9 @@ public class Pet extends BaseEntity {
         this.birth = dto.getBirth();
         this.weight = dto.getWeight();
         this.isNeutered = dto.getIsNeutered();
-//        this.lastVisitDate = dto.getLastVisitDate();
         this.lastDiroDate = dto.getLastDiroDate();
         this.profileUrl = dto.getProfileUrl();
         this.specialNote = dto.getSpecialNote();
 
     }
-    //오버로딩
 }

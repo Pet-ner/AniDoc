@@ -29,7 +29,7 @@ public class PetInfoDto {
                 .species(pet.getSpecies())
                 .birth(pet.getBirth())
                 .lastDiroDate(pet.getLastDiroDate())
-                .isDeceased(pet.isDeceased())
+                .isDeceased(pet.getIsDeceased())
                 .build();
 
     }
