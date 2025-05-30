@@ -58,7 +58,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
 
         // 필터를 적용하지 않을 조건
-        if (!uri.startsWith("/api/") || uri.startsWith("/api/vets") ||
+        if (!uri.startsWith("/api/") ||
                 List.of("/api/users/signup", "/api/users/login", "/api/users/register").contains(uri)) {
             filterChain.doFilter(request, response);
             return;

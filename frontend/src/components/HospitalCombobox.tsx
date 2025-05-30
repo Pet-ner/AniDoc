@@ -42,11 +42,17 @@ export default function HospitalCombobox({
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/vets`,
-          { credentials: "include" }
+          {
+            credentials: "include",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+          }
         );
 
         if (!response.ok) {
-          throw new Error("병원 목록을 불러오는데 실패했습니다.");
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
