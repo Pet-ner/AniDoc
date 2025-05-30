@@ -109,8 +109,8 @@ public class SecurityConfig {
         ));
         configuration.setAllowCredentials(true);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
-        configuration.setExposedHeaders(List.of("Authorization"));  // 응답에서 Authorization 헤더 노출
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));  // 응답에서 Authorization 헤더 노출
         configuration.setMaxAge(3600L);  // 브라우저가 preflight 요청 결과를 캐시하는 시간(초)
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
