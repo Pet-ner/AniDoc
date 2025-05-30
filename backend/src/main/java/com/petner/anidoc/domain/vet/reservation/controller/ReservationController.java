@@ -3,12 +3,14 @@ package com.petner.anidoc.domain.vet.reservation.controller;
 import com.petner.anidoc.domain.vet.reservation.dto.*;
 import com.petner.anidoc.domain.vet.reservation.entity.Reservation;
 import com.petner.anidoc.domain.vet.reservation.service.ReservationService;
+import com.petner.anidoc.global.security.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -120,7 +122,8 @@ public class ReservationController {
     @Operation(summary = "의료진 배정 + 승인된 예약 목록 조회")
     @GetMapping("/approved")
     public ResponseEntity<List<ReservationResponseDto>> getApprovedReservationsForDoctor(
-            @RequestParam Long doctorId) {
+            @AuthenticationPrincipal SecurityUser user) {
+        Long doctorId = user.getId();
         return ResponseEntity.ok(reservationService.getApprovedReservationsForDoctor(doctorId));
     }
 
