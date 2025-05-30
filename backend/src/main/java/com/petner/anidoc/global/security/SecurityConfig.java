@@ -107,16 +107,15 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 모든 Origin 허용 (임시)
-        configuration.setAllowedOriginPatterns(List.of("*"));
+
 
         // 또는 구체적인 도메인 설정
-        // configuration.setAllowedOrigins(List.of(
-        //     "http://localhost:3000",
-        //     "http://localhost:8090",
-        //     "https://www.anidoc.site",
-        //     "https://anidoc.site"
-        // ));
+         configuration.setAllowedOrigins(List.of(
+             "http://localhost:3000",
+             "http://localhost:8090",
+             "https://www.anidoc.site",
+             "https://anidoc.site"
+         ));
 
         configuration.setAllowCredentials(true);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
