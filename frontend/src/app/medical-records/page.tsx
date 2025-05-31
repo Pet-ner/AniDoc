@@ -162,35 +162,33 @@ export default function MedicalRecordPage() {
   return (
     <div className="space-y-6">
       {/* 중앙 정렬된 MedicalRecord 컴포넌트 */}
-      <div className="flex justify-center w-full">
-        <div className="w-full max-w-7xl">
-          {user?.userRole === "ROLE_STAFF" ? (
-            <StaffMedicalRecord
-              records={records}
-              loading={loading}
-              search={search}
-              setSearch={setSearch}
-              onOpenChart={(r) => {
-                setSelectedRecord(r);
-                setOpenChartModal(true);
-                setRecords((prevRecords) =>
-                  prevRecords.map((record) =>
-                    record.id === r.id
-                      ? { ...record, hasMedicalRecord: r.hasMedicalRecord }
-                      : record
-                  )
-                );
-              }}
-              userId={user.id}
-            />
-          ) : user?.userRole === "ROLE_USER" ? (
-            <UserMedicalRecord
-              userId={user.id}
-              search={search}
-              setSearch={setSearch}
-            />
-          ) : null}
-        </div>
+      <div className="w-full">
+        {user?.userRole === "ROLE_STAFF" ? (
+          <StaffMedicalRecord
+            records={records}
+            loading={loading}
+            search={search}
+            setSearch={setSearch}
+            onOpenChart={(r) => {
+              setSelectedRecord(r);
+              setOpenChartModal(true);
+              setRecords((prevRecords) =>
+                prevRecords.map((record) =>
+                  record.id === r.id
+                    ? { ...record, hasMedicalRecord: r.hasMedicalRecord }
+                    : record
+                )
+              );
+            }}
+            userId={user.id}
+          />
+        ) : user?.userRole === "ROLE_USER" ? (
+          <UserMedicalRecord
+            userId={user.id}
+            search={search}
+            setSearch={setSearch}
+          />
+        ) : null}
       </div>
 
       {user?.userRole === "ROLE_STAFF" && openChartModal && selectedRecord && (
