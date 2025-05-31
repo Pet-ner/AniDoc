@@ -71,7 +71,7 @@ public class UserService {
 
         // 의료진인 경우 상태 설정
         if (dto.getRole() == UserRole.ROLE_STAFF) {
-            user.updateStatus(UserStatus.ON_DUTY); // 기본 근무 상태 추가 적용
+            user.updateStatus(UserStatus.ON_DUTY);
             user.setApprovalStatus(ApprovalStatus.PENDING);
         }
 
@@ -92,6 +92,8 @@ public class UserService {
         if (!isMatch) {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
         }
+
+        user.setStatus(UserStatus.ON_DUTY);
 
         if (user.getRole() == UserRole.ROLE_STAFF &&
             user.getApprovalStatus() != ApprovalStatus.APPROVED){
@@ -128,6 +130,7 @@ public class UserService {
             User user = userRepository.findById(tokenUser.getId())
                     .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
             user.updateRefreshToken(null);
+            user.setStatus(UserStatus.OFF);
             userRepository.save(user);
         } catch (Exception e) {
             throw new CustomException(ErrorCode.LOGOUT_FAILED);
