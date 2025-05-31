@@ -13,11 +13,11 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CheckupRecordRequestDto {
+    private Long id;
     private Long medicalRecordId;
     private CheckupType checkupType;
     private String result;
     private String resultUrl;
     private LocalDate checkupDate;
-//    private CheckupStatus status;
 
 }

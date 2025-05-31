@@ -20,6 +20,7 @@ interface MedicalRecord {
   diagnosis?: string;
   treatment?: string;
   surgery?: {
+    id: number;
     surgeryName: string;
     surgeryDate: string;
     anesthesiaType: string;
@@ -27,12 +28,14 @@ interface MedicalRecord {
     resultUrl?: string;
   };
   hospitalization?: {
+    id: number;
     admissionDate: string;
     dischargeDate: string;
     reason: string;
     imageUrl?: string;
   };
   checkups?: {
+    id: number;
     checkupType: string;
     checkupDate: string;
     result: string;
@@ -53,6 +56,7 @@ interface StaffMedicalRecordProps {
   search: string;
   setSearch: (s: string) => void;
   onOpenChart: (record: MedicalRecord) => void;
+  userId: number;
 }
 
 export default function StaffMedicalRecord({
@@ -61,28 +65,20 @@ export default function StaffMedicalRecord({
   search,
   setSearch,
   onOpenChart,
+  userId,
 }: StaffMedicalRecordProps) {
   const [selectedRecord, setSelectedRecord] = useState<MedicalRecord | null>(
     null
   );
   const [showDetail, setShowDetail] = useState(false);
-
-  const getTodayRecords = (records: MedicalRecord[]) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    return records.filter((record) => {
-      const recordDate = new Date(record.reservationDate || "");
-      recordDate.setHours(0, 0, 0, 0);
-      return recordDate.getTime() === today.getTime();
-    });
-  };
-
-  const todayRecords = getTodayRecords(records);
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 10;
 
   useEffect(() => {}, [records]);
 
   const [isChartModalOpen, setChartModalOpen] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const handleClick = async (record: MedicalRecord) => {
     if (record.hasMedicalRecord) {
@@ -103,6 +99,8 @@ export default function StaffMedicalRecord({
 
         const updatedRecord = {
           ...record,
+          id: medicalRecord.id,
+          reservationId: record.id,
           weight: medicalRecord.currentWeight,
           age: medicalRecord.age,
           diagnosis: medicalRecord.diagnosis,
@@ -111,6 +109,7 @@ export default function StaffMedicalRecord({
           hospitalization: medicalRecord.hospitalization,
           checkups: medicalRecord.checkups,
           hasMedicalRecord: true,
+          petId: medicalRecord.petId ?? record.petId,
         };
 
         setSelectedRecord(updatedRecord);
@@ -154,6 +153,7 @@ export default function StaffMedicalRecord({
         treatment: newMedicalRecordData.treatment ?? "",
         surgery: newMedicalRecordData.surgery
           ? {
+              id: newMedicalRecordData.surgery.id,
               surgeryName: newMedicalRecordData.surgery.surgeryName ?? "",
               surgeryDate: newMedicalRecordData.surgery.surgeryDate ?? "",
               anesthesiaType: newMedicalRecordData.surgery.anesthesiaType ?? "",
@@ -163,6 +163,7 @@ export default function StaffMedicalRecord({
           : undefined,
         hospitalization: newMedicalRecordData.hospitalization
           ? {
+              id: newMedicalRecordData.hospitalization.id,
               admissionDate:
                 newMedicalRecordData.hospitalization.admissionDate ?? "",
               dischargeDate:
@@ -179,6 +180,7 @@ export default function StaffMedicalRecord({
               result?: string;
               resultUrl?: string;
             }) => ({
+              id: newMedicalRecordData.checkup.id,
               checkupType: checkup.checkupType ?? "",
               checkupDate: checkup.checkupDate ?? "",
               result: checkup.result ?? "",
@@ -211,7 +213,7 @@ export default function StaffMedicalRecord({
   return (
     <div className="bg-white rounded-lg shadow-sm p-5">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">오늘의 진료</h2>
+        <h2 className="text-lg font-semibold">진료 기록</h2>
         <div className="flex items-center gap-2">
           <div className="relative">
             <input
@@ -270,9 +272,22 @@ export default function StaffMedicalRecord({
                 </td>
               </tr>
             ) : (
-              todayRecords
+              records
                 .filter((r) =>
                   r.petName.toLowerCase().includes(search.toLowerCase())
+                )
+                .sort((a, b) => {
+                  const dateA = new Date(
+                    `${a.reservationDate} ${a.reservationTime}`
+                  );
+                  const dateB = new Date(
+                    `${b.reservationDate} ${b.reservationTime}`
+                  );
+                  return dateB.getTime() - dateA.getTime();
+                })
+                .slice(
+                  (currentPage - 1) * recordsPerPage,
+                  currentPage * recordsPerPage
                 )
                 .map((r) => (
                   <tr key={r.id} className="hover:bg-gray-50">
@@ -331,10 +346,75 @@ export default function StaffMedicalRecord({
         </table>
       </div>
 
+      {/* Pagination */}
+      <div className="mt-4 flex justify-center items-center gap-2">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className="px-3 py-1 rounded-md bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
+        >
+          이전
+        </button>
+        <div className="flex gap-1">
+          {Array.from(
+            {
+              length: Math.ceil(
+                records.filter((r) =>
+                  r.petName.toLowerCase().includes(search.toLowerCase())
+                ).length / recordsPerPage
+              ),
+            },
+            (_, i) => i + 1
+          ).map((pageNum) => (
+            <button
+              key={pageNum}
+              onClick={() => setCurrentPage(pageNum)}
+              className={`px-3 py-1 rounded-md ${
+                currentPage === pageNum
+                  ? "bg-[#49BEB7] text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {pageNum}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() =>
+            setCurrentPage((prev) =>
+              Math.min(
+                prev + 1,
+                Math.ceil(
+                  records.filter((r) =>
+                    r.petName.toLowerCase().includes(search.toLowerCase())
+                  ).length / recordsPerPage
+                )
+              )
+            )
+          }
+          disabled={
+            currentPage >=
+            Math.ceil(
+              records.filter((r) =>
+                r.petName.toLowerCase().includes(search.toLowerCase())
+              ).length / recordsPerPage
+            )
+          }
+          className="px-3 py-1 rounded-md bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
+        >
+          다음
+        </button>
+      </div>
+
       {showDetail && selectedRecord && (
         <ChartDetailModal
           onClose={handleCloseModal}
+          userRole="ROLE_STAFF"
           record={{
+            id: selectedRecord.id,
+            reservationId: selectedRecord.reservationId,
+            userId: selectedRecord.userId,
+            doctorId: selectedRecord.doctorId,
             petName: selectedRecord.petName,
             weight: selectedRecord.weight || 0,
             age: selectedRecord.age || 0,
@@ -342,6 +422,7 @@ export default function StaffMedicalRecord({
             treatment: selectedRecord.treatment || "",
             surgery: selectedRecord.surgery
               ? {
+                  id: selectedRecord.surgery.id,
                   surgeryName: selectedRecord.surgery.surgeryName || "",
                   surgeryDate: selectedRecord.surgery.surgeryDate || "",
                   anesthesiaType: selectedRecord.surgery.anesthesiaType || "",
@@ -351,6 +432,7 @@ export default function StaffMedicalRecord({
               : undefined,
             hospitalization: selectedRecord.hospitalization
               ? {
+                  id: selectedRecord.hospitalization.id,
                   admissionDate:
                     selectedRecord.hospitalization.admissionDate || "",
                   dischargeDate:
@@ -361,6 +443,7 @@ export default function StaffMedicalRecord({
               : undefined,
             checkups:
               selectedRecord.checkups?.map((checkup) => ({
+                id: checkup.id,
                 checkupType: checkup.checkupType || "",
                 checkupDate: checkup.checkupDate || "",
                 result: checkup.result || "",
@@ -379,6 +462,7 @@ export default function StaffMedicalRecord({
           onClose={handleCloseModal}
           record={selectedRecord}
           currentUserId={selectedRecord.doctorId || 0}
+          mode={selectedRecord.hasMedicalRecord ? "edit" : "create"}
           onSaved={(id, reservationId) => handleSaved(id, reservationId)}
         />
       )}

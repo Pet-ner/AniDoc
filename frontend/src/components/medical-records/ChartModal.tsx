@@ -1,52 +1,8 @@
 import { useState, useEffect } from "react";
-
-interface MedicalRecord {
-  id: number;
-  reservationTime: string;
-  petName: string;
-  symptom: string;
-  doctorName: string;
-  status: string;
-  userId: number;
-  reservationId?: number;
-  hasMedicalRecord: boolean;
-  weight?: number;
-  age?: number;
-  diagnosis?: string;
-  treatment?: string;
-  surgery?: {
-    surgeryName?: string;
-    surgeryDate?: string;
-    anesthesiaType?: string;
-    surgeryNote?: string;
-    resultUrl?: string;
-  };
-  hospitalization?: {
-    admissionDate?: string;
-    dischargeDate?: string;
-    reason?: string;
-    imageUrl?: string;
-  };
-  checkups?: {
-    checkupType?: string;
-    checkupDate?: string;
-    result?: string;
-    resultUrl?: string;
-  }[];
-  userName?: string;
-  petId?: number;
-  doctorId?: number;
-  reservationDate?: string;
-}
-
-interface ChartModalProps {
-  onClose: () => void;
-  record: MedicalRecord | null;
-  currentUserId: number;
-  onSaved?: (id: number, reservationId: number) => void;
-}
+import { MedicalRecord } from "../../types/medicalRecordTypes";
 
 interface TestRecord {
+  id?: number;
   testName: string;
   testDate: string;
   testResult: string;
@@ -73,15 +29,28 @@ interface ReservationInfo {
   hasMedicalRecord: boolean;
 }
 
+interface ChartModalProps {
+  onClose: () => void;
+  record: MedicalRecord;
+  currentUserId: number;
+  mode?: "create" | "edit";
+  onSaved?: (id: number, reservationId: number) => void;
+  hospitalizationId?: number;
+  surgeryId?: number;
+}
+
 export default function ChartModal({
   onClose,
   record,
   currentUserId,
+  mode,
   onSaved,
+  hospitalizationId,
+  surgeryId,
 }: ChartModalProps) {
   const reservationDetails = record
     ? {
-        reservationId: record.id,
+        reservationId: record.reservationId || record.id,
         userId: record.userId,
         userName: record.userName || "",
         petId: record.petId || 0,
@@ -123,47 +92,141 @@ export default function ChartModal({
   const [petId, setPetId] = useState<number>(record?.petId || 0);
 
   const [testRecords, setTestRecords] = useState<TestRecord[]>(
-    record?.checkups?.map((checkup) => ({
-      testName: checkup.checkupType || "",
-      testDate: checkup.checkupDate || "",
-      testResult: checkup.result || "",
-      testFile: null,
-      testFileUrl: checkup.resultUrl,
-      testFilePreview: checkup.resultUrl?.startsWith("http")
-        ? checkup.resultUrl
-        : undefined,
-    })) || []
+    record?.checkups?.map(
+      (checkup: {
+        id?: number;
+        checkupType?: string;
+        checkupDate?: string;
+        result?: string;
+        resultUrl?: string;
+      }) => ({
+        id: checkup.id,
+        testName: checkup.checkupType || "",
+        testDate: checkup.checkupDate || "",
+        testResult: checkup.result || "",
+        testFile: null,
+        testFileUrl: checkup.resultUrl,
+        testFilePreview: undefined,
+      })
+    ) || []
   );
 
-  const [surgeryName, setSurgeryName] = useState(
-    record?.surgery?.surgeryName ?? ""
-  );
-  const [surgeryDate, setSurgeryDate] = useState(
-    record?.surgery?.surgeryDate ?? ""
-  );
-  const [anesthesiaType, setAnesthesiaType] = useState<string>(
-    record?.surgery?.anesthesiaType ?? ""
-  );
-  const [surgeryDetail, setSurgeryDetail] = useState(
-    record?.surgery?.surgeryNote ?? ""
-  );
+  // State for Surgery Record including ID
+  const [surgeryRecord, setSurgeryRecord] = useState({
+    id: surgeryId,
+    surgeryName: record?.surgery?.surgeryName ?? "",
+    surgeryDate: record?.surgery?.surgeryDate ?? "",
+    anesthesiaType: record?.surgery?.anesthesiaType ?? "",
+    surgeryNote: record?.surgery?.surgeryNote ?? "",
+  });
 
-  const [admissionDate, setAdmissionDate] = useState(
-    record?.hospitalization?.admissionDate ?? ""
-  );
-  const [dischargeDate, setDischargeDate] = useState(
-    record?.hospitalization?.dischargeDate ?? ""
-  );
-  const [hospitalReason, setHospitalReason] = useState(
-    record?.hospitalization?.reason ?? ""
-  );
-  const [hospitalImageUrl, setHospitalImageUrl] = useState<string | null>(
-    record?.hospitalization?.imageUrl ?? null
-  );
-  const [hospitalImage, setHospitalImage] = useState<File | null>(null);
-  const [hospitalImagePreview, setHospitalImagePreview] = useState<
-    string | null
-  >(record?.hospitalization?.imageUrl ?? null);
+  // State for Hospitalization Record including ID
+  const [hospitalizationRecord, setHospitalizationRecord] = useState({
+    id: hospitalizationId,
+    admissionDate: record?.hospitalization?.admissionDate ?? "",
+    dischargeDate: record?.hospitalization?.dischargeDate ?? "",
+    reason: record?.hospitalization?.reason ?? "",
+    imageUrl: record?.hospitalization?.imageUrl ?? null,
+    imageFile: null as File | null,
+    imagePreview: null as string | null,
+  });
+
+  const handleSurgeryChange = (
+    field: keyof typeof surgeryRecord,
+    value: any
+  ) => {
+    setSurgeryRecord((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleHospitalizationChange = (
+    field: keyof typeof hospitalizationRecord,
+    value: any
+  ) => {
+    setHospitalizationRecord((prev) => ({ ...prev, [field]: value }));
+  };
+
+  useEffect(() => {}, [testRecords, surgeryRecord, hospitalizationRecord]);
+
+  useEffect(() => {
+    const fetchPresignedUrls = async () => {
+      // Fetch hospitalization image URL
+      const originalHospitalImageUrl = record?.hospitalization?.imageUrl;
+      if (originalHospitalImageUrl) {
+        const s3Key = originalHospitalImageUrl.split(".com/")[1];
+        if (s3Key) {
+          try {
+            const res = await fetch(
+              `${
+                process.env.NEXT_PUBLIC_API_BASE_URL
+              }/api/s3/presigned-url/view?s3Key=${encodeURIComponent(s3Key)}`,
+              { credentials: "include" }
+            );
+            if (res.ok) {
+              const data = await res.json();
+              setHospitalizationRecord((prev) => ({
+                ...prev,
+                imagePreview: data.url,
+              }));
+            } else {
+              console.error(
+                "Failed to fetch hospitalization presigned URL",
+                res.status
+              );
+            }
+          } catch (error) {
+            console.error(
+              "Error fetching hospitalization presigned URL",
+              error
+            );
+          }
+        }
+      }
+
+      // Fetch checkup image URLs
+      if (record?.checkups && record.checkups.length > 0) {
+        const fetchUrls = await Promise.all(
+          record.checkups.map(async (checkup) => {
+            if (!checkup.resultUrl) return undefined; // Return undefined if no URL
+            const s3Key = checkup.resultUrl.split(".com/")[1];
+            if (!s3Key) return undefined; // Return undefined if s3Key is invalid
+
+            try {
+              const res = await fetch(
+                `${
+                  process.env.NEXT_PUBLIC_API_BASE_URL
+                }/api/s3/presigned-url/view?s3Key=${encodeURIComponent(s3Key)}`,
+                { credentials: "include" }
+              );
+              if (res.ok) {
+                const data = await res.json();
+                return data.url; // Return the presigned URL
+              } else {
+                console.error(
+                  `Failed to fetch checkup presigned URL for ${s3Key}`,
+                  res.status
+                );
+                return undefined; // Return undefined on fetch error
+              }
+            } catch (error) {
+              console.error(
+                `Error fetching checkup presigned URL for ${s3Key}`,
+                error
+              );
+              return undefined; // Return undefined on exception
+            }
+          })
+        );
+        setTestRecords((prevRecords) =>
+          prevRecords.map((rec, index) => ({
+            ...rec,
+            testFilePreview: fetchUrls[index], // Update preview URL
+          }))
+        );
+      }
+    };
+
+    fetchPresignedUrls();
+  }, [record?.hospitalization?.imageUrl, record?.checkups]); // Re-run effect if original URLs or checkups array change
 
   const handleTestFileUpload = async (idx: number, file: File | null) => {
     if (!file) return;
@@ -210,6 +273,15 @@ export default function ChartModal({
 
   const handleHospitalImageUpload = async (file: File | null) => {
     if (!file) return;
+
+    setHospitalizationRecord((prev) => ({
+      ...prev,
+      imageFile: file,
+      imagePreview: file.type.startsWith("image/")
+        ? URL.createObjectURL(file)
+        : null,
+    }));
+
     try {
       const folder = "HOSPITALIZATION";
       const res = await fetch(
@@ -217,7 +289,8 @@ export default function ChartModal({
           process.env.NEXT_PUBLIC_API_BASE_URL
         }/api/s3/presigned-url?s3Folder=${folder}&fileName=${encodeURIComponent(
           file.name
-        )}&contentType=${encodeURIComponent(file.type)}`,
+        )}&contentType=${encodeURIComponent(file.type)}
+      `,
         {
           credentials: "include",
         }
@@ -231,11 +304,9 @@ export default function ChartModal({
       });
       const objectKey = presignedUrl.split(".com/")[1]?.split("?")[0];
       const finalUrl = `https://anidoc-bucket.s3.ap-northeast-2.amazonaws.com/${objectKey}`;
-      setHospitalImage(file);
-      setHospitalImageUrl(finalUrl);
-      setHospitalImagePreview(
-        file.type.startsWith("image/") ? URL.createObjectURL(file) : null
-      );
+
+      // Update imageUrl in hospitalizationRecord state
+      setHospitalizationRecord((prev) => ({ ...prev, imageUrl: finalUrl }));
     } catch (err) {
       alert("입원 사진 업로드 실패");
     }
@@ -266,6 +337,9 @@ export default function ChartModal({
       return;
     }
 
+    const isEditMode = record?.id !== undefined && mode === "edit";
+    const medicalRecordId = record?.id;
+
     try {
       const medicalPayload = {
         age: parseInt(age) || 0,
@@ -275,21 +349,38 @@ export default function ChartModal({
         doctorId: currentUserId,
       };
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/medical-records?userId=${currentUserId}&reservationId=${reservationDetails.reservationId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(medicalPayload),
-          credentials: "include",
-        }
-      );
+      let res;
+      if (isEditMode && medicalRecordId) {
+        // 수정 모드
+        res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/medical-records/${medicalRecordId}?userId=${currentUserId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(medicalPayload),
+            credentials: "include",
+          }
+        );
+      } else {
+        // 생성 모드
+        res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/medical-records?userId=${currentUserId}&reservationId=${reservationDetails.reservationId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(medicalPayload),
+            credentials: "include",
+          }
+        );
+      }
 
       if (!res.ok) {
         const errorBody = await res.text();
-        console.error("기본 진료기록 저장 실패:", {
+        console.error("진료기록 저장 실패:", {
           status: res.status,
           statusText: res.statusText,
           errorBody,
@@ -319,7 +410,7 @@ export default function ChartModal({
                 errorData,
                 requestDetails: {
                   url: res.url,
-                  method: "POST",
+                  method: isEditMode ? "PUT" : "POST",
                   headers: {
                     "Content-Type": "application/json",
                   },
@@ -342,17 +433,15 @@ export default function ChartModal({
           return;
         }
 
-        throw new Error(
-          `기본 진료기록 저장 실패: ${res.status} - ${errorBody}`
-        );
+        throw new Error(`진료기록 저장 실패: ${res.status} - ${errorBody}`);
       }
 
       const result = await res.json();
-      const medicalRecordId = result.medicalRecord?.id;
+      const newMedicalRecordId = result.medicalRecord?.id || medicalRecordId;
 
-      if (!medicalRecordId) {
+      if (!newMedicalRecordId) {
         console.error(
-          "기본 진료기록 저장 응답에서 medicalRecord ID를 찾을 수 없음:",
+          "진료기록 저장 응답에서 medicalRecord ID를 찾을 수 없음:",
           result
         );
         alert(
@@ -361,8 +450,9 @@ export default function ChartModal({
         onClose();
         return;
       }
+
       if (record?.reservationId !== undefined && onSaved) {
-        onSaved(medicalRecordId, record.reservationId);
+        onSaved(newMedicalRecordId, record.reservationId);
       }
 
       const petIdToSave = reservationDetails.petId;
@@ -373,65 +463,68 @@ export default function ChartModal({
         );
       }
 
-      if (showTest && testRecords.length > 0) {
-        for (const rec of testRecords) {
-          if (!rec.testName || !rec.testDate || !rec.testResult) {
-            console.warn(
-              "필수 필드가 누락된 검사 기록이 있습니다. 저장하지 않습니다.",
-              rec
-            );
-            continue;
-          }
-          const checkupRes = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/medical-records/${medicalRecordId}/checkup?userId=${currentUserId}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                medicalRecordId: medicalRecordId,
-                petId: petIdToSave,
-                checkupType: rec.testName,
-                checkupDate: rec.testDate,
-                result: rec.testResult,
-                resultUrl: rec.testFileUrl,
-              }),
-              credentials: "include",
-            }
-          );
-          if (!checkupRes.ok) {
-            const errorBody = await checkupRes.text();
-            console.error(
-              "개별 검사 기록 저장 실패:",
-              checkupRes.status,
-              errorBody
-            );
-            alert(`일부 검사 기록 저장 실패: ${checkupRes.status}`);
-          }
+      if (
+        showSurgery &&
+        surgeryRecord.surgeryName &&
+        surgeryRecord.surgeryDate &&
+        surgeryRecord.anesthesiaType &&
+        surgeryRecord.surgeryNote
+      ) {
+        const surgeryRecordId = surgeryId;
+        const method = surgeryRecordId ? "PUT" : "POST";
+        const url = `${
+          process.env.NEXT_PUBLIC_API_BASE_URL
+        }/api/medical-records/${newMedicalRecordId}/surgery${
+          surgeryRecordId ? `/${surgeryRecordId}` : ""
+        }?userId=${currentUserId}`;
+
+        const surgeryRes = await fetch(url, {
+          method: method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            medicalRecordId: newMedicalRecordId,
+            petId: petIdToSave,
+            surgeryName: surgeryRecord.surgeryName,
+            surgeryDate: surgeryRecord.surgeryDate,
+            surgeryNote: surgeryRecord.surgeryNote,
+            anesthesiaType: surgeryRecord.anesthesiaType,
+          }),
+          credentials: "include",
+        });
+        if (!surgeryRes.ok) {
+          const errorBody = await surgeryRes.text();
+          console.error("수술 기록 저장 실패:", surgeryRes.status, errorBody);
+          alert(`수술 기록 저장 실패: ${surgeryRes.status}`);
         }
       }
 
       if (
         showHospitalization &&
-        admissionDate &&
-        dischargeDate &&
-        hospitalReason
+        hospitalizationRecord.admissionDate &&
+        hospitalizationRecord.dischargeDate &&
+        hospitalizationRecord.reason
       ) {
-        const hospitalizationRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/medical-records/${medicalRecordId}/hospitalization?userId=${currentUserId}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              medicalRecordId: medicalRecordId,
-              petId: petIdToSave,
-              admissionDate,
-              dischargeDate,
-              reason: hospitalReason,
-              imageUrl: hospitalImageUrl,
-            }),
-            credentials: "include",
-          }
-        );
+        const hospitalizationRecordId = hospitalizationId;
+        const method = hospitalizationRecordId ? "PUT" : "POST";
+        const url = `${
+          process.env.NEXT_PUBLIC_API_BASE_URL
+        }/api/medical-records/${newMedicalRecordId}/hospitalization${
+          hospitalizationRecordId ? `/${hospitalizationRecordId}` : ""
+        }?userId=${currentUserId}`;
+
+        const hospitalizationRes = await fetch(url, {
+          method: method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            medicalRecordId: newMedicalRecordId,
+            petId: petIdToSave,
+            admissionDate: hospitalizationRecord.admissionDate,
+            dischargeDate: hospitalizationRecord.dischargeDate,
+            reason: hospitalizationRecord.reason,
+            imageUrl: hospitalizationRecord.imageUrl,
+          }),
+          credentials: "include",
+        });
         if (!hospitalizationRes.ok) {
           const errorBody = await hospitalizationRes.text();
           console.error(
@@ -443,33 +536,46 @@ export default function ChartModal({
         }
       }
 
-      if (
-        showSurgery &&
-        surgeryName &&
-        surgeryDate &&
-        anesthesiaType &&
-        surgeryDetail
-      ) {
-        const surgeryRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/medical-records/${medicalRecordId}/surgery?userId=${currentUserId}`,
-          {
-            method: "POST",
+      if (showTest && testRecords.length > 0) {
+        for (const rec of testRecords) {
+          if (!rec.testName || !rec.testDate || !rec.testResult) {
+            console.warn(
+              "필수 필드가 누락된 검사 기록이 있습니다. 저장하지 않습니다.",
+              rec
+            );
+            continue;
+          }
+          const checkupRecordId = rec.id;
+
+          const method = checkupRecordId ? "PUT" : "POST";
+          const url = `${
+            process.env.NEXT_PUBLIC_API_BASE_URL
+          }/api/medical-records/${newMedicalRecordId}/checkup${
+            checkupRecordId ? `/${checkupRecordId}` : ""
+          }?userId=${currentUserId}`;
+
+          const checkupRes = await fetch(url, {
+            method: method,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              medicalRecordId: medicalRecordId,
+              medicalRecordId: newMedicalRecordId,
               petId: petIdToSave,
-              surgeryName: surgeryName,
-              surgeryDate: surgeryDate,
-              surgeryNote: surgeryDetail,
-              anesthesiaType: anesthesiaType,
+              checkupType: rec.testName,
+              checkupDate: rec.testDate,
+              result: rec.testResult,
+              resultUrl: rec.testFileUrl,
             }),
             credentials: "include",
+          });
+          if (!checkupRes.ok) {
+            const errorBody = await checkupRes.text();
+            console.error(
+              "개별 검사 기록 저장 실패:",
+              checkupRes.status,
+              errorBody
+            );
+            alert(`일부 검사 기록 저장 실패: ${checkupRes.status}`);
           }
-        );
-        if (!surgeryRes.ok) {
-          const errorBody = await surgeryRes.text();
-          console.error("수술 기록 저장 실패:", surgeryRes.status, errorBody);
-          alert(`수술 기록 저장 실패: ${surgeryRes.status}`);
         }
       }
 
@@ -778,8 +884,10 @@ export default function ChartModal({
                     수술명
                   </label>
                   <input
-                    value={surgeryName}
-                    onChange={(e) => setSurgeryName(e.target.value)}
+                    value={surgeryRecord.surgeryName}
+                    onChange={(e) =>
+                      handleSurgeryChange("surgeryName", e.target.value)
+                    }
                     className="w-full bg-white border border-gray-300 rounded px-2 py-2 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400"
                     placeholder="예: 슬개골 탈구 수술"
                   />
@@ -790,8 +898,10 @@ export default function ChartModal({
                   </label>
                   <input
                     type="date"
-                    value={surgeryDate}
-                    onChange={(e) => setSurgeryDate(e.target.value)}
+                    value={surgeryRecord.surgeryDate}
+                    onChange={(e) =>
+                      handleSurgeryChange("surgeryDate", e.target.value)
+                    }
                     className="w-full bg-white border border-gray-300 rounded px-2 py-2 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400"
                   />
                 </div>
@@ -800,8 +910,10 @@ export default function ChartModal({
                     마취 종류
                   </label>
                   <select
-                    value={anesthesiaType}
-                    onChange={(e) => setAnesthesiaType(e.target.value)}
+                    value={surgeryRecord.anesthesiaType}
+                    onChange={(e) =>
+                      handleSurgeryChange("anesthesiaType", e.target.value)
+                    }
                     className="w-full bg-white border border-gray-300 rounded px-2 py-2 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400"
                   >
                     <option value="">선택하세요</option>
@@ -815,8 +927,10 @@ export default function ChartModal({
                     수술 내용
                   </label>
                   <textarea
-                    value={surgeryDetail}
-                    onChange={(e) => setSurgeryDetail(e.target.value)}
+                    value={surgeryRecord.surgeryNote}
+                    onChange={(e) =>
+                      handleSurgeryChange("surgeryNote", e.target.value)
+                    }
                     className="w-full bg-white border border-gray-300 rounded px-2 py-2 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400"
                   />
                 </div>
@@ -850,8 +964,14 @@ export default function ChartModal({
                   </label>
                   <input
                     type="date"
-                    value={admissionDate}
-                    onChange={(e) => setAdmissionDate(e.target.value)}
+                    value={hospitalizationRecord.admissionDate}
+                    onChange={(e) =>
+                      handleHospitalizationChange(
+                        "admissionDate",
+                        e.target.value
+                      )
+                    }
+                    max={hospitalizationRecord.dischargeDate || undefined}
                     className="w-full bg-white border border-gray-300 rounded px-2 py-2 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400"
                   />
                 </div>
@@ -861,8 +981,14 @@ export default function ChartModal({
                   </label>
                   <input
                     type="date"
-                    value={dischargeDate}
-                    onChange={(e) => setDischargeDate(e.target.value)}
+                    value={hospitalizationRecord.dischargeDate}
+                    onChange={(e) =>
+                      handleHospitalizationChange(
+                        "dischargeDate",
+                        e.target.value
+                      )
+                    }
+                    min={hospitalizationRecord.admissionDate || undefined}
                     className="w-full bg-white border border-gray-300 rounded px-2 py-2 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400"
                   />
                 </div>
@@ -871,8 +997,10 @@ export default function ChartModal({
                     입원 사유
                   </label>
                   <textarea
-                    value={hospitalReason}
-                    onChange={(e) => setHospitalReason(e.target.value)}
+                    value={hospitalizationRecord.reason}
+                    onChange={(e) =>
+                      handleHospitalizationChange("reason", e.target.value)
+                    }
                     className="w-full bg-white border border-gray-300 rounded px-2 py-2 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400"
                   />
                 </div>
@@ -889,14 +1017,14 @@ export default function ChartModal({
                     }}
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
                   />
-                  {hospitalImage && (
+                  {hospitalizationRecord.imageFile && (
                     <div className="mt-1 text-xs text-gray-500">
-                      {hospitalImage.name}
+                      {hospitalizationRecord.imageFile.name}
                     </div>
                   )}
-                  {hospitalImagePreview && (
+                  {hospitalizationRecord.imagePreview && (
                     <img
-                      src={hospitalImagePreview}
+                      src={hospitalizationRecord.imagePreview}
                       alt="미리보기"
                       className="mt-2 max-h-32 rounded"
                     />

@@ -1,5 +1,7 @@
 server:
   port: 8090
+  tomcat:
+    uri-encoding: UTF-8 #로그에 문자 깨짐 방지
 spring:
   output:
     ansi:

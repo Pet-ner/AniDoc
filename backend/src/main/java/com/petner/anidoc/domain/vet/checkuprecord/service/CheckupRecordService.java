@@ -113,6 +113,29 @@ public class CheckupRecordService {
         return CheckupRecordResponseDto.from(checkupRecord);
     }
 
+    @Transactional
+    public void deleteAllByMedicalRecordId(Long userId, Long medicalRecordId) throws AccessDeniedException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+
+        if (!user.getRole().equals(UserRole.ROLE_STAFF)) {
+            throw new AccessDeniedException("검사 기록을 삭제할 권한이 없습니다.");
+        }
+
+        MedicalRecord medicalRecord = medicalRecordRepository.findByIdAndIsDeletedFalse(medicalRecordId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 진료기록이 존재하지 않거나 삭제되었습니다."));
+
+        List<CheckupRecord> checkupRecords = checkupRecordRepository.findAllByMedicalRecordIdAndIsDeletedFalse(medicalRecordId);
+
+        for (CheckupRecord record : checkupRecords) {
+            record.markAsDeleted();
+        }
+
+        if (!checkupRecords.isEmpty()) {
+            medicalRecord.setIsCheckedUp(false);
+        }
+    }
+
 
 
 }

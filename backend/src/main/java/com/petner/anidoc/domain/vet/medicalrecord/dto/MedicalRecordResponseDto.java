@@ -4,15 +4,13 @@ import com.petner.anidoc.domain.vet.checkuprecord.dto.CheckupRecordResponseDto;
 import com.petner.anidoc.domain.vet.hospitalizationrecord.dto.HospitalizationRecordResponseDto;
 import com.petner.anidoc.domain.vet.medicalrecord.entity.MedicalRecord;
 import com.petner.anidoc.domain.vet.surgeryrecord.dto.SurgeryRecordResponseDto;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

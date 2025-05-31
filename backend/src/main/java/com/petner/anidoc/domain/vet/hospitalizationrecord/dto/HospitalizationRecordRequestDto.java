@@ -10,6 +10,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HospitalizationRecordRequestDto {
+    private Long id;
     private Long medicalRecordId;
     private Long petId;
 
