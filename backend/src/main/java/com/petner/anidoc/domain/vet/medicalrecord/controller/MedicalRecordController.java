@@ -13,6 +13,7 @@ import com.petner.anidoc.domain.vet.medicalrecord.service.MedicalRecordService;
 import com.petner.anidoc.domain.vet.surgeryrecord.dto.SurgeryRecordResponseDto;
 import com.petner.anidoc.domain.vet.surgeryrecord.entity.SurgeryRecord;
 import com.petner.anidoc.domain.vet.surgeryrecord.repository.SurgeryRecordRepository;
+import com.petner.anidoc.global.security.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.Table;
@@ -44,9 +45,9 @@ public class MedicalRecordController {
     @Operation(summary = "진료기록 생성", description = "예약 ID와 사용자 ID를 기반으로 진료기록을 생성")
     public ResponseEntity<?> createMedicalRecord(
             @RequestBody MedicalRecordRequestDto dto,
-            @RequestParam Long userId,
-            @RequestParam Long reservationId/*,
-            @AuthenticationPrincipal SecurityUser userDetails*/) throws AccessDeniedException {
+            @AuthenticationPrincipal SecurityUser user,
+            @RequestParam Long reservationId) throws AccessDeniedException {
+        Long userId = user.getId();
         MedicalRecordResponseDto response = medicalRecordService.createMedicalRecord(dto,userId,reservationId);
 
         Map<String, Object> result = new HashMap<>();
@@ -59,8 +60,9 @@ public class MedicalRecordController {
     @GetMapping("/{medicalRecordId}")
     @Operation(summary = "진료기록 단건 상세 조회", description = "사용자 ID와 진료기록 ID를 기반으로 진료기록을 조회")
     public ResponseEntity<?> getMedicalRecord(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal SecurityUser user,
             @PathVariable Long medicalRecordId){
+        Long userId = user.getId();
         MedicalRecordResponseDto response = medicalRecordService.getMedicalRecord(userId, medicalRecordId);
 
         Map<String, Object> result = new HashMap<>();
@@ -74,9 +76,10 @@ public class MedicalRecordController {
     @PutMapping("/{medicalRecordId}")
     @Operation(summary = "진료기록 수정", description = "사용자 ID와 진료기록 ID를 기반으로 진료기록을 수정")
     public ResponseEntity<MedicalRecordResponseDto> updateMedicalRecord(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal SecurityUser user,
             @PathVariable Long medicalRecordId,
             @RequestBody MedicalRecordRequestDto medicalRecordRequestDto) throws AccessDeniedException {
+        Long userId = user.getId();
         MedicalRecordResponseDto response = medicalRecordService.updateMedicalRecord(userId, medicalRecordId, medicalRecordRequestDto);
         return ResponseEntity.ok(response);
     }
@@ -84,8 +87,9 @@ public class MedicalRecordController {
     @DeleteMapping("/{medicalRecordId}")
     @Operation(summary = "진료기록 삭제", description = "사용자 ID와 진료기록 ID를 기반으로 진료기록을 삭제(soft delete)")
     public ResponseEntity<Void> deleteMedicalRecord(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal SecurityUser user,
             @PathVariable Long medicalRecordId) throws AccessDeniedException {
+        Long userId = user.getId();
         medicalRecordService.deleteMedicalRecord(medicalRecordId,userId);
         return ResponseEntity.noContent().build();
 
@@ -94,9 +98,10 @@ public class MedicalRecordController {
     @GetMapping("/by-reservation/{reservationId}")
     public ResponseEntity<?> getMedicalRecordByReservationId(
             @PathVariable Long reservationId,
-            @RequestParam Long userId
+            @AuthenticationPrincipal SecurityUser user
     ) {
         try {
+            Long userId = user.getId();
 
             // 1. 기본 진료기록 엔티티 조회
             MedicalRecord record = medicalRecordService.getMedicalRecordByReservationId(reservationId, userId);
@@ -139,7 +144,8 @@ public class MedicalRecordController {
 
     @GetMapping("/by-user/{userId}")
     @Operation(summary = "보호자 ID로 진료기록 목록 조회", description = "특정 보호자의 모든 진료기록을 반환")
-    public ResponseEntity<?> getMedicalRecordsByUserId(@PathVariable Long userId) {
+    public ResponseEntity<?> getMedicalRecordsByUserId(@AuthenticationPrincipal SecurityUser user) {
+        Long userId = user.getId();
         List<MedicalRecordResponseDto> records = medicalRecordService.getMedicalRecordsByUserId(userId);
 
         return ResponseEntity.ok(Map.of(
