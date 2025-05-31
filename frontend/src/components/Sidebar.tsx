@@ -14,6 +14,7 @@ import {
   Megaphone,
   Package,
   Syringe,
+  Users,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -50,6 +51,19 @@ export default function Sidebar() {
               <Home size={20} className="mr-3" />
               <span>대시보드</span>
             </Link>
+          </li>
+          <li>
+            {user.userRole === "ROLE_ADMIN" && (
+              <Link
+                href="/staff-management"
+                className={`flex items-center p-3 rounded-lg ${isActive(
+                  "/staff-management"
+                )}`}
+              >
+                <Users size={20} className="mr-3" />
+                <span>직원 관리</span>
+              </Link>
+            )}
           </li>
           <li>
             <Link
@@ -120,21 +134,6 @@ export default function Sidebar() {
             >
               <Megaphone size={20} className="mr-3" />
               <span>공지사항</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/chats"
-              className={`flex items-center p-3 rounded-lg ${isActive(
-                "/chats"
-              )}`}
-            >
-              <MessageSquare size={20} className="mr-3" />
-              <span>1:1 채팅</span>
-              {/* 안읽은 메시지 수 */}
-              {/* <div className="ml-auto bg-red-500 text-white rounded-full text-xs px-2 py-1">
-                2
-              </div> */}
             </Link>
           </li>
         </ul>

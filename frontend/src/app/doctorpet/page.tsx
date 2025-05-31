@@ -543,14 +543,6 @@ const DoctorPetManagement = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      {/* 헤더 섹션 */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">반려동물 관리</h1>
-        <p className="text-gray-600">
-          등록된 반려동물 정보를 조회하고 관리할 수 있습니다.
-        </p>
-      </div>
-
       {/* 검색 및 필터 섹션 */}
       <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
         <div className="flex justify-between items-center mb-6">

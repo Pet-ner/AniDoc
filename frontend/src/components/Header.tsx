@@ -3,7 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
-import { Bell, Calendar, Megaphone, User, ChevronDown, Syringe } from "lucide-react"; // Syringe 아이콘 추가
+import {
+  Bell,
+  Calendar,
+  Megaphone,
+  User,
+  ChevronDown,
+  Syringe,
+} from "lucide-react"; // Syringe 아이콘 추가
 import NotificationsModal from "./NotificationsModal";
 import NotificationsList from "@/components/NotificationsList";
 import { formatTimeForNotification } from "@/utils/formatTimeForNotification";
@@ -69,6 +76,7 @@ export default function Header() {
       "/chats": "1:1 채팅",
       "/admin/reservations": "예약 관리",
       "/profile": "계정 설정",
+      "/staff-management": "직원 관리",
     };
 
     return routes[pathname] || "진료 예약";
