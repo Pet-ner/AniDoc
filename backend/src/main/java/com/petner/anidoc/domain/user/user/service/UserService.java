@@ -1,10 +1,7 @@
 package com.petner.anidoc.domain.user.user.service;
 
 import com.petner.anidoc.domain.user.user.dto.*;
-import com.petner.anidoc.domain.user.user.entity.SsoProvider;
-import com.petner.anidoc.domain.user.user.entity.User;
-import com.petner.anidoc.domain.user.user.entity.UserRole;
-import com.petner.anidoc.domain.user.user.entity.UserStatus;
+import com.petner.anidoc.domain.user.user.entity.*;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import com.petner.anidoc.domain.vet.vet.entity.VetInfo;
 import com.petner.anidoc.domain.vet.vet.repository.VetInfoRepository;
@@ -74,13 +71,12 @@ public class UserService {
 
         // 의료진인 경우 상태 설정
         if (dto.getRole() == UserRole.ROLE_STAFF) {
-            user.updateStatus(UserStatus.ON_DUTY);
+            user.updateStatus(UserStatus.ON_DUTY); // 기본 근무 상태 추가 적용
+            user.setApprovalStatus(ApprovalStatus.PENDING);
         }
 
         return userRepository.save(user);
     }
-
-    //TODO: 비밀번호 확인 기능
 
     // ✅ 일반 로그인
     @Transactional
@@ -95,6 +91,16 @@ public class UserService {
 
         if (!isMatch) {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
+        }
+
+        if (user.getRole() == UserRole.ROLE_STAFF &&
+            user.getApprovalStatus() != ApprovalStatus.APPROVED){
+
+            if(user.getApprovalStatus() == ApprovalStatus.PENDING){
+                throw new CustomException(ErrorCode.APPROVAL_PENDING);
+            } else if (user.getApprovalStatus() == ApprovalStatus.REJECTED){
+                throw new CustomException(ErrorCode.APPROVAL_REJECTED);
+            }
         }
 
         // refreshToken 생성
@@ -132,6 +138,45 @@ public class UserService {
     @Transactional
     public void deleteUser(long userId) {
         userRepository.deleteById(userId);
+    }
+
+
+    // 📍 가입 승인
+
+    // ✅ 의료진 가입 승인
+    @Transactional
+    public void approveUser(Long userId, Long adminId){
+        User user = userRepository.findById(userId)
+            .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (user.getRole() != UserRole.ROLE_STAFF){
+            throw new CustomException(ErrorCode.INVALID_USER_ROLE);
+
+        }
+
+        user.setApprovalStatus(ApprovalStatus.APPROVED);
+        userRepository.save(user);
+    }
+
+    // ✅`승인 거부
+    @Transactional
+    public void rejectUser(Long userId, Long adminId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        user.setApprovalStatus(ApprovalStatus.REJECTED);
+        userRepository.save(user);
+    }
+
+    // ✅`승인 대기 중인 사용자 목록 조회
+    @Transactional(readOnly = true)
+    public List<UserResponseDto> getPendingApprovalUsers() {
+        List<User> pendingUsers = userRepository
+                .findByRoleAndApprovalStatus(UserRole.ROLE_STAFF, ApprovalStatus.PENDING);
+
+        return pendingUsers.stream()
+                .map(UserResponseDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
     // 📍 조회

@@ -1,5 +1,6 @@
 package com.petner.anidoc.domain.user.user.repository;
 
+import com.petner.anidoc.domain.user.user.entity.ApprovalStatus;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.entity.UserRole;
 import com.petner.anidoc.domain.user.user.entity.UserStatus;
@@ -24,6 +25,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 사용자 역할, 상태별 조회
     @Query("SELECT u FROM User u WHERE u.role = :role AND u.status = :status")
     List<User> findByRoleAndStatus(@Param("role") UserRole role, @Param("status") UserStatus status);
+
+    List<User> findByRoleAndApprovalStatus(UserRole role, ApprovalStatus approvalStatus);
 
 
     @Modifying
