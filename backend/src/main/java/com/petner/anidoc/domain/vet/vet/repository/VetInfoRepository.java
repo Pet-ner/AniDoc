@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VetInfoRepository extends JpaRepository<VetInfo, Long> {
+    boolean existsByVetNumber(String vetNumber);
 }
