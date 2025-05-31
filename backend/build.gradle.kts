@@ -55,6 +55,16 @@ dependencies {
 
 	//Oauth2
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+
+	//웹소켓
+	implementation("org.springframework.boot:spring-boot-starter-websocket")
+
+	//S3 관련
+	implementation("software.amazon.awssdk:s3:2.25.7")
+	implementation("software.amazon.awssdk:auth:2.25.7")
+	implementation("software.amazon.awssdk:regions:2.25.7")
+
+
 }
 
 tasks.withType<Test> {

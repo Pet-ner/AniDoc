@@ -1,0 +1,4 @@
+custom:
+  cookieDomain: localhost
+  frontUrl: localhost:3000
+  backend: localhost:8090

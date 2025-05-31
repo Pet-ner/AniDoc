@@ -8,6 +8,7 @@ import com.petner.anidoc.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,7 +25,10 @@ import java.util.List;
 @SuperBuilder
 @ToString(exclude = "password")
 @Table(name = "users")
+@DynamicUpdate
 public class User extends BaseEntity implements UserDetails {
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vet_id")
     private VetInfo vetInfo;
@@ -49,6 +53,10 @@ public class User extends BaseEntity implements UserDetails {
     private UserRole role;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private UserStatus status;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "sso_provider")
     private SsoProvider ssoProvider;
 
@@ -57,6 +65,7 @@ public class User extends BaseEntity implements UserDetails {
 
     @Column(name = "refresh_token", unique = true)
     private String refreshToken;
+
 
     @Builder.Default
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
@@ -73,6 +82,7 @@ public class User extends BaseEntity implements UserDetails {
     public boolean isAdmin() {
         return UserRole.ROLE_ADMIN.equals(this.role);
     }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -92,5 +102,35 @@ public class User extends BaseEntity implements UserDetails {
     @Override
     public String getUsername() {
         return this.email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired(){
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked(){
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired(){
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled(){
+        return true;
+    }
+
+    //refreshToken 발급
+    public void updateRefreshToken(String refreshToken){
+        this.refreshToken = refreshToken;
+    }
+
+
+    public void updateStatus(UserStatus status) {
+        this.status = status;
     }
 }

@@ -1,5 +1,6 @@
 package com.petner.anidoc.domain.notice.entity;
 
+import com.petner.anidoc.domain.notice.dto.NoticeRequestDto;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.global.jpa.BaseEntity;
 import jakarta.persistence.*;
@@ -26,4 +27,9 @@ public class Notice extends BaseEntity {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    public void updateFromDto(NoticeRequestDto noticeRequestDto) {
+        this.title = noticeRequestDto.getTitle();
+        this.content = noticeRequestDto.getContent();
+    }
 }
