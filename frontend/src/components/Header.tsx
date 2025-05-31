@@ -68,6 +68,7 @@ export default function Header() {
       "/doctorpetvaccine": "접종 관리",
       "/chats": "1:1 채팅",
       "/admin/reservations": "예약 관리",
+      "/profile": "계정 설정",
     };
 
     return routes[pathname] || "진료 예약";
@@ -669,7 +670,10 @@ export default function Header() {
                 </p>
               </div>
               <div className="py-1">
-                <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
+                <button
+                  onClick={() => router.push("/profile")}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                >
                   계정 설정
                 </button>
                 <button

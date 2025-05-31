@@ -9,11 +9,20 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
+interface VetInfo {
+  id: number;
+  vetName: string;
+}
+
 interface User {
   id: number;
   name: string;
   userRole: string;
   email?: string;
+  password?: string;
+  vetInfoId?: number;
+  phoneNumber?: string;
+  emergencyContact?: string;
 }
 
 interface UserContextType {
@@ -70,8 +79,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
       );
 
       if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
+        //json 파싱 오류 처리
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const userData = await response.json();
+          setUser(userData);
+        } else {
+          console.error("Unexpected content type:", contentType);
+          throw new Error("Invalid response format");
+        }
       } else {
         // 인증 실패 - 로그인 상태 초기화
         setUser(null);

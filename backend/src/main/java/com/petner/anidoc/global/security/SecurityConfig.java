@@ -107,7 +107,6 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-
         // 또는 구체적인 도메인 설정
          configuration.setAllowedOrigins(List.of(
              "http://localhost:3000",

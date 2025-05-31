@@ -74,7 +74,7 @@ custom:
     frontUrl: "http://${custom.dev.cookieDomain}:3000"
     backUrl: "http://${custom.dev.cookieDomain}:${server.port}"
   prod:
-    cookieDomain: anidoc.site
+    cookieDomain: NEED_TO_INPUT
     frontUrl: "https://www.${custom.prod.cookieDomain}"
     backUrl: "https://api.${custom.prod.cookieDomain}"
   site:

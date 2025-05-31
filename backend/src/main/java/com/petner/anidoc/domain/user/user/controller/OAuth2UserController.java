@@ -72,7 +72,7 @@ public class OAuth2UserController {
         Long userId = currentUser.getId();
 
         // 사용자 ID와 업데이트 정보를 서비스로 전달하여 사용자 정보 수정
-        User updatedUser = userService.updateUser(userId, updateDto);
+        User updatedUser = userService.updateSocialUser(userId, updateDto);
 
         // 수정된 사용자 정보를 응답으로 반환
         return ResponseEntity.ok(UserResponseDto.fromEntity(updatedUser));

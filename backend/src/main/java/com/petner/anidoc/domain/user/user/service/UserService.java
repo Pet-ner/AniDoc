@@ -237,9 +237,29 @@ public class UserService {
     }
 
 
+    @Transactional
+    public User updateuser(Long userId, UserUpdateResponseDto dto){
+        // userId로 User 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // password가 null이거나 비어있으면 기존 비밀번호 유지
+
+        String password = dto.getPassword();
+        if (password != null && !password.isEmpty()) {
+            // 비밀번호 해싱 후 저장
+            user.setPassword(passwordEncoder.encode(password));
+        }
+
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setEmergencyContact(dto.getEmergencyContact());
+
+        return user;
+    }
+
 
     @Transactional
-    public User updateUser(Long userId, SocialSignUpRequestDto updateDto) {
+    public User updateSocialUser(Long userId, SocialSignUpRequestDto updateDto) {
         // userId로 User 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
@@ -264,4 +284,41 @@ public class UserService {
         // 업데이트된 사용자 정보 반환
         return userRepository.findById(userId).orElseThrow();
     }
+
+
+    // 비밀번호 체크
+    @Transactional
+    public boolean verifyCurrentPassword(User user, String inputPassword) {
+
+        // 소셜 로그인 사용자는 비밀번호 확인 불가
+        if (user.getSocialId() != null) {
+            throw new RuntimeException("소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다.");
+        }
+
+        // 현재 비밀번호와 입력된 비밀번호 비교
+        return passwordEncoder.matches(inputPassword, user.getPassword());
+    }
+
+
+
+
+    // 📍 status 관련 service
+
+    // 내 상태 변경
+    public void updateMyStatus(Long id, UserStatus newStatus){
+        User user = userRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("사용자 없음"));
+                user.setStatus(newStatus);
+                userRepository.save(user);
+        }
+
+
+    // 내 상태 조회
+    public UserStatus getStatus(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("사용자를 찾을 수 없습니다."))
+                .getStatus();
+
+    }
+
 }
