@@ -5,6 +5,7 @@ import com.petner.anidoc.domain.user.pet.dto.OwnerPetResponseDTO;
 import com.petner.anidoc.domain.user.pet.entity.Pet;
 import com.petner.anidoc.domain.user.pet.service.OwnerPetRegistService;
 import com.petner.anidoc.domain.user.user.entity.User;
+import com.petner.anidoc.domain.user.user.entity.UserRole;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -119,6 +120,32 @@ public class OwnerPetController {
 
         ownerPetRegistService.deletePet(petId, user);
         return ResponseEntity.ok("삭제되었습니다.");
+    }
+
+
+    //사용자의 반려동물 조회
+    @GetMapping(params = "ownerId")
+    @Operation(summary = "특정 사용자의 반려동물 조회", description = "ownerId로 반려동물 조회 (예약 등록용)")
+    public ResponseEntity<?> findPetsByOwnerId(
+            @RequestParam Long ownerId,
+            @AuthenticationPrincipal UserDetails currentUser) {
+
+        // 권한 확인
+        User user = userRepository.findByEmail(currentUser.getUsername())
+                .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
+
+        // 본인 또는 관리자/의료진만 조회 가능
+        if (!user.getId().equals(ownerId) &&
+                !user.getRole().equals(UserRole.ROLE_ADMIN) &&
+                !user.getRole().equals(UserRole.ROLE_STAFF)) {
+            throw new RuntimeException("조회 권한이 없습니다.");
+        }
+
+        List<Pet> pets = ownerPetRegistService.findAllPetsByOwner(ownerId);
+        List<OwnerPetResponseDTO> ownerPetResponseDTO = pets.stream()
+                .map(OwnerPetResponseDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(ownerPetResponseDTO);
     }
 
 

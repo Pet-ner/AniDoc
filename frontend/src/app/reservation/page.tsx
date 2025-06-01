@@ -29,9 +29,10 @@ export default function CreateReservation() {
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [symptom, setSymptom] = useState<string>("");
-  const [type, setType] = useState<string>("GENERAL"); // 기본값 일반진료
+  const [type, setType] = useState<string>("GENERAL");
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 오늘 날짜 기본값
   useEffect(() => {
@@ -120,9 +121,15 @@ export default function CreateReservation() {
     fetchTimeSlots();
   }, [selectedDate]);
 
-  // 예약 등록 (API 연동)
+  // 예약 등록 (API 연동) - 에러 처리 개선
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 중복 제출 방지
+    if (isSubmitting) {
+      console.log("이미 제출 중입니다.");
+      return;
+    }
 
     if (!selectedPet || !selectedDate || !selectedTime || !type) {
       alert("모든 필수 항목을 입력해주세요.");
@@ -134,9 +141,9 @@ export default function CreateReservation() {
       return;
     }
 
-    try {
-      setLoading(true);
+    setIsSubmitting(true);
 
+    try {
       const requestData = {
         petId: selectedPet,
         reservationDate: selectedDate,
@@ -160,22 +167,85 @@ export default function CreateReservation() {
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "예약 등록에 실패했습니다.");
+        const contentType = response.headers.get("content-type");
+        let errorMessage = "예약 등록에 실패했습니다.";
+
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (jsonError) {
+            errorMessage = await response.text();
+          }
+        } else {
+          errorMessage = await response.text();
+        }
+
+        throw new Error(errorMessage);
       }
 
-      const data = await response.json();
-      console.log("예약 등록 성공:", data);
-
+      console.log("예약 등록 성공");
       alert("예약 등록에 성공했습니다.");
       router.push("/");
     } catch (error: any) {
       console.error("예약 등록 오류:", error);
       alert(error.message || "예약 등록 중 오류가 발생했습니다.");
     } finally {
-      setLoading(false);
+      // 2초 후에 버튼 다시 활성화 (안전장치)
+      setTimeout(() => {
+        setIsSubmitting(false);
+      }, 2000);
     }
   };
+
+  // SSE 이벤트 리스너
+  useEffect(() => {
+    const handleReservationRefresh = (e: Event) => {
+      console.log("[Reservation] 예약 새로고침 이벤트 수신");
+      const customEvent = e as CustomEvent;
+      console.log("[Reservation] 이벤트 상세:", customEvent.detail);
+
+      // 현재 선택된 날짜의 예약 가능 시간을 새로고침
+      if (selectedDate) {
+        const fetchTimeSlots = async () => {
+          try {
+            setLoading(true);
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/reservations/available-slots/${selectedDate}`,
+              {
+                credentials: "include",
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error("예약 가능 시간을 불러오는데 실패했습니다.");
+            }
+
+            const data = await response.json();
+            console.log("예약 가능 시간 새로고침:", data);
+            setTimeSlots(data);
+          } catch (error) {
+            console.error("예약 가능 시간 새로고침 오류:", error);
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        fetchTimeSlots();
+      }
+    };
+
+    window.addEventListener("reservation-refresh", handleReservationRefresh);
+    console.log("[Reservation] 이벤트 리스너 등록됨");
+
+    return () => {
+      window.removeEventListener(
+        "reservation-refresh",
+        handleReservationRefresh
+      );
+      console.log("[Reservation] 이벤트 리스너 제거됨");
+    };
+  }, [selectedDate]);
 
   if (!user) {
     return (
