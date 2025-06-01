@@ -19,39 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
-//    Optional<User> findByRefreshToken(String refreshToken);
-
-    //변경 3개 결과 중 가장 최근 것 1개만 선택(3개결과가 나와서 오류발생)
-    @Query("SELECT u FROM User u WHERE u.refreshToken = :refreshToken ORDER BY u.updatedAt DESC")
-    Optional<User> findByRefreshToken(@Param("refreshToken") String refreshToken);
+    Optional<User> findByRefreshToken(String refreshToken);
     boolean existsByEmail(String email);
     List<User> findByRole(UserRole userRole);
     // 사용자 역할, 상태별 조회
     @Query("SELECT u FROM User u WHERE u.role = :role AND u.status = :status")
     List<User> findByRoleAndStatus(@Param("role") UserRole role, @Param("status") UserStatus status);
 
-
-    //역할별 사용자 조회
-    List<User> findByRoleIn(List<UserRole> roles);
-
-    @Modifying
-    @Transactional
-    @Query("UPDATE User u SET u.name = :name, u.phoneNumber = :phoneNumber, " +
-            "u.emergencyContact = :emergencyContact," +
-            "u.role = :role, " +
-            " u.vetInfo = :vetInfo, u.updatedAt = CURRENT_TIMESTAMP " +
-            "WHERE u.id = :id")
-    void updateUserBasicInfo(@Param("id") Long id,
-                             @Param("name") String name,
-                             @Param("phoneNumber") String phoneNumber,
-                             @Param("emergencyContact") String emergencyContact,
-                             @Param("role") UserRole role,
-
     // 승인된 특정 역할의 사용자 조회
     List<User> findByRoleAndApprovalStatus(UserRole role, ApprovalStatus approvalStatus);
 
     // 승인된 특정 역할과 상태의 사용자 조회
     List<User> findByRoleAndApprovalStatusAndStatus(UserRole role, ApprovalStatus approvalStatus, UserStatus status);
+
 
 //
 //    @Modifying
