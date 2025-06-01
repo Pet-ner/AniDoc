@@ -168,14 +168,10 @@ public class StatisticsService {
                 .orElseThrow(() -> new RuntimeException("보호자 정보를 찾을 수 없습니다."));
 
     // 본인의 통계만 조회 가능하도록 권한 체크 (관리자/직원은 모든 보호자 조회 가능)
-        if (!user.getId().equals(userId) && !isAdminOrStaff(user)) {
-            throw new RuntimeException("본인의 통계만 조회할 수 있습니다.");
-        }
-    }
-
-    private boolean isAdminOrStaff(User user) {
-        return user.getRole() == UserRole.ROLE_ADMIN ||
-                user.getRole() == UserRole.ROLE_STAFF;
+    if (!user.getId().equals(userId) && 
+        user.getRole() != UserRole.ROLE_ADMIN && 
+        user.getRole() != UserRole.ROLE_STAFF) {
+        throw new RuntimeException("본인의 통계만 조회할 수 있습니다.");
     }
 
     private int calculateTodayReservations(Long userId) {
