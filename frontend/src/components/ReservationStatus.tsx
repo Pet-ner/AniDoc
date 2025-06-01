@@ -71,10 +71,24 @@ export default function ReservationStatus({
   const isAdminOrStaff =
     user && (user.userRole === "ROLE_ADMIN" || user.userRole === "ROLE_STAFF");
 
+  // 현재 날짜를 YYYY-MM-DD 형식으로 반환하는 함수 추가
+  const getFormattedDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   // 초기 데이터 로드 및 날짜 설정
   useEffect(() => {
     // initialDate가 있으면 해당 날짜를, 없으면 오늘 날짜를 사용
-    const today = new Date().toISOString().split("T")[0];
+    const today = getFormattedDate(new Date());
+    console.log("=== 날짜 설정 디버깅 ===");
+    console.log("초기 today:", today);
+    console.log("initialDate:", initialDate);
+    console.log("currentDate:", currentDate);
+    console.log("selectedDate:", selectedDate);
+
     setSelectedDate(today);
 
     // 일반 유저인 경우 전체 예약 미리 로드
@@ -248,6 +262,10 @@ export default function ReservationStatus({
 
   // 날짜 선택 핸들러
   const handleDateSelect = (date: string) => {
+    console.log("=== 날짜 선택 디버깅 ===");
+    console.log("선택된 날짜:", date);
+    console.log("이전 선택 날짜:", selectedDate);
+
     setSelectedDate(date);
     fetchReservationsByDate(date);
   };
@@ -275,7 +293,7 @@ export default function ReservationStatus({
         day
       ).padStart(2, "0")}`;
       const isSelected = selectedDate === dateStr;
-      const isToday = dateStr === new Date().toISOString().split("T")[0];
+      const isToday = dateStr === getFormattedDate(new Date()); // getFormattedDate 함수 사용
 
       // 해당 날짜에 예약이 있는지 확인
       let hasReservation = false;
