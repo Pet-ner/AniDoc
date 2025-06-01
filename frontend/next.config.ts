@@ -18,6 +18,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // 추가
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://localhost:8090/api/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Eye, Trash2, Edit } from "lucide-react";
+import { Search, Eye, Trash2, Edit, Mars, Venus } from "lucide-react";
 import { useState, useEffect } from "react";
 import PetDetailModal from "@/components/doctorpetchange/DoctorChange";
 
@@ -543,99 +543,89 @@ const DoctorPetManagement = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      {/* 검색 및 필터 섹션 */}
-      <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-        <div className="flex justify-between items-center mb-6">
+      <div className="bg-white rounded-lg shadow-sm px-2 py-5">
+        {/* 검색 및 필터 섹션 */}
+        <div className="flex justify-between items-center mb-4">
           {/* 검색 영역 */}
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
             <input
               type="text"
               placeholder="반려동물/보호자/품종 검색"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-3 border border-gray-200 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+              className="pr-8 pl-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#49BEB7] focus:border-[#49BEB7]"
+            />
+            <Search
+              size={16}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
             />
           </div>
 
           {/* 액션 버튼 영역 */}
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <button
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              className={`flex items-center gap-1 text-sm px-3 py-1 rounded-md transition ${
                 selectedItems.length > 0
-                  ? "bg-red-500 text-white hover:bg-red-600 shadow-md hover:shadow-lg"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  ? "text-white bg-[#49BEB7] hover:bg-[#3ea9a2]"
+                  : "text-gray-400 bg-gray-100 cursor-not-allowed"
               }`}
               disabled={selectedItems.length === 0}
               onClick={handleDeleteSelected}
             >
-              <Trash2 className="h-4 w-4" />
-              선택 삭제 ({selectedItems.length})
+              <Trash2 size={16} /> 선택 삭제 ({selectedItems.length})
             </button>
           </div>
         </div>
 
-        {/* 검색 결과 정보 */}
-        {searchTerm && (
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-blue-700 text-sm">
-              <span className="font-medium">"{searchTerm}"</span> 검색 결과:{" "}
-              {getFilteredData().length}건
-            </p>
-          </div>
-        )}
-
         {/* 테이블 */}
-        <div className="overflow-x-auto">
+        <div className="overflow-hidden rounded-lg">
           <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="text-left py-4 px-4 font-medium text-gray-600">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                   <input
                     type="checkbox"
                     checked={selectAll}
                     onChange={handleSelectAll}
-                    className="w-4 h-4 rounded border-gray-300 text-teal-500 focus:ring-teal-500"
+                    className="w-4 h-4 rounded border-gray-300 text-[#49BEB7] focus:ring-[#49BEB7]"
                   />
                 </th>
-                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                   이름
                 </th>
-                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                   종
                 </th>
-                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                   품종
                 </th>
-                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                   생년월일
                 </th>
-                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                   성별
                 </th>
-                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                   체중
                 </th>
-                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                   중성화여부
                 </th>
-                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                   보호자
                 </th>
-                <th className="text-left py-4 px-4 font-medium text-gray-600">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                   마지막방문일
                 </th>
-                <th className="text-left py-4 px-4 font-medium text-gray-600">
-                  편집
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                  작업
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="bg-white divide-y divide-gray-200">
               {getPaginatedData().length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="py-12 text-center text-gray-500">
+                  <td colSpan={11} className="text-center py-4 text-gray-500">
                     {searchTerm
                       ? "검색 결과가 없습니다."
                       : "등록된 반려동물이 없습니다."}
@@ -643,66 +633,69 @@ const DoctorPetManagement = () => {
                 </tr>
               ) : (
                 getPaginatedData().map((pet: Pet) => (
-                  <tr
-                    key={pet.id}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150"
-                  >
-                    <td className="py-4 px-4">
+                  <tr key={pet.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-4">
                       <input
                         type="checkbox"
                         checked={selectedItems.includes(pet.id)}
                         onChange={() => handleSelectOne(pet.id)}
-                        className="w-4 h-4 rounded border-gray-300 text-teal-500 focus:ring-teal-500"
+                        className="w-4 h-4 rounded border-gray-300 text-[#49BEB7] focus:ring-[#49BEB7]"
                       />
                     </td>
-                    <td className="py-4 px-4 font-medium text-gray-800">
+                    <td className="px-4 py-4 text-sm text-[#49BEB7] font-medium">
                       {pet.name}
                     </td>
-                    <td className="py-4 px-4 text-gray-600">{pet.species}</td>
-                    <td className="py-4 px-4 text-gray-600">{pet.breed}</td>
-                    <td className="py-4 px-4 text-gray-600">
+                    <td className="px-4 py-4 text-sm text-gray-700">
+                      {pet.species}
+                    </td>
+                    <td className="px-4 py-4 text-sm text-gray-700">
+                      {pet.breed}
+                    </td>
+                    <td className="px-4 py-4 text-sm text-gray-700">
                       {formatDate(pet.birth)}
                     </td>
-                    <td className="py-4 px-4">
+                    <td className="px-4 py-4">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        className={`inline-flex text-xs px-2 py-1 rounded-full ${
                           pet.gender === Gender.MALE
                             ? "bg-blue-100 text-blue-800"
                             : "bg-pink-100 text-pink-800"
                         }`}
                       >
-                        {pet.gender === Gender.MALE ? "수컷" : "암컷"}
+                        {pet.gender === Gender.MALE ? (
+                          <Mars size={16} />
+                        ) : (
+                          <Venus size={16} />
+                        )}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-gray-600">{pet.weight}kg</td>
-                    <td className="py-4 px-4">
+                    <td className="px-4 py-4 text-sm text-gray-700">
+                      {pet.weight}kg
+                    </td>
+                    <td className="px-4 py-4">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          pet.isNeutered === true
+                        className={`inline-flex text-xs px-2 py-1 rounded-full ${
+                          pet.isNeutered
                             ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
+                            : "bg-yellow-100 text-yellow-800"
                         }`}
                       >
-                        {pet.isNeutered === true ? "완료" : "미완료"}
+                        {pet.isNeutered ? "완료" : "미완료"}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-gray-600">
+                    <td className="px-4 py-4 text-sm text-gray-700">
                       {pet.owner?.name || "정보 없음"}
                     </td>
-                    <td className="py-4 px-4 text-gray-600">
-                      {/* 백엔드에서 자동 계산된 마지막방문일 표시 */}
+                    <td className="px-4 py-4 text-sm text-gray-700">
                       {pet.lastVisitDate ? formatDate(pet.lastVisitDate) : "-"}
                     </td>
-                    <td className="py-4 px-4">
-                      <div className="flex gap-2">
-                        <button
-                          className="p-2 text-green-500 hover:text-green-700 hover:bg-green-50 rounded-lg transition-all duration-200"
-                          onClick={() => handleEditClick(pet)}
-                          title="편집"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                      </div>
+                    <td className="px-4 py-4">
+                      <button
+                        onClick={() => handleEditClick(pet)}
+                        className="flex items-center gap-1 text-sm px-3 py-1 rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 transition"
+                      >
+                        <Edit size={16} /> 편집
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -713,11 +706,11 @@ const DoctorPetManagement = () => {
 
         {/* 페이지네이션 */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-6">
+          <div className="mt-4 flex justify-center items-center gap-2">
             <button
-              className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
+              className="px-3 py-1 rounded-md bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
             >
               이전
             </button>
@@ -725,10 +718,10 @@ const DoctorPetManagement = () => {
             {getPageNumbers().map((pageNum: number) => (
               <button
                 key={pageNum}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                className={`px-3 py-1 rounded-md ${
                   currentPage === pageNum
-                    ? "bg-teal-500 text-white shadow-md"
-                    : "border border-gray-200 hover:bg-gray-50"
+                    ? "bg-[#49BEB7] text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
                 onClick={() => handlePageChange(pageNum)}
               >
@@ -737,7 +730,7 @@ const DoctorPetManagement = () => {
             ))}
 
             <button
-              className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              className="px-3 py-1 rounded-md bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
             >
@@ -747,7 +740,7 @@ const DoctorPetManagement = () => {
         )}
       </div>
 
-      {/* 모달 컴포넌트 - 타입 오류 해결 */}
+      {/* 모달 컴포넌트 */}
       <PetDetailModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

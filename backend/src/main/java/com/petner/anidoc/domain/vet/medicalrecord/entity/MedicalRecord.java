@@ -29,7 +29,6 @@ import org.hibernate.annotations.Where;
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-//@Where(clause = "is_deleted = false")
 @Table(name = "medical_records")
 public class MedicalRecord extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
@@ -47,7 +46,7 @@ public class MedicalRecord extends BaseEntity {
     @Column(name = "current_weight")
     private BigDecimal currentWeight;
 
-    private Integer age;
+    private String age;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String diagnosis;
@@ -78,7 +77,6 @@ public class MedicalRecord extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL)
     private Set<CheckupRecord> checkupResults = new HashSet<>();
-
 
 
     @Builder.Default

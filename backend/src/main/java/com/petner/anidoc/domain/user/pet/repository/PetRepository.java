@@ -28,4 +28,8 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
             "LEFT JOIN FETCH p.medicalRecords mr " +
             "LEFT JOIN FETCH mr.reservation")
     List<Pet> findAllWithOwnersAndMedicalRecords();
+
+    //대시보드 상단통계카드
+    //추가(보호자)
+    int countByOwnerId(Long ownerId);
 }

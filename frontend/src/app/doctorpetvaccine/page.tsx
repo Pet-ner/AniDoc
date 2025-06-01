@@ -133,16 +133,21 @@ const DoctorPetVaccineManagement = () => {
     // 사용되지 않은 예약만 필터링
     const filtered = reservations.filter((reservation) => {
       const isNotUsed = !usedReservationIds.includes(reservation.id);
-
       // 승인된 예약만 선택 가능
       const isValidStatus = reservation.status === "APPROVED";
-
       const isPetMatch = !selectedPet || reservation.petId === selectedPet.id;
-
       // 담당의사 필터링 추가 (현재 로그인한 의사가 담당인 예약만)
       const isDoctorMatch = reservation.doctorId === user?.id;
+      // VACCINATION 타입 예약만 필터링
+      const isVaccinationType = reservation.type === "VACCINATION";
 
-      return isNotUsed && isValidStatus && isPetMatch && isDoctorMatch;
+      return (
+        isNotUsed &&
+        isValidStatus &&
+        isPetMatch &&
+        isDoctorMatch &&
+        isVaccinationType
+      );
     });
 
     return filtered;
@@ -262,7 +267,6 @@ const DoctorPetVaccineManagement = () => {
     try {
       // 다양한 날짜 형식 처리
       let date;
-
       // 이미 포맷된 한국어 형식인 경우 (2025. 5. 27.)
       if (dateString.includes(".") && dateString.includes(" ")) {
         return dateString;
@@ -448,7 +452,7 @@ const DoctorPetVaccineManagement = () => {
     }
   };
 
-  // 백신 삭제 함수 - 모달에서 사용
+  // 백신 삭제 함수 - 모달에서 사용 (권한 검증 추가)
   const handleVaccineDeleteFromModal = async (vaccinationId: number) => {
     if (!window.confirm("해당 백신 기록을 삭제하시겠습니까?")) return;
 
@@ -463,6 +467,12 @@ const DoctorPetVaccineManagement = () => {
           },
         }
       );
+
+      // 403 에러 처리 추가
+      if (response.status === 403) {
+        alert("본인이 등록한 예방접종만 삭제할 수 있습니다.");
+        return;
+      }
 
       if (!response.ok) throw new Error("백신 정보 삭제에 실패했습니다");
 
@@ -862,7 +872,7 @@ const DoctorPetVaccineManagement = () => {
         />
       )}
 
-      {/* 백신 기록 조회 모달 - X 버튼 제거됨 */}
+      {/* 백신 기록 조회 모달 - 권한 기반 버튼 표시 */}
       {isHistoryModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-96 overflow-y-auto">
@@ -906,22 +916,25 @@ const DoctorPetVaccineManagement = () => {
                         >
                           {getStatusText(vaccine.status)}
                         </span>
-                        {/* 수정 버튼 */}
-                        <button
-                          onClick={() => handleVaccineEdit(vaccine)}
-                          className="text-blue-500 hover:text-blue-700 text-sm px-2 py-1 border border-blue-200 rounded hover:bg-blue-50"
-                        >
-                          수정
-                        </button>
-                        {/* 삭제 버튼 */}
-                        <button
-                          onClick={() =>
-                            handleVaccineDeleteFromModal(vaccine.id)
-                          }
-                          className="text-red-500 hover:text-red-700 text-sm px-2 py-1 border border-red-200 rounded hover:bg-red-50"
-                        >
-                          삭제
-                        </button>
+                        {/* 권한 기반 버튼 표시 - 본인이 등록한 기록만 수정/삭제 가능 */}
+                        {vaccine.doctorId === user?.id && (
+                          <>
+                            <button
+                              onClick={() => handleVaccineEdit(vaccine)}
+                              className="text-blue-500 hover:text-blue-700 text-sm px-2 py-1 border border-blue-200 rounded hover:bg-blue-50"
+                            >
+                              수정
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleVaccineDeleteFromModal(vaccine.id)
+                              }
+                              className="text-red-500 hover:text-red-700 text-sm px-2 py-1 border border-red-200 rounded hover:bg-red-50"
+                            >
+                              삭제
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
 
