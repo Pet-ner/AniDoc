@@ -1,14 +1,17 @@
 "use client";
 
-import { Edit2, Search, Eye } from "lucide-react";
+import { Edit2, Search, Eye, Syringe } from "lucide-react";
 import { useEffect, useState } from "react";
 import ChartModal from "./ChartModal";
 import ChartDetailModal from "./ChartDetailModal";
+import VaccinationModal from "./VaccinationModal";
+import VaccinationDetailModal from "./VaccinationDetailModal";
 
 interface MedicalRecord {
   id: number;
   reservationTime: string;
   petName: string;
+  petSpecies: string;
   symptom: string;
   doctorName: string;
   status: string;
@@ -47,7 +50,9 @@ interface MedicalRecord {
   reservationDate?: string;
   createdAt?: string;
   updatedAt?: string;
-  type?: string;
+  type?: "GENERAL" | "VACCINATION";
+  hasVaccinationRecord?: boolean; // 예방접종 기록 존재 여부
+  vaccinationStatus?: string;
 }
 
 interface StaffMedicalRecordProps {
@@ -71,6 +76,10 @@ export default function StaffMedicalRecord({
     null
   );
   const [showDetail, setShowDetail] = useState(false);
+  const [showVaccinationModal, setShowVaccinationModal] = useState(false);
+  const [showVaccinationDetail, setShowVaccinationDetail] = useState(false);
+  const [selectedVaccinationData, setSelectedVaccinationData] =
+    useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
 
@@ -81,47 +90,91 @@ export default function StaffMedicalRecord({
   const [showEditModal, setShowEditModal] = useState(false);
 
   const handleClick = async (record: MedicalRecord) => {
-    if (record.hasMedicalRecord) {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/medical-records/by-reservation/${record.id}?userId=${record.userId}`,
-          {
-            credentials: "include",
-          }
-        );
-        const responseBody = await res.json();
-        const medicalRecord = responseBody.medicalRecord;
-
-        if (!medicalRecord) {
-          alert("진료기록을 찾을 수 없습니다.");
-          return;
-        }
-
-        const updatedRecord = {
-          ...record,
-          id: medicalRecord.id,
-          reservationId: record.id,
-          weight: medicalRecord.currentWeight,
-          age: medicalRecord.age,
-          diagnosis: medicalRecord.diagnosis,
-          treatment: medicalRecord.treatment,
-          surgery: medicalRecord.surgery,
-          hospitalization: medicalRecord.hospitalization,
-          checkups: medicalRecord.checkups,
-          hasMedicalRecord: true,
-          petId: medicalRecord.petId ?? record.petId,
-        };
-
-        setSelectedRecord(updatedRecord);
-        setShowDetail(true);
-      } catch (err) {
-        console.error("진료기록 조회 실패", err);
-        alert("진료기록을 불러오는 데 실패했습니다.");
+    if (record.type === "VACCINATION") {
+      // 예방접종 기록 처리
+      if (record.hasVaccinationRecord) {
+        // 예방접종 기록 조회
+        await handleViewVaccinationRecord(record);
+      } else {
+        // 예방접종 기록 작성
+        setSelectedRecord(record);
+        setShowVaccinationModal(true);
       }
     } else {
-      // 진료기록이 없을 때는 그대로 예약 데이터 전달
+      // 일반 진료 기록 처리
+      if (record.hasMedicalRecord) {
+        // 진료 기록 조회
+        await handleViewMedicalRecord(record);
+      } else {
+        // 진료 기록 작성
+        setSelectedRecord(record);
+        onOpenChart(record);
+      }
+    }
+  };
+
+  const handleViewMedicalRecord = async (record: MedicalRecord) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/medical-records/by-reservation/${record.id}?userId=${record.userId}`,
+        {
+          credentials: "include",
+        }
+      );
+      const responseBody = await res.json();
+      const medicalRecord = responseBody.medicalRecord;
+
+      if (!medicalRecord) {
+        alert("진료기록을 찾을 수 없습니다.");
+        return;
+      }
+
+      const updatedRecord = {
+        ...record,
+        id: medicalRecord.id,
+        reservationId: record.id,
+        weight: medicalRecord.currentWeight,
+        age: medicalRecord.age,
+        diagnosis: medicalRecord.diagnosis,
+        treatment: medicalRecord.treatment,
+        surgery: medicalRecord.surgery,
+        hospitalization: medicalRecord.hospitalization,
+        checkups: medicalRecord.checkups,
+        hasMedicalRecord: true,
+        petId: medicalRecord.petId ?? record.petId,
+      };
+
+      setSelectedRecord(updatedRecord);
+      setShowDetail(true);
+    } catch (err) {
+      console.error("진료기록 조회 실패", err);
+      alert("진료기록을 불러오는 데 실패했습니다.");
+    }
+  };
+
+  const handleViewVaccinationRecord = async (record: MedicalRecord) => {
+    try {
+      // 예방접종 기록 조회 API 호출
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/doctor/vaccines/reservation/${record.id}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("예방접종 기록을 찾을 수 없습니다.");
+      }
+
+      const vaccinationData = await res.json();
+
+      // 예방접종 기록 상세 모달 표시 (별도 모달 사용)
       setSelectedRecord(record);
-      onOpenChart(record);
+      setSelectedVaccinationData(vaccinationData);
+      setShowVaccinationDetail(true);
+    } catch (err) {
+      console.error("예방접종 기록 조회 실패", err);
+      alert("예방접종 기록을 불러오는 데 실패했습니다.");
     }
   };
 
@@ -204,10 +257,96 @@ export default function StaffMedicalRecord({
     } catch (err) {}
   };
 
+  const handleVaccinationSaved = async () => {
+    // 예방접종 기록 저장 후 처리
+    if (selectedRecord) {
+      const updatedRecord = {
+        ...selectedRecord,
+        hasVaccinationRecord: true,
+      };
+      setSelectedRecord(updatedRecord);
+      onOpenChart(updatedRecord);
+    }
+    setShowVaccinationModal(false);
+  };
+
   const handleCloseModal = () => {
     setSelectedRecord(null);
     setShowDetail(false);
-    setChartModalOpen(false); // ChartModal 명시적으로 닫음
+    setChartModalOpen(false);
+    setShowVaccinationModal(false);
+    setShowVaccinationDetail(false);
+    setSelectedVaccinationData(null);
+  };
+
+  const getVaccinationStatusText = (status: string) => {
+    switch (status) {
+      case "NOT_STARTED":
+        return "미접종";
+      case "IN_PROGRESS":
+        return "접종진행중";
+      case "COMPLETED":
+        return "접종완료";
+      default:
+        return "진료전";
+    }
+  };
+
+  const getVaccinationStatusColor = (status: string) => {
+    switch (status) {
+      case "NOT_STARTED":
+        return "bg-red-100 text-red-800";
+      case "IN_PROGRESS":
+        return "bg-yellow-100 text-yellow-800";
+      case "COMPLETED":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-yellow-100 text-yellow-800";
+    }
+  };
+
+  const getActionButton = (record: MedicalRecord) => {
+    if (record.type === "VACCINATION") {
+      if (record.hasVaccinationRecord) {
+        return (
+          <button
+            onClick={() => handleClick(record)}
+            className="flex items-center gap-1 text-sm px-3 py-1 rounded-md transition text-gray-700 bg-gray-100 hover:bg-gray-200"
+          >
+            <Eye size={16} /> 백신기록 조회
+          </button>
+        );
+      } else {
+        return (
+          <button
+            onClick={() => handleClick(record)}
+            className="flex items-center gap-1 text-sm px-3 py-1 rounded-md transition text-white bg-[#49BEB7] hover:bg-[#3ea9a2]"
+          >
+            <Syringe size={16} /> 백신기록 작성
+          </button>
+        );
+      }
+    } else {
+      if (record.hasMedicalRecord) {
+        return (
+          <button
+            onClick={() => handleClick(record)}
+            className="flex items-center gap-1 text-sm px-3 py-1 rounded-md transition text-gray-700 bg-gray-100 hover:bg-gray-200"
+          >
+            <Eye size={16} /> 진료기록 조회
+          </button>
+        );
+      } else {
+        return (
+          <button
+            onClick={() => handleClick(record)}
+            className="flex items-center gap-1 text-sm px-3 py-1 rounded-md transition text-white bg-[#49BEB7] hover:bg-[#3ea9a2]"
+          >
+            <Edit2 size={16} /> 진료기록 작성
+          </button>
+        );
+      }
+    }
   };
 
   return (
@@ -244,6 +383,9 @@ export default function StaffMedicalRecord({
                 환자명
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                진료 유형
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                 증상
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
@@ -260,13 +402,13 @@ export default function StaffMedicalRecord({
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan={6} className="text-center py-4 text-gray-500">
+                <td colSpan={8} className="text-center py-4 text-gray-500">
                   로딩 중...
                 </td>
               </tr>
             ) : records.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-4 text-gray-500">
+                <td colSpan={8} className="text-center py-4 text-gray-500">
                   기록이 없습니다.
                 </td>
               </tr>
@@ -301,6 +443,17 @@ export default function StaffMedicalRecord({
                     <td className="px-4 py-4 text-sm text-[#49BEB7] font-medium">
                       {r.petName}
                     </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                          r.type === "GENERAL"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-purple-100 text-purple-800"
+                        }`}
+                      >
+                        {r.type === "GENERAL" ? "일반진료" : "예방접종"}
+                      </span>
+                    </td>
                     <td className="px-4 py-4 text-sm text-gray-700">
                       {r.symptom}
                     </td>
@@ -310,34 +463,28 @@ export default function StaffMedicalRecord({
                     <td className="px-4 py-4">
                       <span
                         className={`inline-flex text-xs px-2 py-1 rounded-full ${
-                          r.hasMedicalRecord
+                          r.type === "VACCINATION" &&
+                          r.hasVaccinationRecord &&
+                          r.vaccinationStatus
+                            ? getVaccinationStatusColor(r.vaccinationStatus) // 예방접종 상태별 색상
+                            : (r.type === "GENERAL" && r.hasMedicalRecord) ||
+                              (r.type === "VACCINATION" &&
+                                r.hasVaccinationRecord)
                             ? "bg-green-100 text-green-800"
                             : "bg-yellow-100 text-yellow-800"
                         }`}
                       >
-                        {r.hasMedicalRecord ? "진료완료" : "진료전"}
+                        {r.type === "VACCINATION" &&
+                        r.hasVaccinationRecord &&
+                        r.vaccinationStatus
+                          ? getVaccinationStatusText(r.vaccinationStatus) // 예방접종 상태 텍스트
+                          : (r.type === "GENERAL" && r.hasMedicalRecord) ||
+                            (r.type === "VACCINATION" && r.hasVaccinationRecord)
+                          ? "진료완료"
+                          : "진료전"}
                       </span>
                     </td>
-                    <td className="px-4 py-4">
-                      <button
-                        onClick={() => handleClick(r)}
-                        className={`flex items-center gap-1 text-sm px-3 py-1 rounded-md transition ${
-                          r.hasMedicalRecord
-                            ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
-                            : "text-white bg-[#49BEB7] hover:bg-[#3ea9a2]"
-                        }`}
-                      >
-                        {r.hasMedicalRecord ? (
-                          <>
-                            <Eye size={16} /> 진료기록 조회
-                          </>
-                        ) : (
-                          <>
-                            <Edit2 size={16} /> 진료기록 작성
-                          </>
-                        )}
-                      </button>
-                    </td>
+                    <td className="px-4 py-4">{getActionButton(r)}</td>
                   </tr>
                 ))
             )}
@@ -463,6 +610,29 @@ export default function StaffMedicalRecord({
           currentUserId={selectedRecord.doctorId || 0}
           mode={selectedRecord.hasMedicalRecord ? "edit" : "create"}
           onSaved={(id, reservationId) => handleSaved(id, reservationId)}
+        />
+      )}
+
+      {showVaccinationModal && selectedRecord && (
+        <VaccinationModal
+          onClose={handleCloseModal}
+          record={selectedRecord}
+          onSaved={handleVaccinationSaved}
+        />
+      )}
+
+      {showVaccinationDetail && selectedVaccinationData && (
+        <VaccinationDetailModal
+          onClose={handleCloseModal}
+          vaccinationData={selectedVaccinationData}
+          reservationData={{
+            reservationId: selectedRecord?.id,
+            doctorId: selectedRecord?.doctorId,
+          }}
+          userRole="ROLE_STAFF"
+          onUpdate={(updatedData) => {
+            setSelectedVaccinationData(updatedData);
+          }}
         />
       )}
     </div>
