@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, Edit2, Eye } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import PetVaccineRegist from "@/components/doctorpetvaccine/PetVaccineRegist";
 import VaccineChange from "@/components/doctorpetvaccine/change/VaccineChange";
@@ -679,19 +679,19 @@ const DoctorPetVaccineManagement = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="bg-white rounded-xl p-6 shadow-sm">
-        <div className="flex justify-start items-center mb-6">
+      <div className="bg-white rounded-lg shadow-sm px-2 py-5">
+        <div className="flex justify-start items-center mb-4">
           <div className="relative">
             <input
               type="text"
               placeholder="반려동물/종/백신이름 검색"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="pr-8 pl-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#49BEB7] focus:border-[#49BEB7]"
             />
             <Search
-              className="absolute left-3 top-2.5 text-gray-400"
-              size={20}
+              size={16}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
             />
           </div>
         </div>
@@ -703,134 +703,142 @@ const DoctorPetVaccineManagement = () => {
           예약 {availableReservations.length}개)
         </div>
 
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                이름
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                종
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                백신이름
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                총접종회차
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                회차
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                접종일
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                다음접종일
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                접종상태
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                메모
-              </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600">
-                관리
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {getPaginatedData().map((item: any) => (
-              <tr
-                key={item.uniqueKey}
-                className="border-b border-gray-100 hover:bg-gray-50"
-              >
-                <td className="py-3 px-4">
-                  {item.name || "-"}
-                  {item.allVaccines && item.allVaccines.length > 1 && (
-                    <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                      {item.allVaccines.length}건
-                    </span>
-                  )}
-                </td>
-                <td className="py-3 px-4">{item.species || "-"}</td>
-                <td className="py-3 px-4">
-                  {item.vaccine?.vaccineName || "-"}
-                </td>
-                <td className="py-3 px-4">{item.vaccine?.totalDoses || "-"}</td>
-                <td className="py-3 px-4">
-                  {item.vaccine?.currentDose || "-"}
-                </td>
-                <td className="py-3 px-4">
-                  {formatDate(item.vaccine?.vaccinationDate)}
-                </td>
-                <td className="py-3 px-4">
-                  {formatDate(item.vaccine?.nextDueDate)}
-                </td>
-                <td className="py-3 px-4">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      item.vaccine?.status === VaccinationStatus.COMPLETED
-                        ? "bg-green-100 text-green-800"
-                        : item.vaccine?.status === VaccinationStatus.IN_PROGRESS
-                        ? "bg-yellow-100 text-yellow-800"
-                        : item.vaccine?.status === VaccinationStatus.NOT_STARTED
-                        ? "bg-red-100 text-red-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {item.vaccine ? getStatusText(item.vaccine.status) : "-"}
-                  </span>
-                </td>
-                <td className="py-3 px-4">{item.vaccine?.notes || "-"}</td>
-                <td className="py-3 px-4">
-                  <div className="flex gap-1 flex-wrap">
-                    <button
-                      className="text-blue-500 hover:text-blue-700 text-sm px-2 py-1 border border-blue-200 rounded hover:bg-blue-50"
-                      onClick={() => handleVaccineManageClick(item.id)}
-                    >
-                      접종관리
-                    </button>
-                    <button
-                      className="text-green-500 hover:text-green-700 text-sm px-2 py-1 border border-green-200 rounded hover:bg-green-50"
-                      onClick={() => handleViewVaccineHistory(item.id)}
-                      disabled={historyLoading}
-                    >
-                      {historyLoading ? "로딩..." : "조회"}
-                    </button>
-                  </div>
-                </td>
+        <div className="overflow-hidden rounded-lg">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                  이름
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                  종
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                  백신이름
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                  총접종회차
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                  회차
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                  접종일
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                  다음접종일
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                  접종상태
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                  메모
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                  관리
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {getPaginatedData().map((item: any) => (
+                <tr key={item.uniqueKey} className="hover:bg-gray-50">
+                  <td className="px-4 py-4 text-sm text-[#49BEB7] font-medium">
+                    {item.name || "-"}
+                    {item.allVaccines && item.allVaccines.length > 1 && (
+                      <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                        {item.allVaccines.length}건
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 text-sm text-gray-700">
+                    {item.species || "-"}
+                  </td>
+                  <td className="px-4 py-4 text-sm text-gray-700">
+                    {item.vaccine?.vaccineName || "-"}
+                  </td>
+                  <td className="px-4 py-4 text-sm text-gray-700">
+                    {item.vaccine?.totalDoses || "-"}
+                  </td>
+                  <td className="px-4 py-4 text-sm text-gray-700">
+                    {item.vaccine?.currentDose || "-"}
+                  </td>
+                  <td className="px-4 py-4 text-sm text-gray-700">
+                    {formatDate(item.vaccine?.vaccinationDate)}
+                  </td>
+                  <td className="px-4 py-4 text-sm text-gray-700">
+                    {formatDate(item.vaccine?.nextDueDate)}
+                  </td>
+                  <td className="px-4 py-4">
+                    <span
+                      className={`inline-flex text-xs px-2 py-1 rounded-full ${
+                        item.vaccine?.status === VaccinationStatus.COMPLETED
+                          ? "bg-green-100 text-green-800"
+                          : item.vaccine?.status ===
+                            VaccinationStatus.IN_PROGRESS
+                          ? "bg-yellow-100 text-yellow-800"
+                          : item.vaccine?.status ===
+                            VaccinationStatus.NOT_STARTED
+                          ? "bg-red-100 text-red-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {item.vaccine ? getStatusText(item.vaccine.status) : "-"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 text-sm text-gray-700">
+                    {item.vaccine?.notes || "-"}
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => handleVaccineManageClick(item.id)}
+                        className="flex items-center gap-1 text-sm px-3 py-1 rounded-md text-white bg-[#49BEB7] hover:bg-[#3ea9a2]"
+                      >
+                        <Edit2 size={16} /> 접종관리
+                      </button>
+                      <button
+                        onClick={() => handleViewVaccineHistory(item.id)}
+                        disabled={historyLoading}
+                        className="flex items-center gap-1 text-sm px-3 py-1 rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
+                      >
+                        <Eye size={16} /> {historyLoading ? "로딩..." : "조회"}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-        <div className="flex justify-center items-center gap-2 mt-6">
+        {/* Pagination */}
+        <div className="mt-4 flex justify-center items-center gap-2">
           <button
-            className="px-3 py-1 border border-gray-200 rounded hover:bg-gray-50"
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
+            className="px-3 py-1 rounded-md bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
           >
             이전
           </button>
-
-          {getPageNumbers().map((pageNum) => (
-            <button
-              key={pageNum}
-              className={`px-3 py-1 rounded ${
-                currentPage === pageNum
-                  ? "bg-teal-500 text-white"
-                  : "border border-gray-200 hover:bg-gray-50"
-              }`}
-              onClick={() => handlePageChange(pageNum)}
-            >
-              {pageNum}
-            </button>
-          ))}
-
+          <div className="flex gap-1">
+            {getPageNumbers().map((pageNum) => (
+              <button
+                key={pageNum}
+                onClick={() => handlePageChange(pageNum)}
+                className={`px-3 py-1 rounded-md ${
+                  currentPage === pageNum
+                    ? "bg-[#49BEB7] text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {pageNum}
+              </button>
+            ))}
+          </div>
           <button
-            className="px-3 py-1 border border-gray-200 rounded hover:bg-gray-50"
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
+            className="px-3 py-1 rounded-md bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
           >
             다음
           </button>
@@ -862,7 +870,7 @@ const DoctorPetVaccineManagement = () => {
         />
       )}
 
-      {/* 백신 기록 조회 모달 - X 버튼 제거됨 */}
+      {/* 백신 기록 조회 모달 */}
       {isHistoryModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-96 overflow-y-auto">
@@ -906,21 +914,19 @@ const DoctorPetVaccineManagement = () => {
                         >
                           {getStatusText(vaccine.status)}
                         </span>
-                        {/* 수정 버튼 */}
                         <button
                           onClick={() => handleVaccineEdit(vaccine)}
-                          className="text-blue-500 hover:text-blue-700 text-sm px-2 py-1 border border-blue-200 rounded hover:bg-blue-50"
+                          className="flex items-center gap-1 text-sm px-3 py-1 rounded-md text-white bg-[#49BEB7] hover:bg-[#3ea9a2]"
                         >
-                          수정
+                          <Edit2 size={16} /> 수정
                         </button>
-                        {/* 삭제 버튼 */}
                         <button
                           onClick={() =>
                             handleVaccineDeleteFromModal(vaccine.id)
                           }
-                          className="text-red-500 hover:text-red-700 text-sm px-2 py-1 border border-red-200 rounded hover:bg-red-50"
+                          className="flex items-center gap-1 text-sm px-3 py-1 rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
                         >
-                          삭제
+                          <Eye size={16} /> 삭제
                         </button>
                       </div>
                     </div>
@@ -962,7 +968,7 @@ const DoctorPetVaccineManagement = () => {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setIsHistoryModalOpen(false)}
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                className="px-4 py-2 bg-[#49BEB7] text-white rounded hover:bg-[#3ea9a2]"
               >
                 닫기
               </button>

@@ -8,6 +8,7 @@ import { Calendar, UserCheck, CheckCircle, FilePlus } from "lucide-react";
 import ChartModal from "@/components/medical-records/ChartModal";
 import StaffMedicalRecord from "@/components/medical-records/StaffMedicalRecord";
 import UserMedicalRecord from "@/components/medical-records/UserMedicalRecord";
+import AdminMedicalRecord from "@/components/medical-records/AdminMedicalRecord";
 
 interface MedicalRecord {
   id: number;
@@ -24,6 +25,7 @@ interface MedicalRecord {
   diagnosis?: string;
   treatment?: string;
   surgery?: {
+    id: number;
     surgeryName: string;
     surgeryDate: string;
     anesthesiaType: string;
@@ -31,17 +33,26 @@ interface MedicalRecord {
     resultUrl?: string;
   };
   hospitalization?: {
+    id: number;
     admissionDate: string;
     dischargeDate: string;
     reason: string;
     imageUrl?: string;
   };
   checkups?: {
+    id: number;
     checkupType: string;
     checkupDate: string;
     result: string;
     resultUrl?: string;
   }[];
+  userName?: string;
+  petId?: number;
+  doctorId?: number;
+  reservationDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  type?: string;
 }
 
 interface Stats {
@@ -71,6 +82,8 @@ export default function MedicalRecordPage() {
         endpoint = `/api/reservations/approved?doctorId=${user.id}`;
       } else if (user.userRole === "ROLE_USER") {
         endpoint = `/api/medical-records/by-user/${user.id}`;
+      } else if (user.userRole === "ROLE_ADMIN") {
+        endpoint = `/api/medical-records/admin`;
       } else {
         router.push("/");
         return;
@@ -188,6 +201,8 @@ export default function MedicalRecordPage() {
             search={search}
             setSearch={setSearch}
           />
+        ) : user?.userRole === "ROLE_ADMIN" ? (
+          <AdminMedicalRecord search={search} setSearch={setSearch} />
         ) : null}
       </div>
 

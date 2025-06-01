@@ -162,7 +162,7 @@ export default function ChartDetailModal({
           <div>
             <label className="block text-xs text-gray-500 mb-1">나이</label>
             <div className="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 text-gray-700">
-              {record.age ? `${record.age}세` : "-"}
+              {record.age ? `${record.age}` : "-"}
             </div>
           </div>
         </div>
