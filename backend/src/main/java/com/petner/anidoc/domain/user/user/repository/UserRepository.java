@@ -18,7 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
-    Optional<User> findByRefreshToken(String refreshToken);
+//    Optional<User> findByRefreshToken(String refreshToken);
+
+    //변경 3개 결과 중 가장 최근 것 1개만 선택(3개결과가 나와서 오류발생)
+    @Query("SELECT u FROM User u WHERE u.refreshToken = :refreshToken ORDER BY u.updatedAt DESC")
+    Optional<User> findByRefreshToken(@Param("refreshToken") String refreshToken);
     boolean existsByEmail(String email);
     List<User> findByRole(UserRole userRole);
     // 사용자 역할, 상태별 조회

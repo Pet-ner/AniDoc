@@ -12,6 +12,7 @@ import com.petner.anidoc.domain.vet.vaccination.entity.Vaccination;
 import com.petner.anidoc.domain.vet.vaccination.repository.VaccineRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,9 +59,13 @@ public class DoctorPetVaccineService {
     }
     //수정
     @Transactional
-    public DoctorPetVaccineResponseDTO updateVaccine(Long vaccinationId, DoctorPetVaccineRequestDTO doctorPetVaccineRequestDTO){
+    public DoctorPetVaccineResponseDTO updateVaccine(Long vaccinationId, DoctorPetVaccineRequestDTO doctorPetVaccineRequestDTO, User currentDoctor){
         Vaccination vaccination = vaccineRepository.findById(vaccinationId)
                 .orElseThrow(()-> new RuntimeException("예방접종 기록이 없습니다."));
+        //권한(동일한 의료진인지 확인)
+        if (!vaccination.getDoctor().getId().equals(currentDoctor.getId())) {
+            throw new AccessDeniedException("본인이 등록한 예방접종만 수정할 수 있습니다.");
+        }
         User doctor = userRepository.findById(doctorPetVaccineRequestDTO.getDoctorId())
                 .orElseThrow(() -> new RuntimeException("의사 정보가 없습니다."));
         Reservation reservation = reservationRepository.findById(doctorPetVaccineRequestDTO.getReservationId())
@@ -94,9 +99,14 @@ public class DoctorPetVaccineService {
     }
     //삭제
     @Transactional
-    public void deleteVaccination(Long vaccinationId) {
+    public void deleteVaccination(Long vaccinationId, User currentDoctor) {
         Vaccination vaccination = vaccineRepository.findById(vaccinationId)
                 .orElseThrow(() -> new RuntimeException("예방접종 기록이 없습니다."));
+        //권한(동일한 의료진인지 확인)
+        if (!vaccination.getDoctor().getId().equals(currentDoctor.getId())){
+            throw new AccessDeniedException("본인이 등록한 예방접종만 삭제할 수 있습니다.");
+        }
+
         vaccineRepository.delete(vaccination);
     }
 
