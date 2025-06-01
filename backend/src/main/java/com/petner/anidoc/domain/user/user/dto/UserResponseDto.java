@@ -1,6 +1,5 @@
 package com.petner.anidoc.domain.user.user.dto;
 
-import com.petner.anidoc.domain.user.user.entity.ApprovalStatus;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.entity.UserRole;
 import lombok.AllArgsConstructor;
@@ -21,7 +20,6 @@ public class UserResponseDto {
     private UserRole userRole;
     private String phoneNumber;
     private String emergencyContact;
-    private ApprovalStatus approvalStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -35,7 +33,6 @@ public class UserResponseDto {
                 .userRole(user.getRole())
                 .phoneNumber(user.getPhoneNumber())
                 .emergencyContact(user.getEmergencyContact())
-                .approvalStatus(user.getApprovalStatus())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
