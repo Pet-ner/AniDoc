@@ -1,9 +1,6 @@
 package com.petner.anidoc.domain.vet.medicine.service;
 
-import com.petner.anidoc.domain.vet.medicine.dto.MedicineRequestDto;
-import com.petner.anidoc.domain.vet.medicine.dto.MedicineResponseDto;
-import com.petner.anidoc.domain.vet.medicine.dto.MedicineSearchDto;
-import com.petner.anidoc.domain.vet.medicine.dto.MedicineStockUpdateDto;
+import com.petner.anidoc.domain.vet.medicine.dto.*;
 import com.petner.anidoc.domain.vet.medicine.entity.Medicine;
 import com.petner.anidoc.domain.vet.medicine.repository.MedicineRepository;
 import com.petner.anidoc.domain.vet.vet.entity.VetInfo;
@@ -50,9 +47,8 @@ public class MedicineService {
         return MedicineResponseDto.fromEntity(savedMedicine);
     }
 
-    // 약품 목록 조회 (병원별)
     @Transactional(readOnly = true)
-    public List<MedicineResponseDto> getMedicinesByVet(Long userId) {
+    public List<MedicineResponseDto> getAllMedicinesByVet(Long userId) {
         User user = getUserAndValidateRole(userId);
         VetInfo vetInfo = user.getVetInfo();
 
@@ -113,46 +109,6 @@ public class MedicineService {
         Medicine medicine = getMedicineAndValidateAccess(medicineId, user.getVetInfo());
 
         medicineRepository.delete(medicine);
-    }
-
-    // 약품 검색 (약품명으로)
-    @Transactional(readOnly = true)
-    public List<MedicineSearchDto> searchMedicines(Long userId, String keyword) {
-        User user = getUserAndValidateRole(userId);
-        VetInfo vetInfo = user.getVetInfo();
-
-        List<Medicine> medicines = medicineRepository.findByVetInfoAndMedicationNameContaining(vetInfo, keyword);
-        return medicines.stream()
-                .map(MedicineSearchDto::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    // 재고 부족 약품 조회
-    @Transactional(readOnly = true)
-    public List<MedicineResponseDto> getLowStockMedicines(Long userId, Integer minimum) {
-        User user = getUserAndValidateRole(userId);
-        VetInfo vetInfo = user.getVetInfo();
-
-        if (minimum == null) {
-            minimum = 10; // 기본값: 10개 이하
-        }
-
-        List<Medicine> medicines = medicineRepository.findLowStockMedicines(vetInfo, minimum);
-        return medicines.stream()
-                .map(MedicineResponseDto::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    // 사용 가능한 약품 목록 조회 (재고 > 0)
-    @Transactional(readOnly = true)
-    public List<MedicineSearchDto> getAvailableMedicines(Long userId) {
-        User user = getUserAndValidateRole(userId);
-        VetInfo vetInfo = user.getVetInfo();
-
-        List<Medicine> medicines = medicineRepository.findAvailableMedicines(vetInfo);
-        return medicines.stream()
-                .map(MedicineSearchDto::fromEntity)
-                .collect(Collectors.toList());
     }
 
     // 약품 재고 차감 (처방 시 사용)

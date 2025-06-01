@@ -342,7 +342,7 @@ export default function ChartModal({
 
     try {
       const medicalPayload = {
-        age: parseInt(age) || 0,
+        age: age || "0",
         currentWeight: parseFloat(weight) || 0,
         diagnosis,
         treatment,

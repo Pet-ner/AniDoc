@@ -14,7 +14,7 @@ public class MedicalRecordRequestDto {
     private Long reservationId;
     private Long doctorId;
 
-    private Integer age;
+    private String age;
     private BigDecimal currentWeight;
     private String diagnosis; //진단내용
     private String treatment;

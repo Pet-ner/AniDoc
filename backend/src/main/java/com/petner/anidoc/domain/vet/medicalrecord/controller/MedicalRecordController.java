@@ -157,9 +157,10 @@ public class MedicalRecordController {
     @Operation(summary = "진료기록 + 입원/수술/검사 수정", description = "진료기록과 연관된 입원, 수술, 검사 기록을 한 번에 수정")
     public ResponseEntity<Void> updateFullMedicalRecord(
             @PathVariable Long medicalRecordId,
-            @RequestParam Long userId,
+            @AuthenticationPrincipal SecurityUser user,
             @RequestBody FullMedicalRecordUpdateDto dto
     ) throws AccessDeniedException {
+        Long userId = user.getId();
         fullMedicalRecordService.updateFullMedicalRecord(userId, medicalRecordId, dto);
         return ResponseEntity.ok().build();
     }
@@ -169,10 +170,21 @@ public class MedicalRecordController {
     @Operation(summary = "진료기록 + 입원/수술/검사 삭제", description = "진료기록과 연관된 입원, 수술, 검사 기록을 한 번에 삭제 (soft delete)")
     public ResponseEntity<Void> deleteFullMedicalRecord(
             @PathVariable Long medicalRecordId,
-            @RequestParam Long userId
+            @AuthenticationPrincipal SecurityUser user
     ) throws AccessDeniedException {
+        Long userId = user.getId();
         fullMedicalRecordService.deleteFullMedicalRecord(userId, medicalRecordId);
         return ResponseEntity.noContent().build(); // 204 No Content
+    }
+
+    @GetMapping
+    @Operation(summary = "모든 진료기록 조회", description = "ROLE_STAFF 또는 ROLE_ADMIN 사용자만 접근 가능합니다. 삭제되지 않은 모든 진료기록을 반환합니다.")
+    public ResponseEntity<List<MedicalRecordResponseDto>> getAllMedicalRecords(
+            @AuthenticationPrincipal SecurityUser user
+    ) throws AccessDeniedException {
+        Long userId = user.getId();
+        List<MedicalRecordResponseDto> dtos = medicalRecordService.getAllMedicalRecords(userId);
+        return ResponseEntity.ok(dtos);
     }
 
 

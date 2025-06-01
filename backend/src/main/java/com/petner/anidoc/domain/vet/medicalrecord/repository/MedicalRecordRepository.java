@@ -54,6 +54,8 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
     """)
     Optional<MedicalRecord> findByIdWithAllDetails(@Param("id") Long id);
 
+    List<MedicalRecord> findAllByIsDeletedFalse();
+
 
     //대시보드 상단통계카드
     //추가(보호자)
