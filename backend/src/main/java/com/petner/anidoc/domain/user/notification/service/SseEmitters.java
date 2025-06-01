@@ -1,5 +1,6 @@
 package com.petner.anidoc.domain.user.notification.service;
 
+import com.petner.anidoc.domain.user.notification.repository.NotificationRepository;
 import com.petner.anidoc.domain.user.notification.util.Ut;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.ClientAbortException;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -18,7 +20,23 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class SseEmitters {
     // Thread-safe한 Map<Long,List>를 사용하여 다중 클라이언트의 SSE 연결들을 관리
     final Map<Long, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
+    public int getEmitterCount() {
+        return emitters.size();
+    }
 
+    public Set<Long> getConnectedUserIds() {
+        return emitters.keySet();
+    }
+
+    public boolean isEmpty() {
+        return emitters.isEmpty();
+    }
+
+    private final NotificationRepository notificationRepository;
+
+    public SseEmitters(NotificationRepository notificationRepository) {
+        this.notificationRepository = notificationRepository;
+    }
 
     // 새로운 SSE 연결을 추가하고 관련 콜백을 설정하는 메서드
     public SseEmitter add(Long userId, SseEmitter emitter) {
@@ -53,6 +71,9 @@ public class SseEmitters {
 
     // 모든 연결된 클라이언트들에게 이벤트를 전송하는 메서드
     public void noti(String eventName, Object data) {
+        if (emitters.isEmpty()) {
+            return;
+        }
         // 모든 emitter에 대해 반복하며 이벤트 전송
         emitters.forEach((userId, emitterList) -> {
             List<SseEmitter> deadEmitters = new ArrayList<>();
@@ -65,13 +86,17 @@ public class SseEmitters {
                     );
                 } catch (ClientAbortException e) {
                     deadEmitters.add(emitter);
-                    // 클라이언트가 연결을 강제로 종료한 경우 무시
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    log.error("❌ 사용자 {} SSE 전송 실패 (Broken pipe): {}", userId, e.getMessage());
+                    deadEmitters.add(emitter); // ⭐ 실패한 emitter도 제거
+                } catch (Exception e) { // ⭐ 모든 예외 처리
+                    log.error("❌ 사용자 {} SSE 전송 중 예외: {}", userId, e.getMessage());
+                    deadEmitters.add(emitter);
                 }
             }
             emitterList.removeAll(deadEmitters);
         });
+        log.info("=== 전역 SSE 이벤트 발생 완료 ===");
     }
 
 
@@ -97,6 +122,15 @@ public class SseEmitters {
                 }
             }
             userEmitters.removeAll(deadEmitters);
+        }
+    }
+    public void remove(Long userId, SseEmitter emitter) {
+        List<SseEmitter> userEmitters = emitters.get(userId);
+        if (userEmitters != null) {
+            userEmitters.remove(emitter);
+            if (userEmitters.isEmpty()) {
+                emitters.remove(userId);
+            }
         }
     }
 }

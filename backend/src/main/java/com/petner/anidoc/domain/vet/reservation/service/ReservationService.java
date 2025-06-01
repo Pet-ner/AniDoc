@@ -75,24 +75,7 @@ public class ReservationService {
         Reservation savedReservation = reservationRepository.save(reservation);
 
         // TODO: 알림 기능 추가 (관리자)
-
-        //관리자 1명 고정
-        User admin = userRepository.findByRole(UserRole.ROLE_ADMIN)
-                .stream().findFirst()
-                .orElseThrow(()-> new IllegalStateException("관리자 계정이 존재하지 않습니다."));
-
-        //알림 Dto에 저장
-        ReservationNotificationDto dto = ReservationNotificationDto.from(savedReservation);
-        String content = NotificationMessageUtil.buildReservationCreated(dto);
-        dto.setContent(content);
-
-        //전송
-        notificationService.notifyUser(
-                admin.getId(),
-                NotificationType.RESERVATION,
-                content,
-                dto
-        );
+        notificationService.sendReservationCreatedNotificationAsync(savedReservation.getId());
 
         return ReservationResponseDto.fromEntity(savedReservation);
     }
@@ -173,39 +156,7 @@ public class ReservationService {
         reservation.updateReservationFromDto(requestDto);
 
         // TODO: 알림 기능 추가 (의료진/관리자)
-        ReservationNotificationDto dto = ReservationNotificationDto.from(reservation);
-        String content = NotificationMessageUtil.buildReservationUpdated(dto);
-        dto.setContent(content);
-
-        //예약자에게 전송
-        notificationService.notifyUser(
-                reservation.getUser().getId(),
-                NotificationType.RESERVATION,
-                content,
-                dto
-        );
-
-        //관리자에게 전송
-        User admin = userRepository.findByRole(UserRole.ROLE_ADMIN)
-                .stream().findFirst()
-                .orElseThrow(()-> new IllegalStateException("관리자 계정이 존재하지 않습니다."));
-
-        notificationService.notifyUser(
-                admin.getId(),
-                NotificationType.RESERVATION,
-                content,
-                dto
-        );
-
-        //담당의에게 전송
-        if(reservation.getDoctor() != null){
-            notificationService.notifyUser(
-                    reservation.getDoctor().getId(),
-                    NotificationType.RESERVATION,
-                    content,
-                    dto
-            );
-        }
+        notificationService.sendReservationUpdatedNotificationAsync(reservationId);
 
         return ReservationResponseDto.fromEntity(reservation);
     }
@@ -262,36 +213,7 @@ public class ReservationService {
         reservation.updateReservationStatusFromDto(requestDto);
 
         // TODO: 알림 기능 추가 (사용자, 의료진)
-
-        ReservationNotificationDto dto = ReservationNotificationDto.from(reservation);
-        String content = null;
-
-        if(reservation.getStatus() == ReservationStatus.APPROVED){
-          content = NotificationMessageUtil.buildReservationStatusApproved(dto);
-        }else if(reservation.getStatus() == ReservationStatus.REJECTED){
-            content = NotificationMessageUtil.buildReservationStatusRejected(dto);
-        }
-
-        if(content != null){
-            dto.setContent(content);
-            //예약자 알림
-            notificationService.notifyUser(
-                    reservation.getUser().getId(),
-                    NotificationType.RESERVATION,
-                    content,
-                    dto
-            );
-
-            //담당의 알림
-            if(reservation.getDoctor() != null){
-                notificationService.notifyUser(
-                        reservation.getDoctor().getId(),
-                        NotificationType.RESERVATION,
-                        content,
-                        dto
-                );
-            }
-        }
+        notificationService.sendReservationStatusNotificationAsync(reservationId);
 
         return ReservationResponseDto.fromEntity(reservation);
     }
@@ -313,41 +235,24 @@ public class ReservationService {
             throw new IllegalStateException("이미 승인된 예약은 취소할 수 없습니다. 관리자에게 문의해주세요.");
         }
 
-        reservationRepository.delete(reservation);
 
         // TODO: 알림 기능 추가 (예약취소)
-        ReservationNotificationDto dto = ReservationNotificationDto.from(reservation);
-        String content = NotificationMessageUtil.buildReservationCancelled(dto);
-        dto.setContent(content);
+        // 삭제 전에 예약 정보를 복사 (알림 전송용)
+        Reservation reservationCopy = Reservation.builder()
+                .id(reservation.getId())
+                .user(reservation.getUser())
+                .pet(reservation.getPet())
+                .doctor(reservation.getDoctor())
+                .reservationDate(reservation.getReservationDate())
+                .reservationTime(reservation.getReservationTime())
+                .status(reservation.getStatus())
+                .symptom(reservation.getSymptom())
+                .type(reservation.getType())
+                .build();
 
-        //대기중 취소로 관리자에게만 알림
-        if(reservation.getStatus() == ReservationStatus.PENDING){
-            User admin = userRepository.findByRole(UserRole.ROLE_ADMIN)
-                    .stream().findFirst()
-                    .orElseThrow(()-> new IllegalStateException("관리자 계정이 존재하지 않습니다."));
-            notificationService.notifyUser(
-                    admin.getId(),
-                    NotificationType.RESERVATION,
-                    content,
-                    dto
-            );
-            //확정이후 취소로 예약자 담당의에게 알림
-        }else if (reservation.getStatus() == ReservationStatus.APPROVED){
-            notificationService.notifyUser(
-                    reservation.getUser().getId(),
-                    NotificationType.RESERVATION,
-                    content,
-                    dto
-            );
-            if(reservation.getDoctor() != null) {
-                notificationService.notifyUser(
-                        reservation.getDoctor().getId(),
-                        NotificationType.RESERVATION,
-                        content,
-                        dto
-                );
-            }
-        }
+        reservationRepository.delete(reservation);
+
+        notificationService.sendReservationCancelledNotificationAsync(reservationCopy);
 
 
     }

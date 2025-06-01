@@ -25,6 +25,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.role = :role AND u.status = :status")
     List<User> findByRoleAndStatus(@Param("role") UserRole role, @Param("status") UserStatus status);
 
+    //역할별 사용자 조회
+    List<User> findByRoleIn(List<UserRole> roles);
 
     @Modifying
     @Transactional

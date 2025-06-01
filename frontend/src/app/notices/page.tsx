@@ -4,7 +4,7 @@ import { useUser } from "@/contexts/UserContext";
 import { PlusCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 
 interface Notice {
   id: number;
@@ -40,68 +40,58 @@ function NoticesContent() {
   const currentPage = Number(searchParams.get("page")) || 1;
   const pageSize = 10;
 
-  useEffect(() => {
-    console.group("공지사항 페이지 마운트");
-    console.log("마운트 시점:", new Date().toISOString());
-    console.log("현재 URL:", window.location.href);
-    console.log("pathname:", window.location.pathname);
-    console.log("search:", window.location.search);
-    console.log("SearchParams:", Object.fromEntries(searchParams.entries()));
-    console.log("Current Page:", currentPage);
-    console.groupEnd();
+  // fetchNotices 함수를 useCallback으로 감싸서 재사용
+  const fetchNotices = useCallback(async () => {
+    try {
+      console.log("데이터 가져오기 시작");
+      setLoading(true);
+      setError(null);
 
-    // 현재 경로를 저장
-    sessionStorage.setItem("prevPath", "/notices");
+      const apiUrl = searchQuery
+        ? `${
+            process.env.NEXT_PUBLIC_API_BASE_URL
+          }/api/notices/search?title=${encodeURIComponent(searchQuery)}&page=${
+            currentPage - 1
+          }&size=${pageSize}`
+        : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notices?page=${
+            currentPage - 1
+          }&size=${pageSize}`;
 
-    const fetchNotices = async () => {
-      try {
-        console.log("데이터 가져오기 시작");
-        setLoading(true);
-        setError(null);
+      console.log("API URL:", apiUrl);
 
-        const apiUrl = searchQuery
-          ? `${
-              process.env.NEXT_PUBLIC_API_BASE_URL
-            }/api/notices/search?title=${encodeURIComponent(
-              searchQuery
-            )}&page=${currentPage - 1}&size=${pageSize}`
-          : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notices?page=${
-              currentPage - 1
-            }&size=${pageSize}`;
+      const response = await fetch(apiUrl, {
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-        console.log("API URL:", apiUrl);
-
-        const response = await fetch(apiUrl, {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(
-            response.status === 404
-              ? "공지사항이 없습니다."
-              : "공지사항을 불러오는데 실패했습니다."
-          );
-        }
-
-        const data = await response.json();
-        setPageData(data);
-      } catch (error) {
-        console.error("공지사항 로드 오류:", error);
-        setError(
-          error instanceof Error
-            ? error.message
+      if (!response.ok) {
+        throw new Error(
+          response.status === 404
+            ? "공지사항이 없습니다."
             : "공지사항을 불러오는데 실패했습니다."
         );
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchNotices();
+      const data = await response.json();
+      setPageData(data);
+    } catch (error) {
+      console.error("공지사항 로드 오류:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "공지사항을 불러오는데 실패했습니다."
+      );
+    } finally {
+      setLoading(false);
+    }
   }, [currentPage, searchQuery]);
+
+  // 최초 마운트와 페이지/검색어 변경 시 실행
+  useEffect(() => {
+    fetchNotices();
+  }, [currentPage, searchQuery, fetchNotices]);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -120,13 +110,41 @@ function NoticesContent() {
   useEffect(() => {
     // 공지사항 목록 페이지에 진입할 때마다 경로 저장
     sessionStorage.setItem("prevPath", "/notices");
-  }, []); // 마운트 시에만 실행
+  }, []);
 
   const handleNoticeClick = (noticeId: number) => {
     // 상세 페이지로 이동하기 전에 현재 경로를 저장
     sessionStorage.setItem("prevPath", "/notices");
     router.push(`/notices/${noticeId}`);
   };
+
+  // SSE 이벤트 리스너 (의존성 배열 비움)
+  useEffect(() => {
+    const handleNoticeRefresh = (e: Event) => {
+      console.log("[Notice] 공지사항 새로고침 이벤트 수신");
+      const customEvent = e as CustomEvent;
+      console.log("[Notice] 이벤트 상세:", customEvent.detail);
+
+      // 현재 페이지가 1페이지가 아니면 1페이지로 이동
+      if (currentPage !== 1) {
+        console.log("[Notice] 1페이지로 이동");
+        router.push("/notices?page=1");
+        return;
+      }
+
+      // 1페이지인 경우 즉시 새로고침
+      console.log("[Notice] 즉시 새로고침 실행");
+      fetchNotices();
+    };
+
+    window.addEventListener("notice-refresh", handleNoticeRefresh);
+    console.log("[Notice] 이벤트 리스너 등록됨");
+
+    return () => {
+      window.removeEventListener("notice-refresh", handleNoticeRefresh);
+      console.log("[Notice] 이벤트 리스너 제거됨");
+    };
+  }, []); // 빈 의존성 배열로 한 번만 등록
 
   return (
     <div className="p-8">
@@ -201,7 +219,7 @@ function NoticesContent() {
                 <tr
                   key={notice.id}
                   className="hover:bg-gray-50 transition-colors cursor-pointer"
-                  onClick={() => handleNoticeClick(notice.id)} // 수정된 부분
+                  onClick={() => handleNoticeClick(notice.id)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {pageData.number * pageData.size +

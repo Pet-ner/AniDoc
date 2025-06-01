@@ -26,12 +26,14 @@ interface ReservationStatusProps {
   onDateSelect?: (date: string, reservations: Reservation[]) => void;
   showCreateButton?: boolean;
   isAdminView?: boolean;
+  initialDate?: string; // 초기 선택 날짜 (선택적)
 }
 
 export default function ReservationStatus({
   onDateSelect,
   showCreateButton = true,
   isAdminView = false,
+  initialDate,
 }: ReservationStatusProps) {
   const { user } = useUser();
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -71,6 +73,7 @@ export default function ReservationStatus({
 
   // 초기 데이터 로드 및 날짜 설정
   useEffect(() => {
+    // initialDate가 있으면 해당 날짜를, 없으면 오늘 날짜를 사용
     const today = new Date().toISOString().split("T")[0];
     setSelectedDate(today);
 
@@ -91,6 +94,49 @@ export default function ReservationStatus({
       fetchMonthlyReservations();
     }
   }, [currentDate, isAdminView, isAdminOrStaff, user]);
+
+  // 👇 ✨ 새로 추가: initialDate 처리를 위한 별도 useEffect
+  useEffect(() => {
+    // initialDate가 있을 때만 실행되는 완전 독립적인 로직
+    if (!initialDate) return;
+
+    // 잠시 대기 후 실행 (기존 로직과 충돌 방지)
+    const timer = setTimeout(() => {
+      if (user) {
+        // 조건 체크만 하고 의존성에는 포함하지 않음
+        const dateObj = new Date(initialDate);
+        setCurrentDate(dateObj);
+        setSelectedDate(initialDate);
+        handleDateSelect(initialDate);
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [initialDate]); // initialDate만 의존성으로
+
+  // 기존 useEffect들은 그대로 두고, 맨 아래에 이것만 추가
+  useEffect(() => {
+    if (initialDate && user) {
+      // 페이지 로드 완료 후 실행
+      const timer = setTimeout(() => {
+        const dateObj = new Date(initialDate);
+        setCurrentDate(dateObj);
+        setSelectedDate(initialDate);
+
+        // 강제로 데이터 다시 로드
+        if (isAdminView || isAdminOrStaff) {
+          fetchMonthlyReservations();
+        } else {
+          fetchAllUserReservations();
+        }
+
+        // 날짜 선택 처리
+        fetchReservationsByDate(initialDate);
+      }, 1000); // 1초 지연
+
+      return () => clearTimeout(timer);
+    }
+  }, [initialDate]);
 
   // 유저의 전체 예약 조회
   const fetchAllUserReservations = async () => {
