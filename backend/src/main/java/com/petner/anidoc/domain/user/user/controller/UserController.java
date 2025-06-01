@@ -101,7 +101,6 @@ public class UserController {
             throw new CustomException(ErrorCode.LOGIN_FAILED);
         }
 
-    // TODO : 에러 코드 세분화(USER가 존재하지 않습니다, 비밀번호가 다릅니다 등)
     }
 
 

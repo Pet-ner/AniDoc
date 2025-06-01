@@ -3,6 +3,7 @@ package com.petner.anidoc.domain.user.user.controller;
 
 import com.petner.anidoc.domain.user.user.dto.UserResponseDto;
 import com.petner.anidoc.domain.user.user.service.UserService;
+import com.petner.anidoc.domain.user.user.service.UserStatusService;
 import com.petner.anidoc.global.security.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +22,14 @@ import java.util.List;
 public class AdminController {
 
     private final UserService userService;
+    private final UserStatusService userStatusService;
 
     // ✅ 승인 대기 목록 조회
     @Operation(summary = "승인 대기 목록 조회", description = "의료진 가입 승인 대기 중인 사용자 목록을 조회합니다.")
     @GetMapping("/pending-approvals")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<UserResponseDto>> getPendingApprovals(){
-        List<UserResponseDto> pendingUsers = userService.getPendingApprovalUsers();
+        List<UserResponseDto> pendingUsers = userStatusService.getPendingApprovalUsers();
         return ResponseEntity.ok(pendingUsers);
     }
 
@@ -38,16 +40,17 @@ public class AdminController {
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser admin){
 
-        userService.approveUser(id, admin.getId());
+        userStatusService.approveUser(id, admin.getId());
         return ResponseEntity.ok("사용자 승인 완료");
     }
+
     // ✅ 승인 거절
     @DeleteMapping("/reject/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> rejectUser(
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser admin) {
-        userService.rejectUser(id, admin.getId());
+        userStatusService.rejectUser(id, admin.getId());
         return ResponseEntity.ok("사용자 승인 거부");
     }
 

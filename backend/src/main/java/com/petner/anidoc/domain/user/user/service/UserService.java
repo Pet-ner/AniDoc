@@ -36,6 +36,7 @@ public class UserService {
     private final VetInfoRepository vetInfoRepository;
     private final AuthTokenService authTokenService;
     private final PasswordEncoder passwordEncoder;
+    private final UserStatusService userStatusService;
 
 
     // ✅ 이메일 중복 검사
@@ -92,17 +93,7 @@ public class UserService {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
         }
 
-        user.setStatus(UserStatus.ON_DUTY);
-
-        if (user.getRole() == UserRole.ROLE_STAFF &&
-            user.getApprovalStatus() != ApprovalStatus.APPROVED){
-
-            if(user.getApprovalStatus() == ApprovalStatus.PENDING){
-                throw new CustomException(ErrorCode.APPROVAL_PENDING);
-            } else if (user.getApprovalStatus() == ApprovalStatus.REJECTED){
-                throw new CustomException(ErrorCode.APPROVAL_REJECTED);
-            }
-        }
+        userStatusService.checkLoginUser(user);
 
         // refreshToken 생성
         String refreshToken = authTokenService.generateRefreshToken(user);
@@ -113,6 +104,29 @@ public class UserService {
 
         return UserResponseDto.fromEntity(user);
     }
+
+    // 소셜 로그인
+    @Transactional
+    public User authenticateUserByToken(String accessToken) {
+        // 토큰 검증
+        Map<String, Object> payload = authTokenService.payload(accessToken);
+        if (payload == null) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+        // 사용자 ID 추출
+        Long userId = ((Number) payload.get("id")).longValue();
+
+        // DB에서 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 로그인 상태 확인 및 설정
+        userStatusService.checkLoginUser(user);
+
+        return user;
+    }
+
 
     // ✅ 엑세스 토큰 생성
     public String genAccessToken(User user){
@@ -141,44 +155,6 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
-
-    // 📍 가입 승인
-
-    // ✅ 의료진 가입 승인
-    @Transactional
-    public void approveUser(Long userId, Long adminId){
-        User user = userRepository.findById(userId)
-            .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        if (user.getRole() != UserRole.ROLE_STAFF){
-            throw new CustomException(ErrorCode.INVALID_USER_ROLE);
-
-        }
-
-        user.setApprovalStatus(ApprovalStatus.APPROVED);
-        userRepository.save(user);
-    }
-
-    // ✅`승인 거부
-    @Transactional
-    public void rejectUser(Long userId, Long adminId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        userRepository.delete(user);
-        userRepository.flush();
-    }
-
-    // ✅`승인 대기 중인 사용자 목록 조회
-    @Transactional(readOnly = true)
-    public List<UserResponseDto> getPendingApprovalUsers() {
-        List<User> pendingUsers = userRepository
-                .findByRoleAndApprovalStatus(UserRole.ROLE_STAFF, ApprovalStatus.PENDING);
-
-        return pendingUsers.stream()
-                .map(UserResponseDto::fromEntity)
-                .collect(Collectors.toList());
-    }
 
     // 📍 조회
     // ✅ 이메일로 사용자 조회
@@ -257,6 +233,7 @@ public class UserService {
     }
 
     public void modify(User user, @NotBlank String email){
+
         user.setEmail(email);
     }
 
@@ -267,6 +244,7 @@ public class UserService {
                     throw new RuntimeException("해당 email은 이미 사용중입니다.");
                 });
 
+
         User user = User.builder()
                 .name("Temp_name")
                 .email(email)
@@ -275,7 +253,6 @@ public class UserService {
                 .socialId(socialId)
                 .ssoProvider(provider)
                 .role(UserRole.ROLE_USER)
-
                 .build();
         return userRepository.save(user);
     }
@@ -313,32 +290,37 @@ public class UserService {
     }
 
 
-    @Transactional
-    public User updateSocialUser(Long userId, SocialSignUpRequestDto updateDto) {
-        // userId로 User 조회
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        @Transactional
+        public User updateSocialUser(Long userId, SocialSignUpRequestDto updateDto) {
+            // userId로 User 조회
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // VetInfo 조회
-        VetInfo vetInfo = null;
-        if (updateDto.getVetInfo() != null) {
-            vetInfo = vetInfoRepository.findById(updateDto.getVetInfo().getId())
-                    .orElseThrow(() -> new RuntimeException("병원 정보를 찾을 수 없습니다."));
+            // VetInfo 조회
+            VetInfo vetInfo = null;
+            if (updateDto.getVetInfo() != null) {
+                vetInfo = vetInfoRepository.findById(updateDto.getVetInfo().getId())
+                        .orElseThrow(() -> new RuntimeException("병원 정보를 찾을 수 없습니다."));
+            }
+
+            // 기본 정보 업데이트
+            user.updateBasicInfo(
+                    updateDto.getName(),
+                    updateDto.getPhoneNumber(),
+                    updateDto.getEmergencyContact(),
+                    updateDto.getRole(),
+                    vetInfo
+            );
+
+            // 의료진일 경우 상태 및 승인 설정
+            if (updateDto.getRole() == UserRole.ROLE_STAFF) {
+                user.updateStatus(UserStatus.OFFLINE);
+                user.setApprovalStatus(ApprovalStatus.PENDING);
+            }
+
+            return user;
         }
 
-        // Repository의 업데이트 메서드 사용
-        userRepository.updateUserBasicInfo(
-                userId,
-                updateDto.getName(),
-                updateDto.getPhoneNumber(),
-                updateDto.getEmergencyContact(),
-                updateDto.getRole(),
-                updateDto.getVetInfo()
-        );
-
-        // 업데이트된 사용자 정보 반환
-        return userRepository.findById(userId).orElseThrow();
-    }
 
 
     // 비밀번호 체크

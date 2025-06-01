@@ -87,7 +87,7 @@ export default function StaffApprovalList({
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admins/reject/${id}`,
         {
-          method: "POST",
+          method: "DELETE",
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
