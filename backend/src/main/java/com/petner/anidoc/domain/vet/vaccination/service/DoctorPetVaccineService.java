@@ -9,7 +9,7 @@ import com.petner.anidoc.domain.vet.reservation.repository.ReservationRepository
 import com.petner.anidoc.domain.vet.vaccination.dto.DoctorPetVaccineRequestDTO;
 import com.petner.anidoc.domain.vet.vaccination.dto.DoctorPetVaccineResponseDTO;
 import com.petner.anidoc.domain.vet.vaccination.entity.Vaccination;
-import com.petner.anidoc.domain.vet.vaccination.repository.VaccineRepository;
+import com.petner.anidoc.domain.vet.vaccination.repository.VaccinationRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class DoctorPetVaccineService {
-    private final VaccineRepository vaccineRepository;
+    private final VaccinationRepository vaccineRepository;
     private final PetRepository petRepository;
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
