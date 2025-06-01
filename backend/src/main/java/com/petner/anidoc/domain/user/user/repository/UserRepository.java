@@ -47,7 +47,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 //                             @Param("emergencyContact") String emergencyContact,
 //                             @Param("role") UserRole role,
 //                             @Param("vetInfo") VetInfo vetInfo);
-
 }
 
 

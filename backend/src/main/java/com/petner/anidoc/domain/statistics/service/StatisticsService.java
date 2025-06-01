@@ -167,11 +167,12 @@ public class StatisticsService {
         User user = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("보호자 정보를 찾을 수 없습니다."));
 
-    // 본인의 통계만 조회 가능하도록 권한 체크 (관리자/직원은 모든 보호자 조회 가능)
-    if (!user.getId().equals(userId) && 
-        user.getRole() != UserRole.ROLE_ADMIN && 
-        user.getRole() != UserRole.ROLE_STAFF) {
-        throw new RuntimeException("본인의 통계만 조회할 수 있습니다.");
+        // 본인의 통계만 조회 가능하도록 권한 체크 (관리자/직원은 모든 보호자 조회 가능)
+        if (!user.getId().equals(userId) &&
+                user.getRole() != UserRole.ROLE_ADMIN &&
+                user.getRole() != UserRole.ROLE_STAFF) {
+            throw new RuntimeException("본인의 통계만 조회할 수 있습니다.");
+        }
     }
 
     private int calculateTodayReservations(Long userId) {
@@ -336,4 +337,19 @@ public class StatisticsService {
                 endDateTime
         );
     }
+        //주간 통계(월~일기준)단위로 계산
+        private LocalDateTime[] getWeekRange() {
+            LocalDate today = LocalDate.now();
+
+            // 이번 주 월요일 계산
+            LocalDate monday = today.minusDays(today.getDayOfWeek().getValue() - 1);
+
+            // 이번 주 일요일 계산
+            LocalDate sunday = monday.plusDays(6);
+
+            return new LocalDateTime[]{
+                    monday.atStartOfDay(),
+                    sunday.atTime(23, 59, 59)
+            };
+        }
 }
