@@ -125,6 +125,20 @@ export default function Sidebar() {
               </Link>
             )}
           </li>
+          {user.userRole === "ROLE_ADMIN" && (
+            <li>
+              <Link
+                href="/medicines"
+                className={`flex items-center p-3 rounded-lg ${isActive(
+                  "/medicines"
+                )}`}
+              >
+                <Package size={20} className="mr-3" />
+                <span>약품 재고 관리</span>
+              </Link>
+            </li>
+          )}
+
           <li>
             <Link
               href="/notices"
