@@ -39,6 +39,13 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     List<Reservation> findByDoctorIdAndStatus(Long doctorId, ReservationStatus status);
 
+    //대시보드 상단통계카드
+    //추가(보호자) - 오늘의 예약 (기존)
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.user.id = :userId " +
+            "AND DATE(r.reservationDate) = :today " +
+            "AND r.status = 'APPROVED'")
+    int countTodayReservationsByUserId(@Param("userId") Long userId, @Param("today") LocalDate today);
+
 
     // ReservationRepository에 추가할 메서드들
 
@@ -78,4 +85,40 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByDoctorIdAndStatusWithDetails(@Param("doctorId") Long doctorId, @Param("status") ReservationStatus status);
 
 
+
+    // 오늘의 미완료 예약 (APPROVED 상태이면서 진료/예방접종 완료되지 않은 것만)
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.user.id = :userId " +
+            "AND r.reservationDate = :today " +
+            "AND r.status = 'APPROVED' " +  // PENDING 제외, APPROVED만
+            "AND NOT EXISTS (SELECT 1 FROM MedicalRecord m WHERE m.reservation.id = r.id) " +
+            "AND NOT EXISTS (SELECT 1 FROM Vaccination v WHERE v.reservation.id = r.id)")
+    int countTodayIncompleteReservationsByUserId(@Param("userId") Long userId, @Param("today") LocalDate today);
+
+
+    // 미래의 승인된 예약 (오늘 제외, 오늘 이후, APPROVED만)
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.user.id = :userId " +
+            "AND r.reservationDate > :today " +
+            "AND r.status = :status")
+    int countFutureReservationsByUserIdAndStatus(
+            @Param("userId") Long userId,
+            @Param("today") LocalDate today,
+            @Param("status") ReservationStatus status);
+
+    //추가(의료진, 관리자)
+    // 의료진용: 오늘 전체 예약 수
+    int countByReservationDate(LocalDate date);
+
+    // 의료진용: 승인 대기 예약 수
+    int countByStatus(ReservationStatus status);
+
+    // 특정 의료진의 오늘 예약 수
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.doctor.id = :doctorId AND DATE(r.reservationDate) = :date")
+    int countByDoctorIdAndReservationDate(@Param("doctorId") Long doctorId, @Param("date") LocalDate date);
+
+    // 관리자용: 오늘의 확정된 예약 수만 계산
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.reservationDate = :date AND r.status = 'APPROVED'")
+    int countApprovedReservationsByDate(@Param("date") LocalDate date);
+
 }
+
+

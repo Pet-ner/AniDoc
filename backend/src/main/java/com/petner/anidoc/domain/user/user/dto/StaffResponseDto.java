@@ -14,12 +14,16 @@ import lombok.NoArgsConstructor;
 public class StaffResponseDto {
     private Long id;
     private String name;
+    private String email;
+    private String phoneNumber;
     private UserStatus status;
 
     public static StaffResponseDto fromEntity(User user) {
         return StaffResponseDto.builder()
                 .id(user.getId())
                 .name(user.getName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
                 .status(user.getStatus())
                 .build();
     }

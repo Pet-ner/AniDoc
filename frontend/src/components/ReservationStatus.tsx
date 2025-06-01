@@ -26,14 +26,22 @@ interface ReservationStatusProps {
   onDateSelect?: (date: string, reservations: Reservation[]) => void;
   showCreateButton?: boolean;
   isAdminView?: boolean;
+
   initialDate?: string; // 초기 선택 날짜 (선택적)
+
+  onReservationStatusChange?: () => void;
+
 }
 
 export default function ReservationStatus({
   onDateSelect,
   showCreateButton = true,
   isAdminView = false,
+
   initialDate,
+
+  onReservationStatusChange,
+
 }: ReservationStatusProps) {
   const { user } = useUser();
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -42,7 +50,7 @@ export default function ReservationStatus({
   >([]);
   const [allUserReservations, setAllUserReservations] = useState<Reservation[]>(
     []
-  ); // 유저 전체 예약 (달력 점 표시용)
+  );
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -485,31 +493,34 @@ export default function ReservationStatus({
                           {time}
                         </div>
                         {reservation ? (
-                          <Link
-                            href={`/reservation/${reservation.id}`}
-                            className="flex items-center space-x-2 flex-1 min-w-0 hover:bg-gray-50 rounded px-2 py-1 cursor-pointer transition-colors"
-                          >
-                            <div
-                              className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusColor(
-                                reservation.status
-                              )}`}
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="text-sm text-gray-900 truncate">
-                                <span className="font-medium">
-                                  {reservation.userName}
-                                </span>
-                                <span className="text-gray-500 ml-2">
-                                  {reservation.petName} /{" "}
-                                  {reservation.type === "GENERAL"
-                                    ? "일반진료"
-                                    : "예방접종"}
-                                  {reservation.doctorName &&
-                                    ` / ${reservation.doctorName}`}
-                                </span>
+                          <div className="flex items-center space-x-2 flex-1 min-w-0">
+                            <Link
+                              href={`/reservation/${reservation.id}`}
+                              className="flex items-center space-x-2 flex-1 min-w-0 hover:bg-gray-50 rounded px-2 py-1 cursor-pointer transition-colors"
+                            >
+                              <div
+                                className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusColor(
+                                  reservation.status
+                                )}`}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm text-gray-900 truncate">
+                                  <span className="font-medium">
+                                    {reservation.userName}
+                                  </span>
+                                  <span className="text-gray-500 ml-2">
+                                    {reservation.petName} /{" "}
+                                    {reservation.type === "GENERAL"
+                                      ? "일반진료"
+                                      : "예방접종"}
+                                    {reservation.doctorName &&
+                                      ` / ${reservation.doctorName}`}
+                                  </span>
+                                </div>
                               </div>
-                            </div>
-                          </Link>
+                            </Link>
+                            {/* 승인/거절 버튼 제거됨 */}
+                          </div>
                         ) : (
                           <div className="text-sm text-gray-400 py-1">-</div>
                         )}
@@ -528,31 +539,34 @@ export default function ReservationStatus({
                           {time}
                         </div>
                         {reservation ? (
-                          <Link
-                            href={`/reservation/${reservation.id}`}
-                            className="flex items-center space-x-2 flex-1 min-w-0 hover:bg-gray-50 rounded px-2 py-1 cursor-pointer transition-colors"
-                          >
-                            <div
-                              className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusColor(
-                                reservation.status
-                              )}`}
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="text-sm text-gray-900 truncate">
-                                <span className="font-medium">
-                                  {reservation.userName}
-                                </span>
-                                <span className="text-gray-500 ml-2">
-                                  {reservation.petName} /{" "}
-                                  {reservation.type === "GENERAL"
-                                    ? "일반진료"
-                                    : "예방접종"}
-                                  {reservation.doctorName &&
-                                    ` / ${reservation.doctorName}`}
-                                </span>
+                          <div className="flex items-center space-x-2 flex-1 min-w-0">
+                            <Link
+                              href={`/reservation/${reservation.id}`}
+                              className="flex items-center space-x-2 flex-1 min-w-0 hover:bg-gray-50 rounded px-2 py-1 cursor-pointer transition-colors"
+                            >
+                              <div
+                                className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusColor(
+                                  reservation.status
+                                )}`}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm text-gray-900 truncate">
+                                  <span className="font-medium">
+                                    {reservation.userName}
+                                  </span>
+                                  <span className="text-gray-500 ml-2">
+                                    {reservation.petName} /{" "}
+                                    {reservation.type === "GENERAL"
+                                      ? "일반진료"
+                                      : "예방접종"}
+                                    {reservation.doctorName &&
+                                      ` / ${reservation.doctorName}`}
+                                  </span>
+                                </div>
                               </div>
-                            </div>
-                          </Link>
+                            </Link>
+                            {/* 승인/거절 버튼 제거됨 */}
+                          </div>
                         ) : (
                           <div className="text-sm text-gray-400 py-1">-</div>
                         )}
