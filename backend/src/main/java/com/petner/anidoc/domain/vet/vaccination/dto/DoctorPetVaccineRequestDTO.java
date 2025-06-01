@@ -37,7 +37,6 @@ public class DoctorPetVaccineRequestDTO {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate nextDueDate; //다음접종일
 
-    @NotNull
     private VaccinationStatus status; //접종상태(미접종, 접종진행중(2차까지맞고, 3차가 남은경우), 모든접종완료)
 
     private String notes; //메모

@@ -4,6 +4,7 @@ import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import com.petner.anidoc.domain.vet.vaccination.dto.DoctorPetVaccineRequestDTO;
 import com.petner.anidoc.domain.vet.vaccination.dto.DoctorPetVaccineResponseDTO;
+import com.petner.anidoc.domain.vet.vaccination.dto.VaccinationStatusDto;
 import com.petner.anidoc.domain.vet.vaccination.entity.Vaccination;
 import com.petner.anidoc.domain.vet.vaccination.service.DoctorPetVaccineService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -88,6 +89,14 @@ public class DoctorPetVaccineController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/reservation/{reservationId}")
+    @Operation(summary = "예약별 예방접종 기록 조회", description = "특정 예약에 대한 예방접종 기록을 조회합니다")
+    public ResponseEntity<DoctorPetVaccineResponseDTO> getVaccinationByReservation(
+            @PathVariable Long reservationId) {
+        DoctorPetVaccineResponseDTO result = doctorPetVaccineService.findVaccinationByReservationId(reservationId);
+        return ResponseEntity.ok(result);
+    }
+
     //삭제
     @DeleteMapping("/{vaccinationId}")
     @Operation(summary = "예방접종 삭제", description = "예방접종 삭제")
@@ -102,4 +111,10 @@ public class DoctorPetVaccineController {
         return ResponseEntity.ok().body("예방접종 기록이 삭제되었습니다.");
     }
 
+    @GetMapping("/status/reservation/{reservationId}")
+    @Operation(summary = "예약별 백신 기록 상태 확인", description = "특정 예약에 백신 기록 상태를 확인합니다")
+    public ResponseEntity<VaccinationStatusDto> getVaccinationStatus(@PathVariable Long reservationId) {
+        VaccinationStatusDto status = doctorPetVaccineService.getVaccinationStatusByReservationId(reservationId);
+        return ResponseEntity.ok(status);
+    }
 }

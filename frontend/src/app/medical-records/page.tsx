@@ -14,6 +14,7 @@ interface MedicalRecord {
   id: number;
   reservationTime: string;
   petName: string;
+  petSpecies: string;
   symptom: string;
   doctorName: string;
   status: string;
@@ -52,7 +53,9 @@ interface MedicalRecord {
   reservationDate?: string;
   createdAt?: string;
   updatedAt?: string;
-  type?: string;
+  type?: "GENERAL" | "VACCINATION";
+  hasVaccinationRecord?: boolean; // 예방접종 기록 존재 여부
+  vaccinationStatus?: string;
 }
 
 interface Stats {
@@ -155,7 +158,38 @@ export default function MedicalRecordPage() {
         })
       );
 
-      setRecords(recordsWithDetails);
+      if (user.userRole === "ROLE_STAFF") {
+        const recordsWithVaccinationStatus = await Promise.all(
+          recordsWithDetails.map(async (record) => {
+            if (record.type === "VACCINATION") {
+              try {
+                const vaccinationRes = await fetch(
+                  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/doctor/vaccines/status/reservation/${record.id}`,
+                  { credentials: "include" }
+                );
+                if (vaccinationRes.ok) {
+                  const statusData = await vaccinationRes.json();
+                  return {
+                    ...record,
+                    hasVaccinationRecord: statusData.exists,
+                    vaccinationStatus: statusData.status || undefined,
+                  };
+                }
+              } catch (err) {
+                console.error("백신 기록 확인 실패:", err);
+              }
+            }
+            return {
+              ...record,
+              hasVaccinationRecord: false,
+              vaccinationStatus: undefined,
+            };
+          })
+        );
+        setRecords(recordsWithVaccinationStatus);
+      } else {
+        setRecords(recordsWithDetails);
+      }
     } catch (err) {
       console.error(err);
     } finally {
