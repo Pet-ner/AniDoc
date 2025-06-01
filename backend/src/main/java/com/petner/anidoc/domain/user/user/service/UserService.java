@@ -1,7 +1,10 @@
 package com.petner.anidoc.domain.user.user.service;
 
 import com.petner.anidoc.domain.user.user.dto.*;
-import com.petner.anidoc.domain.user.user.entity.*;
+import com.petner.anidoc.domain.user.user.entity.SsoProvider;
+import com.petner.anidoc.domain.user.user.entity.User;
+import com.petner.anidoc.domain.user.user.entity.UserRole;
+import com.petner.anidoc.domain.user.user.entity.UserStatus;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import com.petner.anidoc.domain.vet.vet.entity.VetInfo;
 import com.petner.anidoc.domain.vet.vet.repository.VetInfoRepository;
@@ -36,7 +39,6 @@ public class UserService {
     private final VetInfoRepository vetInfoRepository;
     private final AuthTokenService authTokenService;
     private final PasswordEncoder passwordEncoder;
-    private final UserStatusService userStatusService;
 
 
     // ✅ 이메일 중복 검사
@@ -69,14 +71,16 @@ public class UserService {
                 .emergencyContact(dto.getEmergencyContact())
                 .vetInfo(vetInfo)
                 .build();
+
         // 의료진인 경우 상태 설정
         if (dto.getRole() == UserRole.ROLE_STAFF) {
-            user.updateStatus(UserStatus.OFFLINE);
-            user.setApprovalStatus(ApprovalStatus.PENDING);
+            user.updateStatus(UserStatus.ON_DUTY);
         }
 
         return userRepository.save(user);
     }
+
+    //TODO: 비밀번호 확인 기능
 
     // ✅ 일반 로그인
     @Transactional
@@ -93,8 +97,6 @@ public class UserService {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
         }
 
-        userStatusService.checkLoginUser(user);
-
         // refreshToken 생성
         String refreshToken = authTokenService.generateRefreshToken(user);
 
@@ -102,31 +104,9 @@ public class UserService {
         user.updateRefreshToken(refreshToken);
         userRepository.save(user);
 
+
         return UserResponseDto.fromEntity(user);
     }
-
-    // 소셜 로그인
-    @Transactional
-    public User authenticateUserByToken(String accessToken) {
-        // 토큰 검증
-        Map<String, Object> payload = authTokenService.payload(accessToken);
-        if (payload == null) {
-            throw new CustomException(ErrorCode.INVALID_TOKEN);
-        }
-
-        // 사용자 ID 추출
-        Long userId = ((Number) payload.get("id")).longValue();
-
-        // DB에서 사용자 조회
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        // 로그인 상태 확인 및 설정
-        userStatusService.checkLoginUser(user);
-
-        return user;
-    }
-
 
     // ✅ 엑세스 토큰 생성
     public String genAccessToken(User user){
@@ -142,7 +122,6 @@ public class UserService {
             User user = userRepository.findById(tokenUser.getId())
                     .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
             user.updateRefreshToken(null);
-            user.setStatus(UserStatus.OFFLINE);
             userRepository.save(user);
         } catch (Exception e) {
             throw new CustomException(ErrorCode.LOGOUT_FAILED);
@@ -154,7 +133,6 @@ public class UserService {
     public void deleteUser(long userId) {
         userRepository.deleteById(userId);
     }
-
 
     // 📍 조회
     // ✅ 이메일로 사용자 조회
@@ -212,20 +190,12 @@ public class UserService {
         List<User> staffList;
 
         if (onlyAvailable) {
-            // 승인되고 근무 중인 의료진만 조회
-            staffList = userRepository.findByRoleAndApprovalStatusAndStatus(
-                    UserRole.ROLE_STAFF,
-                    ApprovalStatus.APPROVED,
-                    UserStatus.ON_DUTY
-            );
+            // 근무 중인 의료진만 조회
+            staffList = userRepository.findByRoleAndStatus(UserRole.ROLE_STAFF, UserStatus.ON_DUTY);
         } else {
-            // 승인된 모든 의료진 조회
-            staffList = userRepository.findByRoleAndApprovalStatus(
-                    UserRole.ROLE_STAFF,
-                    ApprovalStatus.APPROVED
-            );
+            // 모든 의료진 조회
+            staffList = userRepository.findByRole(UserRole.ROLE_STAFF);
         }
-
 
         return staffList.stream()
                 .map(StaffResponseDto::fromEntity)
@@ -233,7 +203,6 @@ public class UserService {
     }
 
     public void modify(User user, @NotBlank String email){
-
         user.setEmail(email);
     }
 
@@ -243,7 +212,6 @@ public class UserService {
                 .ifPresent(user -> {
                     throw new RuntimeException("해당 email은 이미 사용중입니다.");
                 });
-
 
         User user = User.builder()
                 .name("Temp_name")
@@ -290,37 +258,32 @@ public class UserService {
     }
 
 
-        @Transactional
-        public User updateSocialUser(Long userId, SocialSignUpRequestDto updateDto) {
-            // userId로 User 조회
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+    @Transactional
+    public User updateSocialUser(Long userId, SocialSignUpRequestDto updateDto) {
+        // userId로 User 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-            // VetInfo 조회
-            VetInfo vetInfo = null;
-            if (updateDto.getVetInfo() != null) {
-                vetInfo = vetInfoRepository.findById(updateDto.getVetInfo().getId())
-                        .orElseThrow(() -> new RuntimeException("병원 정보를 찾을 수 없습니다."));
-            }
-
-            // 기본 정보 업데이트
-            user.updateBasicInfo(
-                    updateDto.getName(),
-                    updateDto.getPhoneNumber(),
-                    updateDto.getEmergencyContact(),
-                    updateDto.getRole(),
-                    vetInfo
-            );
-
-            // 의료진일 경우 상태 및 승인 설정
-            if (updateDto.getRole() == UserRole.ROLE_STAFF) {
-                user.updateStatus(UserStatus.OFFLINE);
-                user.setApprovalStatus(ApprovalStatus.PENDING);
-            }
-
-            return user;
+        // VetInfo 조회
+        VetInfo vetInfo = null;
+        if (updateDto.getVetInfo() != null) {
+            vetInfo = vetInfoRepository.findById(updateDto.getVetInfo().getId())
+                    .orElseThrow(() -> new RuntimeException("병원 정보를 찾을 수 없습니다."));
         }
 
+        // Repository의 업데이트 메서드 사용
+        userRepository.updateUserBasicInfo(
+                userId,
+                updateDto.getName(),
+                updateDto.getPhoneNumber(),
+                updateDto.getEmergencyContact(),
+                updateDto.getRole(),
+                updateDto.getVetInfo()
+        );
+
+        // 업데이트된 사용자 정보 반환
+        return userRepository.findById(userId).orElseThrow();
+    }
 
 
     // 비밀번호 체크
@@ -342,7 +305,6 @@ public class UserService {
     // 📍 status 관련 service
 
     // 내 상태 변경
-    @Transactional
     public void updateMyStatus(Long id, UserStatus newStatus){
         User user = userRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("사용자 없음"));
@@ -352,7 +314,6 @@ public class UserService {
 
 
     // 내 상태 조회
-    @Transactional
     public UserStatus getStatus(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("사용자를 찾을 수 없습니다."))

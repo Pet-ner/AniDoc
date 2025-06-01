@@ -41,5 +41,3 @@ application-secret.yml
 *.trace.db
 *.mv.db
 .env
-node_modules/
-package-lock.json

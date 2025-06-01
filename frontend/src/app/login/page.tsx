@@ -46,20 +46,9 @@ function LoginContent() {
             login();
             router.push("/");
           }
-        } else {
-          // 에러 응답 처리
-          const errorData = await response.json();
-          throw new Error(errorData.message || "소셜 로그인에 실패했습니다.");
         }
       } catch (error) {
         console.error("로그인 상태 확인 실패:", error);
-        setError(
-          error instanceof Error
-            ? error.message
-            : "소셜 로그인에 실패했습니다. 관리자 승인 후 로그인이 가능합니다."
-        );
-        // 에러 발생 시 로그인 페이지에 머무르기
-        return;
       }
     };
 

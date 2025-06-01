@@ -57,10 +57,6 @@ public class User extends BaseEntity implements UserDetails {
     private UserStatus status;
 
     @Enumerated(EnumType.STRING)
-    @Column(name ="approval_status")
-    private ApprovalStatus approvalStatus;
-
-    @Enumerated(EnumType.STRING)
     @Column(name = "sso_provider")
     private SsoProvider ssoProvider;
 
@@ -137,14 +133,4 @@ public class User extends BaseEntity implements UserDetails {
     public void updateStatus(UserStatus status) {
         this.status = status;
     }
-
-    public void updateBasicInfo(String name, String phoneNumber, String emergencyContact, UserRole role, VetInfo vetInfo) {
-        this.name = name;
-        this.phoneNumber = phoneNumber;
-        this.emergencyContact = emergencyContact;
-        this.role = role;
-        this.vetInfo = vetInfo;
-    }
-
-
 }

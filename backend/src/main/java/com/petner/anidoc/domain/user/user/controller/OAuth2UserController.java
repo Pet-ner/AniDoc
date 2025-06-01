@@ -3,19 +3,12 @@ package com.petner.anidoc.domain.user.user.controller;
 import com.petner.anidoc.domain.user.user.dto.SocialSignUpRequestDto;
 import com.petner.anidoc.domain.user.user.dto.UserResponseDto;
 import com.petner.anidoc.domain.user.user.entity.User;
-import com.petner.anidoc.domain.user.user.repository.UserRepository;
-import com.petner.anidoc.domain.user.user.service.AuthTokenService;
 import com.petner.anidoc.domain.user.user.service.UserService;
-import com.petner.anidoc.domain.user.user.service.UserStatusService;
-import com.petner.anidoc.global.exception.CustomException;
-import com.petner.anidoc.global.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * ✅ OAuth2UserController
@@ -31,9 +24,6 @@ import java.util.Map;
 public class OAuth2UserController {
 
     private final UserService userService;
-    private final UserStatusService userStatusService;
-    private final AuthTokenService authTokenService;
-    private final UserRepository userRepository;
 
     /**
      * ✅ accessToken을 이용해 현재 로그인된 사용자 정보 조회
@@ -46,12 +36,16 @@ public class OAuth2UserController {
     public ResponseEntity<UserResponseDto> getSocialUser(
             @CookieValue(value = "accessToken", required = false) String accessToken) {
 
+        // 토큰이 없는 경우 401 Unauthorized 응답
         if (accessToken == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(null); // 또는 적절한 에러 메시지 DTO 사용 가능
         }
 
-        User user = userService.authenticateUserByToken(accessToken);
+        // 토큰을 통해 사용자 정보 조회
+        User user = userService.getUserByAccessToken(accessToken);
 
+        // 사용자 정보를 응답으로 반환
         return ResponseEntity.ok(UserResponseDto.fromEntity(user));
     }
 
