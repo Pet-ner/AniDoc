@@ -10,13 +10,13 @@ custom:
 
 spring:
   datasource:
-    url: jdbc:mysql://mysql_1:3306/anidocdb
+    url: jdbc:mysql://mysql_1:3306/anidocdb?serverTimezone=Asia/Seoul
     username: petner
     password: petner
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: false
