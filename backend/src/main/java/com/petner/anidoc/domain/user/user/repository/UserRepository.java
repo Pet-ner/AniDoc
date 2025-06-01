@@ -26,7 +26,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.role = :role AND u.status = :status")
     List<User> findByRoleAndStatus(@Param("role") UserRole role, @Param("status") UserStatus status);
 
+    // 승인된 특정 역할의 사용자 조회
     List<User> findByRoleAndApprovalStatus(UserRole role, ApprovalStatus approvalStatus);
+
+    // 승인된 특정 역할과 상태의 사용자 조회
+    List<User> findByRoleAndApprovalStatusAndStatus(UserRole role, ApprovalStatus approvalStatus, UserStatus status);
 
 
     @Modifying

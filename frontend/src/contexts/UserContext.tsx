@@ -86,7 +86,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
           setUser(userData);
         } else {
           console.error("Unexpected content type:", contentType);
-          throw new Error("Invalid response format");
         }
       } else {
         // 인증 실패 - 로그인 상태 초기화

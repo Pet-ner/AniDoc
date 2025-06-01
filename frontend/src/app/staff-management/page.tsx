@@ -10,7 +10,6 @@ export default function StaffManagementPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // 권한 체크
     if (
       !user ||
       (user.userRole !== "ROLE_STAFF" && user.userRole !== "ROLE_ADMIN")

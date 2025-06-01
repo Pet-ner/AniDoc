@@ -68,10 +68,9 @@ public class UserService {
                 .emergencyContact(dto.getEmergencyContact())
                 .vetInfo(vetInfo)
                 .build();
-
         // 의료진인 경우 상태 설정
         if (dto.getRole() == UserRole.ROLE_STAFF) {
-            user.updateStatus(UserStatus.ON_DUTY);
+            user.updateStatus(UserStatus.OFFLINE);
             user.setApprovalStatus(ApprovalStatus.PENDING);
         }
 
@@ -112,7 +111,6 @@ public class UserService {
         user.updateRefreshToken(refreshToken);
         userRepository.save(user);
 
-
         return UserResponseDto.fromEntity(user);
     }
 
@@ -130,7 +128,7 @@ public class UserService {
             User user = userRepository.findById(tokenUser.getId())
                     .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
             user.updateRefreshToken(null);
-            user.setStatus(UserStatus.OFF);
+            user.setStatus(UserStatus.OFFLINE);
             userRepository.save(user);
         } catch (Exception e) {
             throw new CustomException(ErrorCode.LOGOUT_FAILED);
@@ -167,8 +165,8 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        user.setApprovalStatus(ApprovalStatus.REJECTED);
-        userRepository.save(user);
+        userRepository.delete(user);
+        userRepository.flush();
     }
 
     // ✅`승인 대기 중인 사용자 목록 조회
@@ -238,12 +236,20 @@ public class UserService {
         List<User> staffList;
 
         if (onlyAvailable) {
-            // 근무 중인 의료진만 조회
-            staffList = userRepository.findByRoleAndStatus(UserRole.ROLE_STAFF, UserStatus.ON_DUTY);
+            // 승인되고 근무 중인 의료진만 조회
+            staffList = userRepository.findByRoleAndApprovalStatusAndStatus(
+                    UserRole.ROLE_STAFF,
+                    ApprovalStatus.APPROVED,
+                    UserStatus.ON_DUTY
+            );
         } else {
-            // 모든 의료진 조회
-            staffList = userRepository.findByRole(UserRole.ROLE_STAFF);
+            // 승인된 모든 의료진 조회
+            staffList = userRepository.findByRoleAndApprovalStatus(
+                    UserRole.ROLE_STAFF,
+                    ApprovalStatus.APPROVED
+            );
         }
+
 
         return staffList.stream()
                 .map(StaffResponseDto::fromEntity)
@@ -269,6 +275,7 @@ public class UserService {
                 .socialId(socialId)
                 .ssoProvider(provider)
                 .role(UserRole.ROLE_USER)
+
                 .build();
         return userRepository.save(user);
     }
@@ -353,6 +360,7 @@ public class UserService {
     // 📍 status 관련 service
 
     // 내 상태 변경
+    @Transactional
     public void updateMyStatus(Long id, UserStatus newStatus){
         User user = userRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("사용자 없음"));
@@ -362,6 +370,7 @@ public class UserService {
 
 
     // 내 상태 조회
+    @Transactional
     public UserStatus getStatus(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("사용자를 찾을 수 없습니다."))

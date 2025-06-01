@@ -82,6 +82,9 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/vets/**").permitAll()
 
                                 .requestMatchers("/api/**").authenticated()
+                                .requestMatchers("/api/admins/**").hasRole("ADMIN")
+
+
 //
 //
 //

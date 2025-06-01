@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -112,6 +113,8 @@ public class UserController {
         if (accessToken == null || !authTokenService.isValid(accessToken)){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
         }
+
+
         userService.logout(accessToken);
 
 
@@ -152,7 +155,7 @@ public class UserController {
 
 
     // ✅ 의료진 조회
-    @Operation(summary = "의료진 목록 조회", description = "근무 중인 의료진 목록을 조회합니다.")
+    @Operation(summary = "의료진 목록 조회", description = "의료진 목록을 조회합니다.")
     @GetMapping("/staff")
     public ResponseEntity<List<StaffResponseDto>> getStaffList(
             @RequestParam(value = "onlyAvailable", defaultValue = "false") boolean onlyAvailable) {
@@ -160,7 +163,6 @@ public class UserController {
         List<StaffResponseDto> staffList = userService.getStaffList(onlyAvailable);
         return ResponseEntity.ok(staffList);
     }
-
 
     //✅ 비밀번호 일치 확인
     @PostMapping("/verify-password")
