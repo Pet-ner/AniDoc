@@ -45,7 +45,7 @@ public class DoctorPetVaccineService {
             throw new IllegalArgumentException("해당 예약은 이 반려동물의 예약이 아닙니다.");
         }
 
-        if (vaccinationRepository.findByReservationId(doctorPetVaccineRequestDTO.getReservationId()).isPresent()) {
+        if (vaccineRepository.findByReservationId(doctorPetVaccineRequestDTO.getReservationId()).isPresent()) {
             throw new IllegalStateException("이미 해당 예약에 대한 예방접종 기록이 존재합니다.");
         }
 
@@ -108,7 +108,7 @@ public class DoctorPetVaccineService {
     // 예약별 예방접종 기록 조회
     @Transactional(readOnly = true)
     public DoctorPetVaccineResponseDTO findVaccinationByReservationId(Long reservationId) {
-        Vaccination vaccination = vaccinationRepository.findByReservationId(reservationId)
+        Vaccination vaccination = vaccineRepository.findByReservationId(reservationId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 예약에 대한 예방접종 기록이 없습니다."));
         return new DoctorPetVaccineResponseDTO(vaccination);
     }
@@ -128,7 +128,7 @@ public class DoctorPetVaccineService {
 
     @Transactional(readOnly = true)
     public VaccinationStatusDto getVaccinationStatusByReservationId(Long reservationId) {
-        Optional<Vaccination> vaccination = vaccinationRepository.findByReservationId(reservationId);
+        Optional<Vaccination> vaccination = vaccineRepository.findByReservationId(reservationId);
         return vaccination.map(value -> new VaccinationStatusDto(true, value.getStatus().toString()))
                 .orElseGet(() -> new VaccinationStatusDto(false, null));
     }
