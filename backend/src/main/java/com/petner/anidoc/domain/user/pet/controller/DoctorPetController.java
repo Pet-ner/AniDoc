@@ -4,16 +4,12 @@ import com.petner.anidoc.domain.user.pet.dto.DoctorPetRequestDTO;
 import com.petner.anidoc.domain.user.pet.dto.DoctorPetResponseDTO;
 import com.petner.anidoc.domain.user.pet.entity.Pet;
 import com.petner.anidoc.domain.user.pet.service.DoctorPetRegistService;
-import com.petner.anidoc.domain.user.user.entity.User;
-import com.petner.anidoc.domain.user.user.entity.UserRole;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 

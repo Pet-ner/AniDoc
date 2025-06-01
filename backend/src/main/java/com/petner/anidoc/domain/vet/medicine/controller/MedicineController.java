@@ -1,9 +1,6 @@
 package com.petner.anidoc.domain.vet.medicine.controller;
 
-import com.petner.anidoc.domain.vet.medicine.dto.MedicineRequestDto;
-import com.petner.anidoc.domain.vet.medicine.dto.MedicineResponseDto;
-import com.petner.anidoc.domain.vet.medicine.dto.MedicineSearchDto;
-import com.petner.anidoc.domain.vet.medicine.dto.MedicineStockUpdateDto;
+import com.petner.anidoc.domain.vet.medicine.dto.*;
 import com.petner.anidoc.domain.vet.medicine.service.MedicineService;
 import com.petner.anidoc.global.security.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,10 +31,10 @@ public class MedicineController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping
-    @Operation(summary = "약품 목록 조회", description = "병원의 모든 약품 목록을 조회합니다.")
-    public ResponseEntity<List<MedicineResponseDto>> getMedicines(@AuthenticationPrincipal SecurityUser user) {
-        List<MedicineResponseDto> medicines = medicineService.getMedicinesByVet(user.getId());
+    @GetMapping("/all")
+    @Operation(summary = "모든 약품 조회", description = "병원의 모든 약품을 조회합니다.")
+    public ResponseEntity<List<MedicineResponseDto>> getAllMedicines(@AuthenticationPrincipal SecurityUser user) {
+        List<MedicineResponseDto> medicines = medicineService.getAllMedicinesByVet(user.getId());
         return ResponseEntity.ok(medicines);
     }
 
@@ -79,28 +76,4 @@ public class MedicineController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/search")
-    @Operation(summary = "약품 검색", description = "약품명으로 약품을 검색합니다.")
-    public ResponseEntity<List<MedicineSearchDto>> searchMedicines(
-            @AuthenticationPrincipal SecurityUser user,
-            @RequestParam String keyword) {
-        List<MedicineSearchDto> medicines = medicineService.searchMedicines(user.getId(), keyword);
-        return ResponseEntity.ok(medicines);
-    }
-
-    @GetMapping("/low-stock")
-    @Operation(summary = "재고 부족 약품 조회", description = "재고가 부족한 약품 목록을 조회합니다.")
-    public ResponseEntity<List<MedicineResponseDto>> getLowStockMedicines(
-            @AuthenticationPrincipal SecurityUser user,
-            @RequestParam(required = false, defaultValue = "10") Integer minimum) {
-        List<MedicineResponseDto> medicines = medicineService.getLowStockMedicines(user.getId(), minimum);
-        return ResponseEntity.ok(medicines);
-    }
-
-    @GetMapping("/available")
-    @Operation(summary = "사용 가능한 약품 목록", description = "재고가 있는 약품 목록을 조회합니다.")
-    public ResponseEntity<List<MedicineSearchDto>> getAvailableMedicines(@AuthenticationPrincipal SecurityUser user) {
-        List<MedicineSearchDto> medicines = medicineService.getAvailableMedicines(user.getId());
-        return ResponseEntity.ok(medicines);
-    }
 }

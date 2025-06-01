@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,12 +20,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.nio.file.AccessDeniedException;
-
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/notices")
+@Slf4j
 @Tag(name = "공지사항", description = "공지사항 CRUD API")
 public class NoticeController {
 
@@ -62,10 +62,16 @@ public class NoticeController {
     @Operation(summary = "공지사항 생성", description = "제목, 내용(작성자는 고정)")
     @PostMapping
     public NoticeResponseDto createNotice(@Valid @RequestBody NoticeRequestDto noticeRequestDto,
-                                    @AuthenticationPrincipal UserDetails currentUser) throws AccessDeniedException {
-    User user = getUserFromUserDetails(currentUser);
-    return noticeService.createNotice(noticeRequestDto, user);
-}
+                                          @AuthenticationPrincipal UserDetails currentUser) {
+        log.info("=== POST /api/notices 요청 도달 ===");
+        log.info("요청 데이터: {}", noticeRequestDto);
+
+        User user = getUserFromUserDetails(currentUser);
+        NoticeResponseDto result = noticeService.createNotice(noticeRequestDto, user);
+
+        log.info("응답 데이터: {}", result);
+        return result;
+    }
 
 
     //공지사항 수정
@@ -73,7 +79,7 @@ public class NoticeController {
     @PutMapping("/{noticeId}")
     public NoticeResponseDto updateNotice(@PathVariable Long noticeId,
                                           @Valid @RequestBody NoticeRequestDto noticeRequestDto,
-                                          @AuthenticationPrincipal UserDetails currentUser) throws AccessDeniedException {
+                                          @AuthenticationPrincipal UserDetails currentUser) {
 
         User user = getUserFromUserDetails(currentUser);
 
@@ -84,7 +90,7 @@ public class NoticeController {
     @Operation(summary = "공지사항 삭제", description = "관리자만 삭제가능")
     @DeleteMapping("/{noticeId}")
     public ResponseEntity<Void> deleteNotice(@PathVariable Long noticeId,
-                                             @AuthenticationPrincipal UserDetails currentUser) throws AccessDeniedException {
+                                             @AuthenticationPrincipal UserDetails currentUser) {
 
         User user = getUserFromUserDetails(currentUser);
 

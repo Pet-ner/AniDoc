@@ -145,8 +145,21 @@ public class MedicalRecordService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<MedicalRecordResponseDto> getAllMedicalRecords(Long userId) throws AccessDeniedException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
+        // STAFF, ADMIN만 전체 조회 가능하도록 권한 체크
+        if (!user.getRole().equals(UserRole.ROLE_ADMIN)) {
+            throw new AccessDeniedException("전체 진료기록을 조회할 권한이 없습니다.");
+        }
 
-
+        // isDeleted=false인 모든 MedicalRecord를 가져와 DTO로 변환
+        List<MedicalRecord> records = medicalRecordRepository.findAllByIsDeletedFalse();
+        return records.stream()
+                .map(MedicalRecordResponseDto::from)
+                .toList();
+    }
 
 }

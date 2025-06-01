@@ -10,10 +10,11 @@ import {
   User,
   ChevronDown,
   Syringe,
-} from "lucide-react"; // Syringe 아이콘 추가
+} from "lucide-react";
 import NotificationsModal from "./NotificationsModal";
 import NotificationsList from "@/components/NotificationsList";
 import { formatTimeForNotification } from "@/utils/formatTimeForNotification";
+import useSSE from "@/hooks/useSSE";
 
 interface NotificationDto {
   id: number;
@@ -26,9 +27,8 @@ interface NotificationDto {
     title?: string;
     writerName?: string;
     reservationId?: number;
-    reservationDate?: string; // LocalDate 형식
-    reservationTime?: string; // LocalTime 형식
-    // 예방접종 알림 데이터 추가
+    reservationDate?: string;
+    reservationTime?: string;
     petId?: number;
     petName?: string;
     vaccineName?: string;
@@ -45,14 +45,28 @@ export default function Header() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationDto[]>([]);
+
+  // useSSE 훅에서 상태 가져오기 (실시간 갱신)
+  const {
+    notifications: sseNotifications,
+    unreadCount: sseUnreadCount,
+    connected,
+    decreaseUnreadCount,
+    resetUnreadCount,
+  } = useSSE();
+
+  // 서버에서 가져온 전체 알림 목록 (드롭다운용)
+  const [serverNotifications, setServerNotifications] = useState<
+    NotificationDto[]
+  >([]);
+
+  // 전체 알림 모달용 상태
   const [allNotifications, setAllNotifications] = useState<NotificationDto[]>(
     []
   );
-  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // 페이지네이션 상태 추가
+  // 페이지네이션 상태
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
@@ -61,7 +75,6 @@ export default function Header() {
 
   // 현재 경로에 따른 페이지 제목 설정
   const getPageTitle = () => {
-    // 공지사항 관련 경로 처리
     if (pathname.startsWith("/notices")) {
       return "공지사항";
     }
@@ -82,8 +95,8 @@ export default function Header() {
     return routes[pathname] || "진료 예약";
   };
 
-  // 알림 데이터 조회 함수를 컴포넌트 외부로 분리
-  const fetchNotifications = async () => {
+  // 서버에서 알림 목록 조회 (드롭다운용)
+  const fetchServerNotifications = async () => {
     if (!user) return;
 
     try {
@@ -109,30 +122,51 @@ export default function Header() {
         }
       );
 
-      setNotifications(sortedNotifications);
-      setUnreadCount(
-        sortedNotifications.filter((n: NotificationDto) => !n.isRead).length
-      );
+      setServerNotifications(sortedNotifications);
     } catch (error) {
-      console.error("알림 로드 오류:", error);
+      console.error("서버 알림 로드 오류:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // 컴포넌트 마운트 시 알림 조회
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-    }
-  }, [user]);
-
-  // 알림 드롭다운 열릴 때도 알림 조회
+  // 알림 드롭다운이 열릴 때 서버에서 최신 알림 조회
   useEffect(() => {
     if (showNotifications && user) {
-      fetchNotifications();
+      fetchServerNotifications();
     }
   }, [user, showNotifications]);
+
+  // SSE로 받은 새 알림 처리
+  useEffect(() => {
+    console.log("SSE 새 알림 수신:", sseNotifications);
+
+    if (sseNotifications.length > 0) {
+      const latestNotification = sseNotifications[0];
+
+      // 서버 알림 목록에 새 알림 추가 (중복 방지)
+      setServerNotifications((prev) => {
+        const exists = prev.some((n) => n.id === latestNotification.id);
+        if (exists) return prev;
+
+        const updatedNotifications = [latestNotification, ...prev];
+        return Array.from(
+          new Map(updatedNotifications.map((item) => [item.id, item])).values()
+        ).sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      });
+
+      // 전체 알림 모달에도 새 알림 추가
+      setAllNotifications((prev) => {
+        const exists = prev.some((n) => n.id === latestNotification.id);
+        if (exists) return prev;
+
+        return [latestNotification, ...prev];
+      });
+    }
+  }, [sseNotifications]);
 
   // 외부 클릭 감지
   useEffect(() => {
@@ -171,13 +205,22 @@ export default function Header() {
           throw new Error("알림 상태 업데이트에 실패했습니다.");
         }
 
-        // 알림 상태 업데이트
-        setNotifications((prev) =>
+        // 읽지 않은 알림 개수 감소
+        decreaseUnreadCount();
+
+        // 서버 알림 상태 업데이트
+        setServerNotifications((prev) =>
           prev.map((n) =>
             n.id === notification.id ? { ...n, isRead: true } : n
           )
         );
-        setUnreadCount((prev) => prev - 1);
+
+        // 전체 알림 모달의 상태도 업데이트
+        setAllNotifications((prev) =>
+          prev.map((n) =>
+            n.id === notification.id ? { ...n, isRead: true } : n
+          )
+        );
       }
 
       // 알림 드롭다운 닫기
@@ -188,21 +231,16 @@ export default function Header() {
       switch (notification.type) {
         case "NOTICE":
           if (notification.data?.noticeId) {
-            // noticeId가 있는 경우 직접 이동
             await router.push(`/notices/${notification.data.noticeId}`);
           } else {
-            // 제목으로 검색 (수정된 공지사항 처리 개선)
             let title = notification.content;
             let isModified = false;
 
-            // 수정된 공지사항 여부 확인
             if (title.startsWith("[수정]")) {
               isModified = true;
-              // [수정] 태그 제거
               title = title.replace("[수정]", "").trim();
             }
 
-            // 알림 메시지 접두사 제거
             title = title
               .replace("공지사항이 수정되었습니다: ", "")
               .replace("공지사항이 등록되었습니다: ", "")
@@ -223,7 +261,6 @@ export default function Header() {
               if (response.ok) {
                 const data = await response.json();
                 if (data.content && data.content.length > 0) {
-                  // 수정된 공지사항인 경우 가장 최근에 수정된 게시글 선택
                   if (isModified) {
                     const sortedNotices = [...data.content].sort(
                       (a, b) =>
@@ -251,44 +288,38 @@ export default function Header() {
 
         case "RESERVATION":
           try {
-            // 새로운 예약 등록 알림 처리 (관리자용)
             if (notification.content.includes("새로운 예약이 등록되었습니다")) {
               if (
                 user?.userRole === "ROLE_ADMIN" ||
                 user?.userRole === "ROLE_STAFF"
               ) {
                 if (notification.data?.reservationDate) {
-                  await router.push(
-                    `/admin/reservations?date=${notification.data.reservationDate}`
-                  );
+                  window.location.href = `/admin/reservations?date=${notification.data.reservationDate}`;
                   return;
                 }
-                // 공백이 있는 경우도 처리할 수 있도록 정규식 수정
+
                 const dateMatch = notification.content.match(
                   /예약\s*일시:\s*(\d{2})년\s*(\d{2})월\s*(\d{2})일/
                 );
+
                 if (dateMatch) {
                   const [_, year, month, day] = dateMatch;
                   const formattedDate = `20${year}-${month}-${day}`;
-                  await router.push(
-                    `/admin/reservations?date=${formattedDate}`
-                  );
+                  window.location.href = `/admin/reservations?date=${formattedDate}`;
                   return;
                 }
               }
             }
 
-            // 예약 확정/거절 알림 처리
             if (
               notification.content.includes("예약이 확정되었습니다") ||
               notification.content.includes("예약이 취소되었습니다") ||
               notification.content.includes("예약이 거절되었습니다")
             ) {
-              await router.push("/");
+              window.location.href = "/";
               return;
             }
 
-            // 예약 수정 알림 처리
             if (notification.content.includes("예약이 수정되었습니다")) {
               if (notification.data?.reservationId) {
                 const path =
@@ -296,15 +327,15 @@ export default function Header() {
                   user?.userRole === "ROLE_STAFF"
                     ? `/admin/reservations/${notification.data.reservationId}`
                     : `/reservation/${notification.data.reservationId}`;
-                await router.push(path);
+                window.location.href = path;
                 return;
               }
             }
 
-            // 기존 날짜 기반 이동 로직도 수정
             const dateTimeMatch = notification.content.match(
               /예약\s*일시:\s*(\d+년\s*\d+월\s*\d+일)/
             );
+
             if (dateTimeMatch) {
               const koreanDate = dateTimeMatch[1];
               const [year, month, day] = koreanDate
@@ -320,10 +351,14 @@ export default function Header() {
                 user?.userRole === "ROLE_ADMIN" ||
                 user?.userRole === "ROLE_STAFF"
               ) {
-                await router.push(`/admin/reservations?date=${formattedDate}`);
+                window.location.href = `/admin/reservations?date=${formattedDate}`;
               } else {
-                await router.push(`/reservation?date=${formattedDate}`);
+                window.location.href = `/reservation?date=${formattedDate}`;
               }
+            } else {
+              // 모든 날짜 파싱 실패 시 기본 페이지로 이동
+              const today = new Date().toISOString().split("T")[0];
+              window.location.href = `/admin/reservations?date=${today}`;
             }
           } catch (error) {
             console.error("예약 페이지 이동 중 오류:", error);
@@ -331,13 +366,10 @@ export default function Header() {
           break;
 
         case "VACCINATION":
-          // 예방접종 알림 처리
           try {
             if (notification.data?.petId) {
-              // 반려동물 상세 페이지로 이동
               await router.push(`/ownerpet/${notification.data.petId}`);
             } else {
-              // 반려동물 관리 페이지로 이동
               await router.push("/ownerpet");
             }
           } catch (error) {
@@ -354,7 +386,7 @@ export default function Header() {
     }
   };
 
-  // 전체 알림 데이터 조회 함수 추가
+  // 전체 알림 데이터 조회 함수
   const fetchAllNotifications = async () => {
     if (!user) return;
 
@@ -374,7 +406,7 @@ export default function Header() {
       const data = await response.json();
       setAllNotifications(data.content);
       setTotalPages(data.totalPages);
-      setCurrentPage(0); // 페이지 초기화
+      setCurrentPage(0);
     } catch (error) {
       console.error("알림 로드 오류:", error);
     } finally {
@@ -382,7 +414,7 @@ export default function Header() {
     }
   };
 
-  // 모든 알림 읽음 처리 함수 추가
+  // 모든 알림 읽음 처리 함수
   const handleMarkAllAsRead = async () => {
     if (!user) return;
 
@@ -399,16 +431,20 @@ export default function Header() {
         throw new Error("알림 전체 읽음 처리에 실패했습니다.");
       }
 
-      // UI 업데이트만 수행
+      // 읽지 않은 알림 개수 초기화
+      resetUnreadCount();
+
+      // UI 업데이트
       setAllNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      setUnreadCount(0);
+      setServerNotifications((prev) =>
+        prev.map((n) => ({ ...n, isRead: true }))
+      );
     } catch (error) {
       console.error("알림 전체 읽음 처리 오류:", error);
     }
   };
 
-  // 페이지 변경 핸들러 수정
+  // 페이지 변경 핸들러
   const handlePageChange = async (page: number) => {
     if (!user) return;
 
@@ -428,7 +464,7 @@ export default function Header() {
       const data = await response.json();
       setAllNotifications(data.content);
       setTotalPages(data.totalPages);
-      setCurrentPage(page); // 페이지 번호 업데이트
+      setCurrentPage(page);
     } catch (error) {
       console.error("알림 로드 오류:", error);
     } finally {
@@ -439,11 +475,11 @@ export default function Header() {
   // showAllNotifications 상태가 변경될 때 전체 알림 데이터 조회
   useEffect(() => {
     if (showAllNotifications) {
-      handlePageChange(currentPage); // fetchAllNotifications() 대신 handlePageChange 호출
+      handlePageChange(currentPage);
     }
-  }, [showAllNotifications]); // currentPage 제거, showAllNotifications만 감지
+  }, [showAllNotifications]);
 
-  // 알림 아이콘 함수 (예방접종 알림 추가)
+  // 알림 아이콘 함수
   const getNotificationIcon = (notification: NotificationDto) => {
     if (notification.type === "NOTICE") {
       return <Megaphone className="text-blue-500" size={20} />;
@@ -452,12 +488,12 @@ export default function Header() {
       return <Calendar className="text-teal-500" size={20} />;
     }
     if (notification.type === "VACCINATION") {
-      return <Syringe className="text-purple-500" size={20} />; // 백신 알림 아이콘을 보라색 주사기로 변경
+      return <Syringe className="text-purple-500" size={20} />;
     }
     return <Bell className="text-gray-500" size={20} />;
   };
 
-  // 알림 내용 렌더링 함수 (예방접종 알림 상세 정보 표시)
+  // 알림 내용 렌더링 함수
   const renderNotificationContent = (notification: NotificationDto) => {
     if (notification.type === "VACCINATION" && notification.data) {
       return (
@@ -494,7 +530,7 @@ export default function Header() {
     );
   };
 
-  // 알림 스타일 함수 (예방접종 알림 강조)
+  // 알림 스타일 함수
   const getNotificationStyle = (notification: NotificationDto) => {
     const baseStyle =
       "p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer";
@@ -513,16 +549,17 @@ export default function Header() {
       <h1 className="text-xl font-medium">{getPageTitle()}</h1>
 
       <div className="ml-auto flex items-center space-x-4">
-        {/* 알림 */}
+        {/* 알림 - useSSE의 unreadCount 직접 사용 */}
         <div className="relative" ref={notificationRef}>
           <button
             className="relative p-2 rounded-full hover:bg-gray-100"
             onClick={() => setShowNotifications(!showNotifications)}
           >
             <Bell size={22} className="text-gray-600" />
-            {unreadCount > 0 && (
+            {/* SSE에서 받은 실시간 unreadCount 사용 */}
+            {sseUnreadCount > 0 && (
               <span className="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                {unreadCount}
+                {sseUnreadCount}
               </span>
             )}
           </button>
@@ -532,9 +569,9 @@ export default function Header() {
               <div className="p-3 border-b border-gray-200">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">알림</span>
-                  {unreadCount > 0 && (
+                  {sseUnreadCount > 0 && (
                     <span className="text-sm text-gray-500">
-                      ({unreadCount})
+                      ({sseUnreadCount})
                     </span>
                   )}
                 </div>
@@ -545,20 +582,20 @@ export default function Header() {
                   <div className="p-4 text-center text-gray-500">
                     알림을 불러오는 중...
                   </div>
-                ) : notifications.length === 0 ? (
+                ) : serverNotifications.length === 0 ? (
                   <div className="p-4 text-center text-gray-500">
                     새로운 알림이 없습니다.
                   </div>
                 ) : (
                   <>
                     {/* 새로운 알림 섹션 */}
-                    {notifications.some((n) => !n.isRead) && (
+                    {serverNotifications.some((n) => !n.isRead) && (
                       <div>
                         <div className="px-3 py-2 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
                           <span className="text-sm font-medium text-gray-600">
                             새로운 알림
                           </span>
-                          {unreadCount > 0 && (
+                          {sseUnreadCount > 0 && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -571,7 +608,7 @@ export default function Header() {
                           )}
                         </div>
                         {/* 안읽은 알림 */}
-                        {notifications
+                        {serverNotifications
                           .filter((n) => !n.isRead)
                           .map((notification) => (
                             <div
@@ -600,14 +637,14 @@ export default function Header() {
                     )}
 
                     {/* 읽은 알림 */}
-                    {notifications.some((n) => n.isRead) && (
+                    {serverNotifications.some((n) => n.isRead) && (
                       <div>
                         <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
                           <span className="text-sm font-medium text-gray-600">
                             읽은 알림
                           </span>
                         </div>
-                        {notifications
+                        {serverNotifications
                           .filter((n) => n.isRead)
                           .map((notification) => (
                             <div
@@ -703,9 +740,9 @@ export default function Header() {
         notifications={allNotifications}
         onNotificationClick={handleNotificationClick}
         onMarkAllAsRead={handleMarkAllAsRead}
+        onPageChange={handlePageChange}
         currentPage={currentPage}
         totalPages={totalPages}
-        onPageChange={handlePageChange}
       />
     </header>
   );

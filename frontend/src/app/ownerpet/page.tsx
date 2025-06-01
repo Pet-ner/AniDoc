@@ -670,26 +670,16 @@ const PetManagement = () => {
           )}
         </div>
       </div>
-
       {/* 반려동물 추가/수정 모달 */}
       {showPetModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl overflow-auto max-h-[90vh] w-full max-w-3xl mx-4 shadow-2xl">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+            {/* 헤더 부분에서 X 버튼 제거 */}
+            <div className="p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-gray-800">
                 {selectedPet ? "반려동물 정보 수정" : "반려동물 등록"}
               </h2>
-              {!selectedPet && (
-                <button
-                  onClick={() => {
-                    setShowPetModal(false);
-                    setSelectedPet(null);
-                  }}
-                  className="border-none bg-transparent text-gray-500 font-medium text-xl cursor-pointer hover:text-gray-700 transition-colors duration-200"
-                >
-                  ✕
-                </button>
-              )}
+              {/* X 버튼 코드를 완전히 제거 */}
             </div>
             <div className="p-6">
               <Pet

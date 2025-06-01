@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
 import ReservationStatus from "@/components/ReservationStatus";
 import { User, Check, X, Clock } from "lucide-react";
@@ -33,6 +34,19 @@ interface Doctor {
 
 export default function ReservationManagement() {
   const { user } = useUser();
+  const searchParams = useSearchParams();
+  const [initialDate, setInitialDate] = useState<string | undefined>();
+  const [key, setKey] = useState(0); // 강제 리렌더링용
+
+  useEffect(() => {
+    const date = searchParams.get("date");
+
+    if (date) {
+      setInitialDate(date);
+      setKey((prev) => prev + 1); // 컴포넌트 강제 리렌더링
+    }
+  }, [searchParams]);
+
   const [selectedDateReservations, setSelectedDateReservations] = useState<
     Reservation[]
   >([]);
@@ -126,13 +140,19 @@ export default function ReservationManagement() {
     }
   };
 
-  // 예약 상태 변경 처리
+  // ⭐ 수정된 예약 상태 변경 처리 - 안전한 JSON 파싱 및 자동 재시도 로직
   const handleUpdateStatus = async (
     reservationId: number,
-    newStatus: string
+    newStatus: string,
+    isRetry: boolean = false
   ) => {
     try {
       setLoading(true);
+      console.log(
+        `예약 상태 변경 시작 ${isRetry ? "(재시도)" : ""}:`,
+        reservationId,
+        newStatus
+      );
 
       const requestData = {
         status: newStatus,
@@ -145,19 +165,86 @@ export default function ReservationManagement() {
         {
           method: "PATCH",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json;charset=UTF-8",
+            Accept: "application/json;charset=UTF-8",
           },
           body: JSON.stringify(requestData),
           credentials: "include",
         }
       );
 
+      console.log("응답 상태:", response.status);
+      console.log("Content-Type:", response.headers.get("content-type"));
+
+      // ⭐ 응답 상태 확인
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "상태 변경에 실패했습니다.");
+        console.error("HTTP 오류:", response.status);
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
-      const updatedReservation = await response.json();
+      // ⭐ 204 No Content 응답 처리
+      if (response.status === 204) {
+        console.log("빈 응답 수신 (204) - 성공으로 처리");
+        const statusText = newStatus === "APPROVED" ? "승인" : "거절";
+        alert(`예약이 성공적으로 ${statusText}되었습니다.`);
+        window.location.reload();
+        return;
+      }
+
+      // ⭐ 응답 텍스트 먼저 확인
+      const responseText = await response.text();
+      console.log("응답 본문 길이:", responseText.length);
+      console.log("응답 본문 미리보기:", responseText.substring(0, 100));
+
+      // ⭐ 빈 응답 처리
+      if (!responseText || responseText.trim() === "") {
+        console.warn("빈 응답 수신 - 성공으로 간주");
+        const statusText = newStatus === "APPROVED" ? "승인" : "거절";
+        alert(`예약이 성공적으로 ${statusText}되었습니다.`);
+        window.location.reload();
+        return;
+      }
+
+      // ⭐ HTML 응답 체크
+      if (
+        responseText.trim().startsWith("<!DOCTYPE html>") ||
+        responseText.trim().startsWith("<html>")
+      ) {
+        console.error("HTML 응답 수신 - 서버 오류");
+        throw new Error(
+          "서버에서 HTML 응답을 반환했습니다. 백엔드를 확인해주세요."
+        );
+      }
+
+      // ⭐ JSON 파싱 시도
+      let updatedReservation;
+      try {
+        updatedReservation = JSON.parse(responseText);
+        console.log("JSON 파싱 성공:", updatedReservation);
+      } catch (parseError: any) {
+        console.error("JSON 파싱 오류:", parseError);
+        console.error("파싱 실패한 응답:", responseText);
+
+        // ⭐ JSON 파싱 실패 시 재시도 (한 번만)
+        if (
+          !isRetry &&
+          parseError.message.includes("Unexpected end of JSON input")
+        ) {
+          console.warn("JSON 파싱 오류로 인한 자동 재시도...");
+
+          setTimeout(() => {
+            handleUpdateStatus(reservationId, newStatus, true);
+          }, 1500); // 1.5초 후 재시도
+
+          return;
+        }
+
+        throw new Error("응답 형식이 올바르지 않습니다: " + parseError.message);
+      }
+
+      // ⭐ 성공 처리
+      console.log("예약 상태 변경 성공:", updatedReservation);
 
       // 예약 목록 업데이트
       const updatedReservations = selectedDateReservations.map((r) => {
@@ -172,8 +259,33 @@ export default function ReservationManagement() {
       const statusText = newStatus === "APPROVED" ? "승인" : "거절";
       alert(`예약이 성공적으로 ${statusText}되었습니다.`);
     } catch (error: any) {
-      console.error("상태 변경 오류:", error);
-      alert(error.message || "상태 변경 중 오류가 발생했습니다.");
+      console.error("예약 상태 변경 실패:", error);
+
+      // ⭐ 네트워크 오류 처리
+      if (error.message.includes("Failed to fetch")) {
+        if (!isRetry) {
+          console.warn("네트워크 오류로 인한 자동 재시도...");
+          setTimeout(() => {
+            handleUpdateStatus(reservationId, newStatus, true);
+          }, 2000); // 2초 후 재시도
+          return;
+        } else {
+          alert(
+            "네트워크 연결을 확인해주세요. 백엔드 서버가 실행 중인지 확인하세요."
+          );
+        }
+      } else if (error.message.includes("JSON")) {
+        alert(
+          "서버 응답 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+        );
+      } else {
+        alert(error.message || "상태 변경 중 오류가 발생했습니다.");
+      }
+
+      // ⭐ 재시도였는데도 실패한 경우
+      if (isRetry) {
+        console.error("재시도도 실패했습니다.");
+      }
     } finally {
       setLoading(false);
     }
@@ -188,9 +300,11 @@ export default function ReservationManagement() {
         <div className="col-span-3">
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <ReservationStatus
+              key={key}
               onDateSelect={handleDateSelect}
               showCreateButton={false}
               isAdminView={true}
+              initialDate={initialDate}
             />
 
             {/* 기존 관리 테이블 */}
@@ -241,7 +355,10 @@ export default function ReservationManagement() {
                           <tr key={reservation.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
-                                <Clock size={16} className="text-gray-400 mr-2" />
+                                <Clock
+                                  size={16}
+                                  className="text-gray-400 mr-2"
+                                />
                                 <span className="text-sm font-medium text-gray-900">
                                   {reservation.reservationTime.substring(0, 5)}
                                 </span>
