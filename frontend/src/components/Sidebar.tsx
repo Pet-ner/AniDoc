@@ -111,20 +111,7 @@ export default function Sidebar() {
               <span>진료 기록</span>
             </Link>
           </li>
-          <li>
-            {(user.userRole === "ROLE_STAFF" ||
-              user.userRole === "ROLE_ADMIN") && (
-              <Link
-                href="/doctorpetvaccine"
-                className={`flex items-center p-3 rounded-lg ${isActive(
-                  "/doctorpetvaccine"
-                )}`}
-              >
-                <Syringe size={20} className="mr-3" />
-                <span>접종 관리</span>
-              </Link>
-            )}
-          </li>
+
           {user.userRole === "ROLE_ADMIN" && (
             <li>
               <Link

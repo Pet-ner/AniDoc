@@ -8,7 +8,9 @@ import com.petner.anidoc.domain.vet.reservation.entity.Reservation;
 import com.petner.anidoc.domain.vet.reservation.repository.ReservationRepository;
 import com.petner.anidoc.domain.vet.vaccination.dto.DoctorPetVaccineRequestDTO;
 import com.petner.anidoc.domain.vet.vaccination.dto.DoctorPetVaccineResponseDTO;
+import com.petner.anidoc.domain.vet.vaccination.dto.VaccinationStatusDto;
 import com.petner.anidoc.domain.vet.vaccination.entity.Vaccination;
+import com.petner.anidoc.domain.vet.vaccination.entity.VaccinationStatus;
 import com.petner.anidoc.domain.vet.vaccination.repository.VaccinationRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,6 +45,10 @@ public class DoctorPetVaccineService {
             throw new IllegalArgumentException("해당 예약은 이 반려동물의 예약이 아닙니다.");
         }
 
+        if (vaccineRepository.findByReservationId(doctorPetVaccineRequestDTO.getReservationId()).isPresent()) {
+            throw new IllegalStateException("이미 해당 예약에 대한 예방접종 기록이 존재합니다.");
+        }
+
         Vaccination vaccination = Vaccination.builder()
                 .doctor(doctor)
                 .pet(pet)
@@ -49,9 +56,9 @@ public class DoctorPetVaccineService {
                 .vaccineName(doctorPetVaccineRequestDTO.getVaccineName())
                 .currentDose(doctorPetVaccineRequestDTO.getCurrentDose())
                 .totalDoses(doctorPetVaccineRequestDTO.getTotalDoses())
-                .vaccinationDate(doctorPetVaccineRequestDTO.getVaccinationDate()) //추가
-                .nextDueDate(doctorPetVaccineRequestDTO.getNextDueDate())
-                .status(doctorPetVaccineRequestDTO.getStatus())
+                .vaccinationDate(reservation.getReservationDate()) // 예약일로 자동 설정
+                .nextDueDate(null) // 다음 접종일은 설정하지 않음
+                .status(VaccinationStatus.NOT_STARTED)
                 .notes(doctorPetVaccineRequestDTO.getNotes())
                 .build();
 
@@ -97,6 +104,15 @@ public class DoctorPetVaccineService {
                 .orElseThrow(() -> new RuntimeException("예방접종 기록이 없습니다."));
         return new DoctorPetVaccineResponseDTO(vaccination);
     }
+
+    // 예약별 예방접종 기록 조회
+    @Transactional(readOnly = true)
+    public DoctorPetVaccineResponseDTO findVaccinationByReservationId(Long reservationId) {
+        Vaccination vaccination = vaccineRepository.findByReservationId(reservationId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 예약에 대한 예방접종 기록이 없습니다."));
+        return new DoctorPetVaccineResponseDTO(vaccination);
+    }
+
     //삭제
     @Transactional
     public void deleteVaccination(Long vaccinationId, User currentDoctor) {
@@ -110,4 +126,10 @@ public class DoctorPetVaccineService {
         vaccineRepository.delete(vaccination);
     }
 
+    @Transactional(readOnly = true)
+    public VaccinationStatusDto getVaccinationStatusByReservationId(Long reservationId) {
+        Optional<Vaccination> vaccination = vaccineRepository.findByReservationId(reservationId);
+        return vaccination.map(value -> new VaccinationStatusDto(true, value.getStatus().toString()))
+                .orElseGet(() -> new VaccinationStatusDto(false, null));
+    }
 }
