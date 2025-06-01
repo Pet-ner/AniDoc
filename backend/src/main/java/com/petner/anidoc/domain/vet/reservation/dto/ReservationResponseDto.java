@@ -22,6 +22,7 @@ public class ReservationResponseDto {
     private String userName;
     private Long petId;
     private String petName;
+    private String petSpecies;
     private Long doctorId;
     private String doctorName;
     private LocalDate reservationDate;
@@ -51,6 +52,7 @@ public class ReservationResponseDto {
                 .userName(reservation.getUser().getName())
                 .petId(reservation.getPet().getId())
                 .petName(reservation.getPet().getName())
+                .petSpecies(reservation.getPet().getSpecies())
                 .doctorId(doctorId)
                 .doctorName(doctorName)
                 .reservationDate(reservation.getReservationDate())
@@ -80,6 +82,7 @@ public class ReservationResponseDto {
                 .userName(reservation.getUser().getName())
                 .petId(reservation.getPet().getId())
                 .petName(reservation.getPet().getName())
+                .petSpecies(reservation.getPet().getSpecies())
                 .doctorId(doctorId)
                 .doctorName(doctorName)
                 .reservationDate(reservation.getReservationDate())
