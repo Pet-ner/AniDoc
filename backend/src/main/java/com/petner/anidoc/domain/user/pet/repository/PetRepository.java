@@ -28,4 +28,10 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
             "LEFT JOIN FETCH p.medicalRecords mr " +
             "LEFT JOIN FETCH mr.reservation")
     List<Pet> findAllWithOwnersAndMedicalRecords();
+
+    //fetch Join - 예약 성능 개선
+    @Query("SELECT p FROM Pet p LEFT JOIN FETCH p.owner WHERE p.owner.id = :ownerId")
+    List<Pet> findByOwnerIdWithDetails(@Param("ownerId") Long ownerId);
+
+
 }

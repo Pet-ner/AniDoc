@@ -57,7 +57,7 @@ public class OwnerPetRegistService {
     //전체 조회
     @Transactional(readOnly = true)
     public List<Pet> findAllPetsByOwner(Long ownerId){
-        return petRepository.findByOwnerId(ownerId);
+        return petRepository.findByOwnerIdWithDetails(ownerId); //n+1 쿼리 문제 개선
     }
     //상세 조회
     @Transactional(readOnly = true)

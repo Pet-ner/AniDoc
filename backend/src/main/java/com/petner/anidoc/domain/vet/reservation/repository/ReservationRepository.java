@@ -40,4 +40,42 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByDoctorIdAndStatus(Long doctorId, ReservationStatus status);
 
 
+    // ReservationRepository에 추가할 메서드들
+
+    // 1. 사용자별 예약 조회 (대시보드용)
+    @Query("SELECT r FROM Reservation r " +
+            "LEFT JOIN FETCH r.user " +
+            "LEFT JOIN FETCH r.pet " +
+            "LEFT JOIN FETCH r.doctor " +
+            "WHERE r.user = :user " +
+            "ORDER BY r.reservationDate DESC, r.reservationTime DESC")
+    List<Reservation> findByUserWithDetailsOrderByReservationDateDescReservationTimeDesc(@Param("user") User user);
+
+    // 2. 날짜별 예약 조회 (캘린더용)
+    @Query("SELECT r FROM Reservation r " +
+            "LEFT JOIN FETCH r.user " +
+            "LEFT JOIN FETCH r.pet " +
+            "LEFT JOIN FETCH r.doctor " +
+            "WHERE r.reservationDate = :date " +
+            "ORDER BY r.reservationTime")
+    List<Reservation> findByReservationDateWithDetailsOrderByReservationTime(@Param("date") LocalDate date);
+
+    // 3. 반려동물별 예약 조회
+    @Query("SELECT r FROM Reservation r " +
+            "LEFT JOIN FETCH r.user " +
+            "LEFT JOIN FETCH r.pet " +
+            "LEFT JOIN FETCH r.doctor " +
+            "WHERE r.pet = :pet " +
+            "ORDER BY r.reservationDate DESC, r.reservationTime DESC")
+    List<Reservation> findByPetWithDetailsOrderByReservationDateDescReservationTimeDesc(@Param("pet") Pet pet);
+
+    // 4. 의사별 예약 조회
+    @Query("SELECT r FROM Reservation r " +
+            "LEFT JOIN FETCH r.user " +
+            "LEFT JOIN FETCH r.pet " +
+            "LEFT JOIN FETCH r.doctor " +
+            "WHERE r.doctor.id = :doctorId AND r.status = :status")
+    List<Reservation> findByDoctorIdAndStatusWithDetails(@Param("doctorId") Long doctorId, @Param("status") ReservationStatus status);
+
+
 }
