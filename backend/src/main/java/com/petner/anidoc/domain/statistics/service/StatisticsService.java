@@ -280,12 +280,11 @@ public class StatisticsService {
         return reservationRepository.countByStatus(ReservationStatus.PENDING);
     }
 
+    // 관리자용 주간 완료된 진료 수 (수정됨 - 월~일 기준)
     private int calculateWeeklyCompletedTreatments() {
-        LocalDate endDate = LocalDate.now();
-        LocalDate startDate = endDate.minusDays(7);
-
-        LocalDateTime startDateTime = startDate.atStartOfDay();
-        LocalDateTime endDateTime = LocalDateTime.now();
+        LocalDateTime[] weekRange = getWeekRange();
+        LocalDateTime startDateTime = weekRange[0];  // 월요일 00:00:00
+        LocalDateTime endDateTime = weekRange[1];    // 일요일 23:59:59
 
         return medicalRecordRepository.countByIsDeletedFalseAndCreatedAtBetween(
                 startDateTime,
@@ -293,13 +292,11 @@ public class StatisticsService {
         );
     }
 
-    // 관리자용 최근 예방접종 계산
+    // 관리자용 주간 예방접종 계산 (수정됨 - 월~일 기준)
     private int calculateRecentVaccinations() {
-        LocalDate endDate = LocalDate.now();
-        LocalDate startDate = endDate.minusDays(7);
-
-        LocalDateTime startDateTime = startDate.atStartOfDay();
-        LocalDateTime endDateTime = LocalDateTime.now();
+        LocalDateTime[] weekRange = getWeekRange();
+        LocalDateTime startDateTime = weekRange[0];  // 월요일 00:00:00
+        LocalDateTime endDateTime = weekRange[1];    // 일요일 23:59:59
 
         return vaccineRepository.countByCreatedAtBetween(startDateTime, endDateTime);
     }
@@ -314,12 +311,11 @@ public class StatisticsService {
         return medicalRecordRepository.countDistinctPetsByDoctorId(doctorId);
     }
 
+    // 의료진용 주간 진료 수 (수정됨 - 월~일 기준)
     private int calculateWeeklyMyTreatments(Long doctorId) {
-        LocalDate endDate = LocalDate.now();
-        LocalDate startDate = endDate.minusDays(7);
-
-        LocalDateTime startDateTime = startDate.atStartOfDay();
-        LocalDateTime endDateTime = LocalDateTime.now();
+        LocalDateTime[] weekRange = getWeekRange();
+        LocalDateTime startDateTime = weekRange[0];  // 월요일 00:00:00
+        LocalDateTime endDateTime = weekRange[1];    // 일요일 23:59:59
 
         return medicalRecordRepository.countByDoctorIdAndIsDeletedFalseAndCreatedAtBetween(
                 doctorId,
@@ -328,13 +324,11 @@ public class StatisticsService {
         );
     }
 
-    // 의료진용 주간 예방접종 계산
+    // 의료진용 주간 예방접종 계산 (수정됨 - 월~일 기준)
     private int calculateWeeklyMyVaccinations(Long doctorId) {
-        LocalDate endDate = LocalDate.now();
-        LocalDate startDate = endDate.minusDays(7);
-
-        LocalDateTime startDateTime = startDate.atStartOfDay();
-        LocalDateTime endDateTime = LocalDateTime.now();
+        LocalDateTime[] weekRange = getWeekRange();
+        LocalDateTime startDateTime = weekRange[0];  // 월요일 00:00:00
+        LocalDateTime endDateTime = weekRange[1];    // 일요일 23:59:59
 
         return vaccineRepository.countByDoctorIdAndCreatedAtBetween(
                 doctorId,
