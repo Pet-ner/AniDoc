@@ -698,7 +698,12 @@ export default function Header() {
             <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center">
               <User size={18} className="text-teal-600" />
             </div>
-            <span className="text-gray-700">{user?.name || "사용자"}</span>
+            <span className="text-gray-700">
+              {user?.name || "사용자"}
+              {user?.userRole === "ROLE_ADMIN" && " 관리자"}
+              {user?.userRole === "ROLE_STAFF" && " 의료진"}
+              {user?.userRole === "ROLE_USER" && " 보호자"}
+            </span>
             <ChevronDown size={16} className="text-gray-500" />
           </button>
 
