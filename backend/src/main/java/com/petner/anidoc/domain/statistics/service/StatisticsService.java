@@ -9,7 +9,7 @@ import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import com.petner.anidoc.domain.vet.medicalrecord.repository.MedicalRecordRepository;
 import com.petner.anidoc.domain.vet.reservation.entity.ReservationStatus;
 import com.petner.anidoc.domain.vet.reservation.repository.ReservationRepository;
-import com.petner.anidoc.domain.vet.vaccination.repository.VaccineRepository;
+import com.petner.anidoc.domain.vet.vaccination.repository.VaccinationRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,7 +30,7 @@ public class StatisticsService {
     private final ReservationRepository reservationRepository;
     private final MedicalRecordRepository medicalRecordRepository;
     private final UserRepository userRepository;
-    private final VaccineRepository vaccineRepository;
+    private final VaccinationRepository vaccineRepository;
 
     //전주 방문자 통계
     @Transactional
