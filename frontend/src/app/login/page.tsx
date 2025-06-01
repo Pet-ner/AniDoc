@@ -218,12 +218,12 @@ function LoginContent() {
             <button
               type="button"
               onClick={handleKakaoLogin}
-              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-black bg-[#FEE500] hover:bg-[#F0D800]"
+              className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-black bg-[#FEE500] hover:bg-[#F0D800]"
             >
-              <span className="mr-2">
+              <span className="mr-2 flex items-center">
                 <svg
-                  width="18"
-                  height="18"
+                  width="20"
+                  height="20"
                   viewBox="0 0 18 18"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -240,14 +240,14 @@ function LoginContent() {
             <button
               type="button"
               onClick={handleNaverLogin}
-              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white bg-[#03C75A] hover:bg-[#02b54d]"
+              className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white bg-[#03C75A] hover:bg-[#02b54d]"
             >
-              <span className="mr-2">
+              <span className="mr-2 flex items-center">
                 <img
                   src="/images/naver-login.png"
                   alt="네이버 로그인"
-                  width="30"
-                  height="30"
+                  width="24"
+                  height="24"
                 />
               </span>
               네이버 계정으로 로그인
