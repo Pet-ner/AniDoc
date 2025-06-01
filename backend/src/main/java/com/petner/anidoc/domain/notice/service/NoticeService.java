@@ -13,15 +13,15 @@ import com.petner.anidoc.domain.user.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.nio.file.AccessDeniedException;
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NoticeService {
 
     private final NoticeRepository noticeRepository;
@@ -41,27 +41,25 @@ public class NoticeService {
 
         Notice saved = noticeRepository.save(notice);
 
-        // 전체 사용자 알림 트리거
-        List<User> users = userRepository.findAll();
-        for(User u : users){
-            NoticeNotificationDto noticeNotificationDto = NoticeNotificationDto.builder()
-                    .noticeId(saved.getId())
-                    .title(saved.getTitle())
-                    .content(notificationService.getSummary(saved.getContent()))
-                    .writerName(user.getName())
-                    .createdAt(saved.getCreatedAt())
-                    .isRead(false)
-                    .build();
+        //  NoticeNotificationDto 생성
+        NoticeNotificationDto noticeNotificationDto = NoticeNotificationDto.builder()
+                .noticeId(saved.getId())
+                .title(saved.getTitle())
+                .content(notificationService.getSummary(saved.getContent()))
+                .writerName(user.getName())
+                .createdAt(saved.getCreatedAt())
+                .isRead(false)
+                .build();
 
-            notificationService.notifyUser(
-                    u.getId(),
-                    NotificationType.NOTICE,
-                    "공지사항: "+ noticeNotificationDto.getTitle(),
-                    noticeNotificationDto
-            );
-        }
-
+        //  notifyAll 메서드 사용 (개별 알림 + 전역 이벤트)
+        notificationService.notifyAll(
+                NotificationType.NOTICE,
+                "공지사항: " + saved.getTitle(),
+                noticeNotificationDto
+        );
+        log.info("=== 알림 전송 완료 ===");
         return NoticeResponseDto.from(saved);
+
     }
 
 

@@ -65,6 +65,7 @@ public class SecurityConfig {
                                 .requestMatchers("/h2-console/**").permitAll()
                                 .requestMatchers("/api/users/register", "/api/users/login", "/api/users/logout").permitAll()
                                 .requestMatchers("/api/users/emailCheck").permitAll()
+                                .requestMatchers("/api/notifications/connect").permitAll() //sse 엔드포인트 제외
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/swagger-ui/**").permitAll()
                                 .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()

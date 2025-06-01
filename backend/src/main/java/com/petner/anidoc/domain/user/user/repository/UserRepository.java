@@ -30,6 +30,23 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.role = :role AND u.status = :status")
     List<User> findByRoleAndStatus(@Param("role") UserRole role, @Param("status") UserStatus status);
 
+
+    //역할별 사용자 조회
+    List<User> findByRoleIn(List<UserRole> roles);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET u.name = :name, u.phoneNumber = :phoneNumber, " +
+            "u.emergencyContact = :emergencyContact," +
+            "u.role = :role, " +
+            " u.vetInfo = :vetInfo, u.updatedAt = CURRENT_TIMESTAMP " +
+            "WHERE u.id = :id")
+    void updateUserBasicInfo(@Param("id") Long id,
+                             @Param("name") String name,
+                             @Param("phoneNumber") String phoneNumber,
+                             @Param("emergencyContact") String emergencyContact,
+                             @Param("role") UserRole role,
+
     // 승인된 특정 역할의 사용자 조회
     List<User> findByRoleAndApprovalStatus(UserRole role, ApprovalStatus approvalStatus);
 
@@ -50,6 +67,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 //                             @Param("emergencyContact") String emergencyContact,
 //                             @Param("role") UserRole role,
 //                             @Param("vetInfo") VetInfo vetInfo);
+
 }
 
 
