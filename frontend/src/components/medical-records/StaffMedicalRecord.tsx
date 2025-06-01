@@ -211,9 +211,8 @@ export default function StaffMedicalRecord({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">진료 기록</h2>
+    <div className="bg-white rounded-lg shadow-sm px-2 py-5">
+      <div className="flex justify-end items-center mb-4">
         <div className="flex items-center gap-2">
           <div className="relative">
             <input

@@ -47,22 +47,26 @@ public class Pet extends BaseEntity {
     private BigDecimal weight;
 
     @Column(name = "is_neutered", nullable = false) //중성화 여부
-    private Boolean isNeutered;
+    @Builder.Default
+    private Boolean isNeutered = false;
 
     @Column(name = "neutered_date") //중성화 날짜
     private LocalDate neuteredDate;
 
     @Column(name = "is_deceased", nullable = false) //사망 여부
-    private Boolean isDeceased;
+    @Builder.Default
+    private Boolean isDeceased = false;
 
     @Column(name = "deceased_date") //사망 날짜
     private LocalDate deceasedDate;
 
     @Column(name = "surgery_count") //수술 횟수
-    private Integer surgeryCount;
+    @Builder.Default
+    private Integer surgeryCount = 0;
 
     @Column(name = "hospitalization_count") //입원 횟수
-    private Integer hospitalizationCount;
+    @Builder.Default
+    private Integer hospitalizationCount = 0;
 
     @Column(name = "last_diro_date") // 마지막 심장사상충 약 투여일
     private LocalDate lastDiroDate;
