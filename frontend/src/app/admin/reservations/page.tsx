@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
 import ReservationStatus from "@/components/ReservationStatus";
@@ -32,7 +32,7 @@ interface Doctor {
   status: "ON_DUTY" | "ON_LEAVE";
 }
 
-export default function ReservationManagement() {
+function ReservationManagementContent() {
   const { user } = useUser();
   const searchParams = useSearchParams();
   const [initialDate, setInitialDate] = useState<string | undefined>();
@@ -140,7 +140,7 @@ export default function ReservationManagement() {
     }
   };
 
-  // ⭐ 수정된 예약 상태 변경 처리 - 안전한 JSON 파싱 및 자동 재시도 로직
+  // 예약 상태 변경 처리 - 안전한 JSON 파싱 및 자동 재시도 로직
   const handleUpdateStatus = async (
     reservationId: number,
     newStatus: string,
@@ -176,14 +176,14 @@ export default function ReservationManagement() {
       console.log("응답 상태:", response.status);
       console.log("Content-Type:", response.headers.get("content-type"));
 
-      // ⭐ 응답 상태 확인
+      // 응답 상태 확인
       if (!response.ok) {
         console.error("HTTP 오류:", response.status);
         const errorText = await response.text();
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
-      // ⭐ 204 No Content 응답 처리
+      // 204 No Content 응답 처리
       if (response.status === 204) {
         console.log("빈 응답 수신 (204) - 성공으로 처리");
         const statusText = newStatus === "APPROVED" ? "승인" : "거절";
@@ -192,12 +192,12 @@ export default function ReservationManagement() {
         return;
       }
 
-      // ⭐ 응답 텍스트 먼저 확인
+      // 응답 텍스트 먼저 확인
       const responseText = await response.text();
       console.log("응답 본문 길이:", responseText.length);
       console.log("응답 본문 미리보기:", responseText.substring(0, 100));
 
-      // ⭐ 빈 응답 처리
+      // 빈 응답 처리
       if (!responseText || responseText.trim() === "") {
         console.warn("빈 응답 수신 - 성공으로 간주");
         const statusText = newStatus === "APPROVED" ? "승인" : "거절";
@@ -206,7 +206,7 @@ export default function ReservationManagement() {
         return;
       }
 
-      // ⭐ HTML 응답 체크
+      // HTML 응답 체크
       if (
         responseText.trim().startsWith("<!DOCTYPE html>") ||
         responseText.trim().startsWith("<html>")
@@ -217,7 +217,7 @@ export default function ReservationManagement() {
         );
       }
 
-      // ⭐ JSON 파싱 시도
+      // JSON 파싱 시도
       let updatedReservation;
       try {
         updatedReservation = JSON.parse(responseText);
@@ -226,7 +226,7 @@ export default function ReservationManagement() {
         console.error("JSON 파싱 오류:", parseError);
         console.error("파싱 실패한 응답:", responseText);
 
-        // ⭐ JSON 파싱 실패 시 재시도 (한 번만)
+        // JSON 파싱 실패 시 재시도 (한 번만)
         if (
           !isRetry &&
           parseError.message.includes("Unexpected end of JSON input")
@@ -243,7 +243,7 @@ export default function ReservationManagement() {
         throw new Error("응답 형식이 올바르지 않습니다: " + parseError.message);
       }
 
-      // ⭐ 성공 처리
+      // 성공 처리
       console.log("예약 상태 변경 성공:", updatedReservation);
 
       // 예약 목록 업데이트
@@ -261,7 +261,7 @@ export default function ReservationManagement() {
     } catch (error: any) {
       console.error("예약 상태 변경 실패:", error);
 
-      // ⭐ 네트워크 오류 처리
+      // 네트워크 오류 처리
       if (error.message.includes("Failed to fetch")) {
         if (!isRetry) {
           console.warn("네트워크 오류로 인한 자동 재시도...");
@@ -282,7 +282,7 @@ export default function ReservationManagement() {
         alert(error.message || "상태 변경 중 오류가 발생했습니다.");
       }
 
-      // ⭐ 재시도였는데도 실패한 경우
+      // 재시도였는데도 실패한 경우
       if (isRetry) {
         console.error("재시도도 실패했습니다.");
       }
@@ -543,5 +543,22 @@ export default function ReservationManagement() {
         </div>
       )}
     </div>
+  );
+}
+
+function LoadingSpinner() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
+      <span className="ml-2 text-gray-600">로딩 중...</span>
+    </div>
+  );
+}
+
+export default function ReservationManagement() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <ReservationManagementContent />
+    </Suspense>
   );
 }
