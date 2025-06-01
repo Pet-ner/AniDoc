@@ -53,6 +53,9 @@ const PetRegist: React.FC<PetRegistProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [presignedImageUrl, setPresignedImageUrl] = useState<string>("");
 
+  // 체중 입력을 위한 별도 상태
+  const [weightInput, setWeightInput] = useState("");
+
   // 이미지 크롭 관련 상태
   const [showCropper, setShowCropper] = useState(false);
   const [selectedImageForCrop, setSelectedImageForCrop] = useState<string>("");
@@ -70,6 +73,15 @@ const PetRegist: React.FC<PetRegistProps> = ({
     profileUrl: "",
     specialNote: "",
   });
+
+  // formData.weight 변경 시 weightInput 동기화
+  useEffect(() => {
+    if (formData.weight === 0) {
+      setWeightInput("");
+    } else {
+      setWeightInput(formData.weight.toString());
+    }
+  }, [formData.weight]);
 
   // S3 Presigned URL 발급 함수
   const generatePresignedViewUrl = async (
@@ -346,13 +358,6 @@ const PetRegist: React.FC<PetRegistProps> = ({
   return (
     <>
       <div className="w-full">
-        {/* 헤더 */}
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-gray-800">
-            반려동물 {petData ? "수정" : "등록"}
-          </h2>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="space-y-4">
@@ -448,6 +453,7 @@ const PetRegist: React.FC<PetRegistProps> = ({
                   <option value="고양이">고양이</option>
                   <option value="고슴도치">고슴도치</option>
                   <option value="햄스터">햄스터</option>
+                  <option value="기타">기타</option>
                 </select>
               </div>
 
@@ -470,20 +476,54 @@ const PetRegist: React.FC<PetRegistProps> = ({
                   체중 (kg) <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="weight"
-                  value={formData.weight}
+                  value={weightInput}
                   onChange={(e) => {
-                    const value = Math.max(0, parseFloat(e.target.value) || 0);
-                    setFormData((prev) => ({
-                      ...prev,
-                      weight: value,
-                    }));
+                    const value = e.target.value;
+
+                    if (value === "") {
+                      setWeightInput("");
+                      setFormData((prev) => ({ ...prev, weight: 0 }));
+                      return;
+                    }
+
+                    // 0.1, 0.2 등의 입력을 정확히 처리
+                    if (/^[0-9]*\.?[0-9]{0,1}$/.test(value)) {
+                      setWeightInput(value);
+                      const numValue = parseFloat(value);
+                      if (!isNaN(numValue)) {
+                        setFormData((prev) => ({ ...prev, weight: numValue }));
+                      }
+                    }
                   }}
-                  min="0"
-                  step="0.1"
+                  onKeyDown={(e) => {
+                    const allowedKeys = [
+                      "Backspace",
+                      "Delete",
+                      "Tab",
+                      "Escape",
+                      "Enter",
+                      "ArrowLeft",
+                      "ArrowRight",
+                      "ArrowUp",
+                      "ArrowDown",
+                      "Home",
+                      "End",
+                    ];
+
+                    if (
+                      allowedKeys.includes(e.key) ||
+                      (e.key >= "0" && e.key <= "9") ||
+                      (e.key === "." && !e.currentTarget.value.includes("."))
+                    ) {
+                      return;
+                    }
+
+                    e.preventDefault();
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="체중을 입력하세요"
+                  placeholder="체중을 입력하세요 (예: 0.1, 4.3)"
                   required
                 />
               </div>
@@ -515,7 +555,6 @@ const PetRegist: React.FC<PetRegistProps> = ({
                     </div>
                   ) : previewUrl ? (
                     <div className="relative w-full max-w-md">
-                      {/* 카드에서 보이는 것과 동일한 비율로 미리보기 */}
                       <div className="w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
                         <img
                           src={previewUrl}
@@ -523,25 +562,6 @@ const PetRegist: React.FC<PetRegistProps> = ({
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <button
-                        type="button"
-                        onClick={handleImageRemove}
-                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
                       {presignedImageUrl && (
                         <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
                           카드 크기 (384×192)
