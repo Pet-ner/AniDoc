@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -99,7 +100,6 @@ public class UserController {
             throw new CustomException(ErrorCode.LOGIN_FAILED);
         }
 
-    // TODO : 에러 코드 세분화(USER가 존재하지 않습니다, 비밀번호가 다릅니다 등)
     }
 
 
@@ -111,6 +111,8 @@ public class UserController {
         if (accessToken == null || !authTokenService.isValid(accessToken)){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
         }
+
+
         userService.logout(accessToken);
 
 
@@ -151,7 +153,7 @@ public class UserController {
 
 
     // ✅ 의료진 조회
-    @Operation(summary = "의료진 목록 조회", description = "근무 중인 의료진 목록을 조회합니다.")
+    @Operation(summary = "의료진 목록 조회", description = "의료진 목록을 조회합니다.")
     @GetMapping("/staff")
     public ResponseEntity<List<StaffResponseDto>> getStaffList(
             @RequestParam(value = "onlyAvailable", defaultValue = "false") boolean onlyAvailable) {
@@ -160,14 +162,13 @@ public class UserController {
         return ResponseEntity.ok(staffList);
     }
 
-
     //✅ 비밀번호 일치 확인
     @PostMapping("/verify-password")
     public ResponseEntity<Map<String, Object>> verifyCurrentPassword(
             @RequestBody PasswordVerificationRequest request,
             @AuthenticationPrincipal SecurityUser securityUser) {
-            User user = userService.getUserById(securityUser.getId());
-            try {
+        User user = userService.getUserById(securityUser.getId());
+        try {
             boolean isValid = userService.verifyCurrentPassword(user, request.getPassword());
 
             Map<String, Object> response = new HashMap<>();
@@ -200,7 +201,7 @@ public class UserController {
 
     @PutMapping("/me/status")
     public ResponseEntity<String> updateMyStatus(@AuthenticationPrincipal SecurityUser securityUser,
-                                                @RequestParam UserStatus status){
+                                                 @RequestParam UserStatus status){
         userService.updateMyStatus(securityUser.getId(),status);
         return ResponseEntity.ok("상태 변경이 반영되었습니다.");
     }

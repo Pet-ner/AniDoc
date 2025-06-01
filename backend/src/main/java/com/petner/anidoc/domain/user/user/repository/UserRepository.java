@@ -1,5 +1,6 @@
 package com.petner.anidoc.domain.user.user.repository;
 
+import com.petner.anidoc.domain.user.user.entity.ApprovalStatus;
 import com.petner.anidoc.domain.user.user.entity.User;
 import com.petner.anidoc.domain.user.user.entity.UserRole;
 import com.petner.anidoc.domain.user.user.entity.UserStatus;
@@ -25,20 +26,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.role = :role AND u.status = :status")
     List<User> findByRoleAndStatus(@Param("role") UserRole role, @Param("status") UserStatus status);
 
+    // 승인된 특정 역할의 사용자 조회
+    List<User> findByRoleAndApprovalStatus(UserRole role, ApprovalStatus approvalStatus);
 
-    @Modifying
-    @Transactional
-    @Query("UPDATE User u SET u.name = :name, u.phoneNumber = :phoneNumber, " +
-            "u.emergencyContact = :emergencyContact," +
-            "u.role = :role, " +
-            " u.vetInfo = :vetInfo, u.updatedAt = CURRENT_TIMESTAMP " +
-            "WHERE u.id = :id")
-    void updateUserBasicInfo(@Param("id") Long id,
-                             @Param("name") String name,
-                             @Param("phoneNumber") String phoneNumber,
-                             @Param("emergencyContact") String emergencyContact,
-                             @Param("role") UserRole role,
-                             @Param("vetInfo") VetInfo vetInfo);
+    // 승인된 특정 역할과 상태의 사용자 조회
+    List<User> findByRoleAndApprovalStatusAndStatus(UserRole role, ApprovalStatus approvalStatus, UserStatus status);
+
 }
 
 
