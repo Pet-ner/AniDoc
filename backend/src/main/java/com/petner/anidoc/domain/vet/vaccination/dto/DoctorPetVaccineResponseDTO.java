@@ -48,7 +48,7 @@ public class DoctorPetVaccineResponseDTO {
         this.currentDose = vaccination.getCurrentDose();
         this.totalDoses = vaccination.getTotalDoses();
         this.vaccinationDate = vaccination.getVaccinationDate();
-        this.nextDueDate = vaccination.getNextDueDate();
+//        this.nextDueDate = vaccination.getNextDueDate();
         this.status = vaccination.getStatus();
         this.notes = vaccination.getNotes();
     }
