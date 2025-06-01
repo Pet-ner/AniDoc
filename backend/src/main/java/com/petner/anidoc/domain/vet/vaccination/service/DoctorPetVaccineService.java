@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class DoctorPetVaccineService {
-    private final VaccinationRepository vaccineRepository;
+    private final VaccinationRepository vaccinationRepository;
     private final PetRepository petRepository;
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
@@ -45,7 +45,7 @@ public class DoctorPetVaccineService {
             throw new IllegalArgumentException("해당 예약은 이 반려동물의 예약이 아닙니다.");
         }
 
-        if (vaccineRepository.findByReservationId(doctorPetVaccineRequestDTO.getReservationId()).isPresent()) {
+        if (vaccinationRepository.findByReservationId(doctorPetVaccineRequestDTO.getReservationId()).isPresent()) {
             throw new IllegalStateException("이미 해당 예약에 대한 예방접종 기록이 존재합니다.");
         }
 
@@ -62,12 +62,12 @@ public class DoctorPetVaccineService {
                 .notes(doctorPetVaccineRequestDTO.getNotes())
                 .build();
 
-        return vaccineRepository.save(vaccination);
+        return vaccinationRepository.save(vaccination);
     }
     //수정
     @Transactional
     public DoctorPetVaccineResponseDTO updateVaccine(Long vaccinationId, DoctorPetVaccineRequestDTO doctorPetVaccineRequestDTO, User currentDoctor){
-        Vaccination vaccination = vaccineRepository.findById(vaccinationId)
+        Vaccination vaccination = vaccinationRepository.findById(vaccinationId)
                 .orElseThrow(()-> new RuntimeException("예방접종 기록이 없습니다."));
         //권한(동일한 의료진인지 확인)
         if (!vaccination.getDoctor().getId().equals(currentDoctor.getId())) {
@@ -91,7 +91,7 @@ public class DoctorPetVaccineService {
     //전체 조회
     @Transactional(readOnly = true)
     public List<DoctorPetVaccineResponseDTO> findAllVaccinations() {
-        List<Vaccination> vaccinations = vaccineRepository.findAll();
+        List<Vaccination> vaccinations = vaccinationRepository.findAll();
         return vaccinations.stream()
                 .map(DoctorPetVaccineResponseDTO::new)
                 .collect(Collectors.toList());
@@ -100,7 +100,7 @@ public class DoctorPetVaccineService {
     //상세 조회
     @Transactional(readOnly = true)
     public DoctorPetVaccineResponseDTO findVaccinationById(Long vaccinationId) {
-        Vaccination vaccination = vaccineRepository.findById(vaccinationId)
+        Vaccination vaccination = vaccinationRepository.findById(vaccinationId)
                 .orElseThrow(() -> new RuntimeException("예방접종 기록이 없습니다."));
         return new DoctorPetVaccineResponseDTO(vaccination);
     }
@@ -108,7 +108,7 @@ public class DoctorPetVaccineService {
     // 예약별 예방접종 기록 조회
     @Transactional(readOnly = true)
     public DoctorPetVaccineResponseDTO findVaccinationByReservationId(Long reservationId) {
-        Vaccination vaccination = vaccineRepository.findByReservationId(reservationId)
+        Vaccination vaccination = vaccinationRepository.findByReservationId(reservationId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 예약에 대한 예방접종 기록이 없습니다."));
         return new DoctorPetVaccineResponseDTO(vaccination);
     }
@@ -116,19 +116,19 @@ public class DoctorPetVaccineService {
     //삭제
     @Transactional
     public void deleteVaccination(Long vaccinationId, User currentDoctor) {
-        Vaccination vaccination = vaccineRepository.findById(vaccinationId)
+        Vaccination vaccination = vaccinationRepository.findById(vaccinationId)
                 .orElseThrow(() -> new RuntimeException("예방접종 기록이 없습니다."));
         //권한(동일한 의료진인지 확인)
         if (!vaccination.getDoctor().getId().equals(currentDoctor.getId())){
             throw new AccessDeniedException("본인이 등록한 예방접종만 삭제할 수 있습니다.");
         }
 
-        vaccineRepository.delete(vaccination);
+        vaccinationRepository.delete(vaccination);
     }
 
     @Transactional(readOnly = true)
     public VaccinationStatusDto getVaccinationStatusByReservationId(Long reservationId) {
-        Optional<Vaccination> vaccination = vaccineRepository.findByReservationId(reservationId);
+        Optional<Vaccination> vaccination = vaccinationRepository.findByReservationId(reservationId);
         return vaccination.map(value -> new VaccinationStatusDto(true, value.getStatus().toString()))
                 .orElseGet(() -> new VaccinationStatusDto(false, null));
     }

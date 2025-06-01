@@ -14,5 +14,4 @@ public class AnidocApplication {
 		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
 		SpringApplication.run(AnidocApplication.class, args);
 	}
-
 }
