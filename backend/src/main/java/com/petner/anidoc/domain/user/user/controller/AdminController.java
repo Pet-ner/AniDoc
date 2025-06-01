@@ -19,6 +19,10 @@ import java.util.List;
 @RequestMapping("/api/admins")
 @RequiredArgsConstructor
 
+/**
+ * ✅ admin이 staff의 가입 승인/거부/조회
+ * */
+
 public class AdminController {
 
     private final UserService userService;
