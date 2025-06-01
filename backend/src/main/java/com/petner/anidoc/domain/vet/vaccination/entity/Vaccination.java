@@ -46,8 +46,8 @@ public class Vaccination extends BaseEntity {
     @Column(name = "vaccination_date")
     private LocalDate vaccinationDate; //접종일
 
-//    @Column(name = "next_due_date")
-//    private LocalDate nextDueDate; //다음접종일
+    @Column(name = "next_due_date")
+    private LocalDate nextDueDate; //다음접종일
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -68,7 +68,7 @@ public class Vaccination extends BaseEntity {
         this.currentDose = dto.getCurrentDose();
         this.totalDoses = dto.getTotalDoses();
         this.vaccinationDate = dto.getVaccinationDate();
-//        this.nextDueDate = dto.getNextDueDate();
+        this.nextDueDate = dto.getNextDueDate();
         this.status = dto.getStatus();
         this.notes = dto.getNotes();
     }

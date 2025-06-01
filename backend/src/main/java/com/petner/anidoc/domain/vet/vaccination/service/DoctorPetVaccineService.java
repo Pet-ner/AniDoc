@@ -49,7 +49,7 @@ public class DoctorPetVaccineService {
                 .currentDose(doctorPetVaccineRequestDTO.getCurrentDose())
                 .totalDoses(doctorPetVaccineRequestDTO.getTotalDoses())
                 .vaccinationDate(doctorPetVaccineRequestDTO.getVaccinationDate()) //추가
-//                .nextDueDate(doctorPetVaccineRequestDTO.getNextDueDate())
+                .nextDueDate(doctorPetVaccineRequestDTO.getNextDueDate())
                 .status(doctorPetVaccineRequestDTO.getStatus())
                 .notes(doctorPetVaccineRequestDTO.getNotes())
                 .build();
