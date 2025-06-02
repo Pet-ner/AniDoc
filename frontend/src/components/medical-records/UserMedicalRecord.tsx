@@ -4,6 +4,7 @@ import { Search, Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import ChartDetailModal from "./ChartDetailModal";
+import { toast } from "react-hot-toast";
 
 interface MedicalRecord {
   id: number;
@@ -87,7 +88,7 @@ export default function UserMedicalRecord({
         setRecords(medicalRecords);
       } catch (err) {
         console.error("❌ 진료기록 목록 조회 실패:", err);
-        alert("진료기록을 불러오는 데 실패했습니다.");
+        toast.error("진료기록을 불러오는 데 실패했습니다.");
       } finally {
         setLoading(false);
       }
@@ -108,7 +109,7 @@ export default function UserMedicalRecord({
       const medicalRecord = responseBody.medicalRecord;
 
       if (!medicalRecord) {
-        alert("진료기록을 찾을 수 없습니다.");
+        toast.error("진료기록을 찾을 수 없습니다.");
         return;
       }
 
@@ -127,7 +128,7 @@ export default function UserMedicalRecord({
       setShowDetail(true);
     } catch (err) {
       console.error("진료기록 조회 실패", err);
-      alert("진료기록을 불러오는 데 실패했습니다.");
+      toast.error("진료기록을 불러오는 데 실패했습니다.");
     }
   };
 

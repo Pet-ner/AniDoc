@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 // VaccinationStatus enum
 enum VaccinationStatus {
@@ -209,14 +210,12 @@ const VaccineChange: React.FC<VaccineChangeProps> = ({
       const result = await response.json();
       console.log("Update successful:", result);
 
-      alert("백신 정보가 성공적으로 수정되었습니다.");
+      toast.success("백신 정보가 성공적으로 수정되었습니다.");
       onSuccess(); // 부모 컴포넌트에 성공 알림
       onClose(); // 모달 닫기
     } catch (error) {
       console.error("Error updating vaccine:", error);
-      alert(
-        error instanceof Error ? error.message : "백신 정보 수정에 실패했습니다"
-      );
+      toast.error("백신 정보 수정에 실패했습니다");
     } finally {
       setIsLoading(false);
     }

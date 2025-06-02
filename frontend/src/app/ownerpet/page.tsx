@@ -5,6 +5,7 @@ import { Camera, Heart, ImageOff, Edit, Clipboard, Trash2 } from "lucide-react";
 import Pet from "@/components/pet/PetRegist";
 import OwnerPetVaccineView from "@/components/ownerpetvaccine/OwnerPetVaccineView";
 import { useUser } from "@/contexts/UserContext";
+import { toast } from "react-hot-toast";
 
 interface Pet {
   id: number;
@@ -286,7 +287,7 @@ const PetManagement = () => {
       setCurrentPage(1);
     } catch (error) {
       console.error("데이터 로딩 실패:", error);
-      alert("반려동물 목록을 불러오는데 실패했습니다.");
+      toast.error("반려동물 목록을 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
     }
@@ -326,7 +327,7 @@ const PetManagement = () => {
       setShowPetModal(true);
     } catch (error) {
       console.error("상세 정보 로딩 실패:", error);
-      alert("반려동물 정보를 불러오는데 실패했습니다.");
+      toast.error("반려동물 정보를 불러오는데 실패했습니다.");
     }
   };
 
@@ -354,10 +355,10 @@ const PetManagement = () => {
 
       // 삭제 성공 시 목록 새로고침
       fetchPets();
-      alert("반려동물이 삭제되었습니다.");
+      toast.success("반려동물이 삭제되었습니다.");
     } catch (error) {
       console.error("삭제 실패:", error);
-      alert("반려동물 삭제에 실패했습니다.");
+      toast.error("반려동물 삭제에 실패했습니다.");
     }
   };
 
@@ -399,7 +400,7 @@ const PetManagement = () => {
       setShowVaccineModal(true);
     } catch (error) {
       console.error("백신 기록 조회 실패:", error);
-      alert("백신 기록을 불러오는데 실패했습니다.");
+      toast.error("백신 기록을 불러오는데 실패했습니다.");
     } finally {
       setVaccineLoading(false);
     }

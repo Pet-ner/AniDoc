@@ -2,6 +2,7 @@
 
 import { X, Edit, Save } from "lucide-react";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 
 interface VaccinationData {
   id: number;
@@ -136,10 +137,10 @@ export default function VaccinationDetailModal({
         onUpdate(updatedVaccinationData);
       }
 
-      alert("백신 기록이 성공적으로 수정되었습니다.");
+      toast.success("백신 기록이 성공적으로 수정되었습니다.");
     } catch (error) {
       console.error("백신 기록 수정 오류:", error);
-      alert("백신 기록 수정에 실패했습니다.");
+      toast.error("백신 기록 수정에 실패했습니다.");
     } finally {
       setLoading(false);
     }

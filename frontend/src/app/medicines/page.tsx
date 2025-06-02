@@ -20,6 +20,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 export default function MedicineInventoryPage() {
   const router = useRouter();
@@ -71,7 +72,7 @@ export default function MedicineInventoryPage() {
       setAllMedicines(data);
     } catch (error) {
       console.error("약품 목록 로드 오류:", error);
-      alert("약품 목록을 불러오는데 실패했습니다.");
+      toast.error("약품 목록을 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
     }
@@ -176,13 +177,13 @@ export default function MedicineInventoryPage() {
         throw new Error("약품 삭제에 실패했습니다.");
       }
 
-      alert("약품이 삭제되었습니다.");
+      toast.success("약품이 삭제되었습니다.");
 
       // 전체 데이터 다시 로드
       fetchAllMedicines();
     } catch (error) {
       console.error("약품 삭제 오류:", error);
-      alert("약품 삭제에 실패했습니다.");
+      toast.error("약품 삭제에 실패했습니다.");
     }
   };
 

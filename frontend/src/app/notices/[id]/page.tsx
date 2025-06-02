@@ -4,6 +4,7 @@ import { useUser } from "@/contexts/UserContext";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 
 interface Notice {
   id: number;
@@ -52,11 +53,7 @@ export default function NoticeDetailPage() {
         setNotice(data);
       } catch (error) {
         console.error("공지사항 로드 오류:", error);
-        alert(
-          error instanceof Error
-            ? error.message
-            : "공지사항을 불러오는데 실패했습니다."
-        );
+        toast.error("공지사항을 불러오는데 실패했습니다.");
         router.push("/notices");
       }
     };
@@ -115,11 +112,11 @@ export default function NoticeDetailPage() {
                       throw new Error("공지사항 삭제에 실패했습니다.");
                     }
 
-                    alert("공지사항이 삭제되었습니다.");
+                    toast.success("공지사항이 삭제되었습니다.");
                     router.push("/notices");
                   } catch (error) {
                     console.error("공지사항 삭제 오류:", error);
-                    alert("공지사항 삭제에 실패했습니다.");
+                    toast.error("공지사항 삭제에 실패했습니다.");
                   }
                 }
               }}

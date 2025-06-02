@@ -6,6 +6,7 @@ import ChartModal from "./ChartModal";
 import ChartDetailModal from "./ChartDetailModal";
 import VaccinationModal from "./VaccinationModal";
 import VaccinationDetailModal from "./VaccinationDetailModal";
+import { toast } from "react-hot-toast";
 
 interface MedicalRecord {
   id: number;
@@ -125,7 +126,7 @@ export default function StaffMedicalRecord({
       const medicalRecord = responseBody.medicalRecord;
 
       if (!medicalRecord) {
-        alert("진료기록을 찾을 수 없습니다.");
+        toast.error("진료기록을 찾을 수 없습니다.");
         return;
       }
 
@@ -148,7 +149,7 @@ export default function StaffMedicalRecord({
       setShowDetail(true);
     } catch (err) {
       console.error("진료기록 조회 실패", err);
-      alert("진료기록을 불러오는 데 실패했습니다.");
+      toast.error("진료기록을 불러오는 데 실패했습니다.");
     }
   };
 
@@ -174,7 +175,7 @@ export default function StaffMedicalRecord({
       setShowVaccinationDetail(true);
     } catch (err) {
       console.error("예방접종 기록 조회 실패", err);
-      alert("예방접종 기록을 불러오는 데 실패했습니다.");
+      toast.error("예방접종 기록을 불러오는 데 실패했습니다.");
     }
   };
 

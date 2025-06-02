@@ -6,6 +6,7 @@ import { useUser } from "@/contexts/UserContext";
 import ReservationStatus from "@/components/ReservationStatus";
 import { User, Check, X, Clock } from "lucide-react";
 import StatisticsPanel from "@/components/statistics/StatisticsPanel";
+import { toast } from "react-hot-toast";
 
 // 예약 타입
 interface Reservation {
@@ -131,10 +132,10 @@ function ReservationManagementContent() {
 
       setSelectedDateReservations(updatedReservations);
       setAssigningDoctor(null);
-      alert("담당의가 성공적으로 배정되었습니다.");
+      toast.success("담당의가 성공적으로 배정되었습니다.");
     } catch (error: any) {
       console.error("의사 배정 오류:", error);
-      alert(error.message || "담당의 배정 중 오류가 발생했습니다.");
+      toast.error("담당의 배정 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
@@ -187,7 +188,7 @@ function ReservationManagementContent() {
       if (response.status === 204) {
         console.log("빈 응답 수신 (204) - 성공으로 처리");
         const statusText = newStatus === "APPROVED" ? "승인" : "거절";
-        alert(`예약이 성공적으로 ${statusText}되었습니다.`);
+        toast.success(`예약이 성공적으로 ${statusText}되었습니다.`);
         window.location.reload();
         return;
       }
@@ -201,7 +202,7 @@ function ReservationManagementContent() {
       if (!responseText || responseText.trim() === "") {
         console.warn("빈 응답 수신 - 성공으로 간주");
         const statusText = newStatus === "APPROVED" ? "승인" : "거절";
-        alert(`예약이 성공적으로 ${statusText}되었습니다.`);
+        toast.success(`예약이 성공적으로 ${statusText}되었습니다.`);
         window.location.reload();
         return;
       }
@@ -257,7 +258,7 @@ function ReservationManagementContent() {
       setSelectedDateReservations(updatedReservations);
 
       const statusText = newStatus === "APPROVED" ? "승인" : "거절";
-      alert(`예약이 성공적으로 ${statusText}되었습니다.`);
+      toast.success(`예약이 성공적으로 ${statusText}되었습니다.`);
     } catch (error: any) {
       console.error("예약 상태 변경 실패:", error);
 
@@ -270,16 +271,16 @@ function ReservationManagementContent() {
           }, 2000); // 2초 후 재시도
           return;
         } else {
-          alert(
+          toast.error(
             "네트워크 연결을 확인해주세요. 백엔드 서버가 실행 중인지 확인하세요."
           );
         }
       } else if (error.message.includes("JSON")) {
-        alert(
+        toast.error(
           "서버 응답 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
         );
       } else {
-        alert(error.message || "상태 변경 중 오류가 발생했습니다.");
+        toast.error("상태 변경 중 오류가 발생했습니다.");
       }
 
       // 재시도였는데도 실패한 경우

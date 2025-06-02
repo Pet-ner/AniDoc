@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useUser } from "@/contexts/UserContext";
 import ImageCropper from "./ImageCropper";
+import { toast } from "react-hot-toast";
 
 interface Pet {
   id: number;
@@ -177,12 +178,12 @@ const PetRegist: React.FC<PetRegistProps> = ({
     if (!file || !user) return;
 
     if (file.size > 10 * 1024 * 1024) {
-      alert("파일 크기는 10MB 이하로 선택해주세요.");
+      toast.error("파일 크기는 10MB 이하로 선택해주세요.");
       return;
     }
 
     if (!file.type.startsWith("image/")) {
-      alert("이미지 파일만 선택할 수 있습니다.");
+      toast.error("이미지 파일만 선택할 수 있습니다.");
       return;
     }
 
@@ -249,7 +250,7 @@ const PetRegist: React.FC<PetRegistProps> = ({
       console.log("이미지 업로드 완료:", finalUrl);
     } catch (error) {
       console.error("이미지 업로드 실패:", error);
-      alert("이미지 업로드 중 오류가 발생했습니다.");
+      toast.error("이미지 업로드 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
       if (selectedImageForCrop) {
@@ -326,10 +327,12 @@ const PetRegist: React.FC<PetRegistProps> = ({
         );
       }
 
-      alert(`반려동물이 성공적으로 ${petData ? "수정" : "등록"}되었습니다.`);
+      toast.success(
+        `반려동물이 성공적으로 ${petData ? "수정" : "등록"}되었습니다.`
+      );
       onClose();
     } catch (error) {
-      alert(
+      toast.error(
         error instanceof Error
           ? error.message
           : `반려동물 ${petData ? "수정" : "등록"} 중 오류가 발생했습니다.`

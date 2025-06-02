@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 
 type VaccinationStatus = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
 
@@ -91,19 +92,19 @@ export default function PetVaccineRegistModal({
     e.preventDefault();
 
     if (!formData.reservationId || formData.reservationId === 0) {
-      alert("예약을 반드시 선택해야 합니다.");
+      toast.error("예약을 반드시 선택해야 합니다.");
       return;
     }
     if (!formData.doctorId || formData.doctorId === 0) {
-      alert("의사 정보가 올바르지 않습니다. 다시 로그인 해주세요.");
+      toast.error("의사 정보가 올바르지 않습니다. 다시 로그인 해주세요.");
       return;
     }
     if (!formData.vaccineName.trim()) {
-      alert("백신 이름을 입력해주세요.");
+      toast.error("백신 이름을 입력해주세요.");
       return;
     }
     if (!formData.vaccinationDate) {
-      alert("접종일을 입력해주세요.");
+      toast.error("접종일을 입력해주세요.");
       return;
     }
 
@@ -113,7 +114,7 @@ export default function PetVaccineRegistModal({
       onClose();
     } catch (error) {
       console.error("등록 오류:", error);
-      alert("예방접종 등록에 실패했습니다.");
+      toast.error("예방접종 등록에 실패했습니다.");
     } finally {
       setLoading(false);
     }

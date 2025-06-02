@@ -6,6 +6,7 @@ import { useUser } from "@/contexts/UserContext";
 import { formatDate } from "@/utils/formatDate";
 import { Calendar as CalendarIcon, Clock, Dog, FileText } from "lucide-react";
 import Link from "next/link";
+import { toast } from "react-hot-toast";
 
 // 반려동물 타입
 interface Pet {
@@ -69,7 +70,7 @@ export default function CreateReservation() {
         }
       } catch (error) {
         console.error("반려동물 정보 로드 오류:", error);
-        alert("반려동물 정보를 불러오는데 실패했습니다.");
+        toast.error("반려동물 정보를 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
@@ -112,7 +113,7 @@ export default function CreateReservation() {
         }
       } catch (error) {
         console.error("예약 가능 시간 로드 오류:", error);
-        alert("예약 가능 시간을 불러오는데 실패했습니다.");
+        toast.error("예약 가능 시간을 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
@@ -132,12 +133,12 @@ export default function CreateReservation() {
     }
 
     if (!selectedPet || !selectedDate || !selectedTime || !type) {
-      alert("모든 필수 항목을 입력해주세요.");
+      toast.error("모든 필수 항목을 입력해주세요.");
       return;
     }
 
     if (!user?.id) {
-      alert("사용자 정보가 없습니다.");
+      toast.error("사용자 정보가 없습니다.");
       return;
     }
 
@@ -184,12 +185,11 @@ export default function CreateReservation() {
         throw new Error(errorMessage);
       }
 
-      console.log("예약 등록 성공");
-      alert("예약 등록에 성공했습니다.");
+      toast.success("예약 등록에 성공했습니다.");
       router.push("/");
     } catch (error: any) {
       console.error("예약 등록 오류:", error);
-      alert(error.message || "예약 등록 중 오류가 발생했습니다.");
+      toast.error("예약 등록 중 오류가 발생했습니다.");
     } finally {
       // 2초 후에 버튼 다시 활성화 (안전장치)
       setTimeout(() => {
