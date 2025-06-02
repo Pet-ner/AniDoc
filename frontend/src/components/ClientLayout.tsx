@@ -40,40 +40,6 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: "#fff",
-            color: "#333",
-            boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
-            borderRadius: "8px",
-            padding: "12px 20px",
-            maxWidth: "500px",
-            width: "max-content",
-            whiteSpace: "nowrap",
-          },
-          success: {
-            style: {
-              border: "1px solid #10B981",
-            },
-            iconTheme: {
-              primary: "#10B981",
-              secondary: "#FFFBEB",
-            },
-          },
-          error: {
-            style: {
-              border: "1px solid #EF4444",
-            },
-            iconTheme: {
-              primary: "#EF4444",
-              secondary: "#FFFBEB",
-            },
-          },
-        }}
-      />
       <Sidebar />
       <div className="ml-[240px]">
         <Header />
