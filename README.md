@@ -129,3 +129,84 @@
  <br/>
 
  ---
+
+## 🚀 Getting Started
+
+### Backend (Spring Boot)
+```bash
+# 1. 프로젝트 클론
+git clone https://github.com/Pet-ner/AniDoc.git
+cd AniDoc/backend
+
+# 2. 환경변수 설정
+cp src/main/resources/application.yml.example src/main/resources/application.yml
+# (application.yml을 자신의 DB/환경에 맞게 수정하세요)
+
+# 3. 서버 실행
+./gradlew bootRun
+```
+### Frontend (Next.js)
+```bash
+cd AniDoc/frontend
+
+# 의존성 설치
+npm install
+
+# 개발 서버 실행
+npm run dev
+
+```
+---
+
+## 🛠️ 주요 기능 상세
+
+- 대시보드
+  - 1
+  - 1
+- 반려동물 관리
+  - 1
+  - 1
+- 진료예약
+  - 1
+  - 1
+- 진료기록
+  - 1
+  - 1
+- 공지사항
+  - 1
+- 보호자
+  - 1
+  - 1
+  - 1
+- 의료진
+  - 1
+  - 1
+  - 1
+- 관리자
+  - 1
+  - 1
+  - 1
+ 
+---
+
+## :open_file_folder: Project Structure
+
+```markdown
+backend
+└── src
+    └── main
+        └── java
+            └── com
+                └── petner
+                    └── anidoc
+                        ├── domain/          # 핵심 도메인 로직
+                        │   ├── chat/        # 채팅 관련
+                        │   ├── notice/      # 알림 관련  
+                        │   ├── statistics/  # 통계 관련
+                        │   ├── user/        # 사용자 관련
+                        │   └── vet/         # 수의사 관련
+                        ├── global/          # 전역 설정 (AWS S3, 보안 등)
+                        └── Application.java # 메인 클래스
+```
+
+---
