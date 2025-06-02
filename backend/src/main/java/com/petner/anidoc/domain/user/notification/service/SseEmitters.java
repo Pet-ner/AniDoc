@@ -118,7 +118,8 @@ public class SseEmitters {
                 }catch (ClientAbortException e){
                     deadEmitters.add(emitter);
                 }catch (IOException e) {
-                    throw new RuntimeException(e);
+                    log.debug("SSE 연결 끊어짐 - userId: {}, 메시지: {}", userId, e.getMessage());
+                    deadEmitters.add(emitter);
                 }
             }
             userEmitters.removeAll(deadEmitters);
