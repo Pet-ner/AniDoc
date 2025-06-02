@@ -66,6 +66,8 @@
     <img width="1251" alt="공지사항 화면" src="https://github.com/user-attachments/assets/996c1f2d-5e9e-485c-8a8f-618ac0ef70cf" />
   </p>
 </details>
+
+
 ---
 
 ## 🛠️ 주요 기능
