@@ -9,7 +9,7 @@
  |:--------:|:--------:|:--------:|:--------:|:--------:|
  | <img src="https://github.com/Heun0.png" alt="한영흔" width="150"> | <img src="https://github.com/mordor8378.png" alt="유재현" width="150"> | <img src="https://github.com/codefish-sea.png" alt="김진경" width="150"> | <img src="https://github.com/Vincentius7.png" alt="박혁" width="150"> | <img src="https://github.com/Kim-ms527.png" alt="김명수" width="150"> |
  | BE | BE | BE | BE | BE |
- | PM | 개발팀장 | 팀원 | 팀원 | 팀원 |
+ | PM / 진료기록 | 개발팀장 / 예약 및 재고관리 | 팀원 / 로그인 및 직원관리 | 팀원 / 알림,통계,배포 | 팀원 / 반려동물 |
  | [GitHub](https://github.com/Heun0) | [GitHub](https://github.com/mordor8378) | [GitHub](https://github.com/codefish-sea) | [GitHub](https://github.com/Vincentius7) | [GitHub](https://github.com/Kim-ms527) |
 
 ---
