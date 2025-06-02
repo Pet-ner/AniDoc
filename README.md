@@ -41,6 +41,31 @@
   </p>
 </details>
 
+<details>
+  <summary>진료예약 화면</summary>
+
+  <p align="center">
+    <img width="1251" alt="진료예약 화면" src="https://github.com/user-attachments/assets/a8fd27da-1181-47c4-9322-48f0fae71b05" />
+  </p>
+</details>
+
+<details>
+  <summary>진료기록 & 진료기록 조회 화면</summary>
+
+  <p align="center">
+    <img width="1251" alt="진료기록 화면" src="https://github.com/user-attachments/assets/334852e6-6c0c-47cb-b0e8-411580d1b3b0" />
+    <img width="1251" alt="진료기록 조회 화면" src="!https://github.com/user-attachments/assets/42b106c1-10d8-462e-a6da-f51889dcce2c" />
+  </p>
+</details>
+
+
+<details>
+  <summary>공지사항 화면</summary>
+
+  <p align="center">
+    <img width="1251" alt="공지사항 화면" src="https://github.com/user-attachments/assets/996c1f2d-5e9e-485c-8a8f-618ac0ef70cf" />
+  </p>
+</details>
 ---
 
 ## 🛠️ 주요 기능
