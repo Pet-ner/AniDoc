@@ -81,6 +81,11 @@
 [![Lombok](https://img.shields.io/badge/Lombok-ED1C24?style=flat&logo=java&logoColor=white)](https://projectlombok.org/)
  <br/>
 
+ ## Real-time Communication
+[![WebSocket](https://img.shields.io/badge/WebSocket-010101?style=flat&logo=websocket&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
+[![Server-Sent Events](https://img.shields.io/badge/SSE-FF6B6B?style=flat&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)
+<br/>
+
  ## Infra
 [![Amazon EC2](https://img.shields.io/badge/Amazon_EC2-FF9900?style=flat&logo=amazon-ec2&logoColor=white)](https://aws.amazon.com/ec2/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
