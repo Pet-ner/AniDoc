@@ -31,3 +31,12 @@
     <img width="600" alt="회원가입 화면" src="https://github.com/user-attachments/assets/d858f3eb-aea6-4aff-90e8-054cbd997dac" />
   </div>
 </details>
+
+<details>
+  <summary>반려동물 관리 & 반려동물 등록 화면</summary>
+
+  <p align="center">
+    <img width="1251" alt="반려동물 관리 화면" src="https://github.com/user-attachments/assets/48e7c3a8-9979-44cf-9f0e-0ce8938c29bb" />
+    <img width="1251" alt="반려동물 등록 화면" src="https://github.com/user-attachments/assets/0fd11196-6f8c-46f1-bcca-ca0d05d4bf59" />
+  </p>
+</details>
