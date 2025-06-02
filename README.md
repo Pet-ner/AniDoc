@@ -40,3 +40,25 @@
     <img width="1251" alt="반려동물 등록 화면" src="https://github.com/user-attachments/assets/0fd11196-6f8c-46f1-bcca-ca0d05d4bf59" />
   </p>
 </details>
+
+---
+
+## 🛠️ 주요 기능
+
+- **보호자**: 반려동물 등록, 진료 예약 및 알림 수신, 진료 내역 확인
+- **의료진**: 진료 예약 현황 열람, 진료 기록 입력, 다음 진료 일정 등록/수정
+- **관리자**: 진료 일정 총괄 관리, 수의사 배정, 공지사항 관리, 통계 확인
+
+---
+
+## 🏗️ 기술 스택
+
+| 분야 | 기술 |
+|:---|:---|
+| Backend | Spring Boot, JPA, WebSocket |
+| Frontend | Next.js, TypeScript |
+| Database | MySQL, S3 |
+| DevOps | Docker, Terraform, AWS (EC2, RDS) |
+| CI/CD | GitHub Actions |
+
+---
