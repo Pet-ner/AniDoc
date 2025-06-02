@@ -82,8 +82,8 @@
  <br/>
 
  ## Real-time Communication
-[![WebSocket](https://img.shields.io/badge/WebSocket-010101?style=flat&logo=websocket&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
-[![Server-Sent Events](https://img.shields.io/badge/SSE-FF6B6B?style=flat&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)
+[![WebSocket](https://img.shields.io/badge/WebSocket-010101?style=flat&logo=socketdotio&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
+[![Server-Sent Events](https://img.shields.io/badge/SSE-FF4500?style=flat&logo=rss&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)
 <br/>
 
  ## Infra
