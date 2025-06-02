@@ -54,7 +54,7 @@
 
   <p align="center">
     <img width="1251" alt="진료기록 화면" src="https://github.com/user-attachments/assets/334852e6-6c0c-47cb-b0e8-411580d1b3b0" />
-    <img width="1251" alt="진료기록 조회 화면" src="!https://github.com/user-attachments/assets/42b106c1-10d8-462e-a6da-f51889dcce2c" />
+    <img width="1251" alt="진료기록 조회 화면" src="https://github.com/user-attachments/assets/42b106c1-10d8-462e-a6da-f51889dcce2c" />
   </p>
 </details>
 
