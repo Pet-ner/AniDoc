@@ -9,7 +9,7 @@
  |:--------:|:--------:|:--------:|:--------:|:--------:|
  | <img src="https://github.com/Heun0.png" alt="한영흔" width="150"> | <img src="https://github.com/mordor8378.png" alt="유재현" width="150"> | <img src="https://github.com/codefish-sea.png" alt="김진경" width="150"> | <img src="https://github.com/Vincentius7.png" alt="박혁" width="150"> | <img src="https://github.com/Kim-ms527.png" alt="김명수" width="150"> |
  | BE | BE | BE | BE | BE |
- | 인증, 인가 | 유저 등록 | 유저 프로필, 배포 | 게시글 | 댓글, 관리자 |
+ | PM | 개발팀장 | 팀원 | 팀원 | 팀원 |
  | [GitHub](https://github.com/Heun0) | [GitHub](https://github.com/mordor8378) | [GitHub](https://github.com/codefish-sea) | [GitHub](https://github.com/Vincentius7) | [GitHub](https://github.com/Kim-ms527) |
 
 ---
@@ -19,8 +19,7 @@
 - 메인 페이지 화면(대시보드)
 
   <p align="center">
-    <img width="1251" alt="메인 페이지 화면(대시보드)" src="![image](https://github.com/user-attachments/assets/91f0b9f2-066f-4480-a59b-5b1be62d3311)
-" />
+    <img width="1251" alt="메인 페이지 화면(대시보드)" src="https://github.com/user-attachments/assets/91f0b9f2-066f-4480-a59b-5b1be62d3311" />
   </p>
 
 
@@ -28,9 +27,7 @@
   <summary>로그인 & 회원가입 화면</summary>
 
   <div align="center">
-    <img width="600" alt="로그인 화면" src="![image](https://github.com/user-attachments/assets/5b60a733-606d-4e12-a664-6153b12d9379)
-" />
-    <img width="600" alt="회원가입 화면" src="![image](https://github.com/user-attachments/assets/d858f3eb-aea6-4aff-90e8-054cbd997dac)
-" />
+    <img width="600" alt="로그인 화면" src="!https://github.com/user-attachments/assets/5b60a733-606d-4e12-a664-6153b12d9379" />
+    <img width="600" alt="회원가입 화면" src="!https://github.com/user-attachments/assets/d858f3eb-aea6-4aff-90e8-054cbd997dac" />
   </div>
 </details>
