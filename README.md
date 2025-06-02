@@ -203,8 +203,8 @@ backend
                         │   ├── chat/        # 채팅 관련
                         │   ├── notice/      # 알림 관련  
                         │   ├── statistics/  # 통계 관련
-                        │   ├── user/        # 사용자 관련
-                        │   └── vet/         # 수의사 관련
+                        │   ├── user/        # 보호자 관련
+                        │   └── vet/         # 의료진 관련
                         ├── global/          # 전역 설정 (AWS S3, 보안 등)
                         └── Application.java # 메인 클래스
 ```
