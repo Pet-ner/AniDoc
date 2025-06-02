@@ -241,7 +241,7 @@ refactor/{issue-number}
 ---
 
 ## 🎥 데모 영상
-- [AniDoc 데모 영상](주소)
+- [AniDoc 데모 영상](https://youtu.be/-e_uE-0y-0w)
 
 
 
