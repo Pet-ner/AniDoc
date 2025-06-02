@@ -138,7 +138,7 @@ export default function ProfileSidebar() {
                 }`}
               >
                 {Object.entries(statusInfo)
-                  .filter(([value]) => value !== "OFF")
+                  .filter(([value]) => value !== "OFFLINE")
                   .map(([value, info]) => (
                     <option key={value} value={value} className="py-1">
                       {info.text}
