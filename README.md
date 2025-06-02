@@ -264,3 +264,15 @@ refactor/{issue-number}
 
 ---
 
+ 
+## 🌐 배포 주소
+- [AniDoc 웹사이트 링크](https://www.anidoc.site/)
+
+---
+
+## 🎥 데모 영상
+- [AniDoc 데모 영상](주소)
+
+
+
+멋쟁이사자처럼 부트캠프 백엔드JAVA 13기 2차 프로젝트입니다
