@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -213,10 +214,15 @@ public class UserService {
 
         if (onlyAvailable) {
             // 승인되고 근무 중인 의료진만 조회
-            staffList = userRepository.findByRoleAndApprovalStatusAndStatus(
+            List<UserStatus> statuses = Arrays.asList(
+                    UserStatus.ON_DUTY,
+                    UserStatus.OFFLINE
+            );
+
+            staffList = userRepository.findByRoleAndApprovalStatusAndStatusIn(
                     UserRole.ROLE_STAFF,
                     ApprovalStatus.APPROVED,
-                    UserStatus.ON_DUTY
+                    statuses
             );
         } else {
             // 승인된 모든 의료진 조회

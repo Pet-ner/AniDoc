@@ -32,6 +32,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 승인된 특정 역할과 상태의 사용자 조회
     List<User> findByRoleAndApprovalStatusAndStatus(UserRole role, ApprovalStatus approvalStatus, UserStatus status);
 
+    List<User> findByRoleAndApprovalStatusAndStatusIn(UserRole role, ApprovalStatus approvalStatus, List<UserStatus> statuses);
+
 }
 
 
