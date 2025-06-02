@@ -228,7 +228,7 @@ refactor/{issue-number}
 ```
 
 **예시:**  
-`feat/#27-게시판 CRUD`
+`feat/27`
 
 ---
 
