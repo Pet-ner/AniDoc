@@ -54,7 +54,6 @@ public class SseEmitters {
             if (list != null) list.remove(emitter);
         });
 
-
         emitter.onError(e -> {
             List<SseEmitter> list = this.emitters.get(userId);
             if (list != null) list.remove(emitter);
