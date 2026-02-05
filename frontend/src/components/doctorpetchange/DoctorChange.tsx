@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Pet, Gender } from "@/app/doctorpet/page"; // Pet과 Gender 타입 import
-
+import { toast } from "react-hot-toast";
 // Pet 인터페이스 직접 정의 제거
 // interface Pet { ... } 이 부분 삭제
 
@@ -97,7 +97,7 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({
       await onSave(submitData);
     } catch (error) {
       console.error("Error in modal handleSubmit:", error);
-      alert("반려동물 정보 수정에 실패했습니다. 다시 시도해주세요.");
+      toast.error("반려동물 정보 수정에 실패했습니다. 다시 시도해주세요.");
     }
   };
 

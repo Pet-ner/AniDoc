@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, Eye, Calendar, Syringe } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import { toast } from "react-hot-toast";
 
 // VaccinationStatus enum
 enum VaccinationStatus {
@@ -96,7 +97,7 @@ const OwnerPetVaccineView: React.FC = () => {
       setIsDetailModalOpen(true);
     } catch (error) {
       console.error("Error fetching vaccine detail:", error);
-      alert("백신 상세 정보를 불러오는데 실패했습니다");
+      toast.error("백신 상세 정보를 불러오는데 실패했습니다");
     }
   };
 

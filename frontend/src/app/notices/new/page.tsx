@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import { toast } from "react-hot-toast";
 
 interface NoticeForm {
   title: string;
@@ -23,13 +24,13 @@ export default function CreateNoticePage() {
   useEffect(() => {
     // 마운트 시점에 권한 체크
     if (!user) {
-      alert("로그인이 필요합니다.");
+      toast.error("로그인이 필요합니다.");
       router.push("/login");
       return;
     }
 
     if (user.userRole !== "ROLE_ADMIN") {
-      alert("관리자만 공지사항을 작성할 수 있습니다.");
+      toast.error("관리자만 공지사항을 작성할 수 있습니다.");
       router.push("/notices");
     }
   }, [user, router]);
@@ -59,13 +60,13 @@ export default function CreateNoticePage() {
     }
 
     if (!user) {
-      alert("로그인이 필요합니다.");
+      toast.error("로그인이 필요합니다.");
       router.push("/login");
       return;
     }
 
     if (user.userRole !== "ROLE_ADMIN") {
-      alert("관리자만 공지사항을 작성할 수 있습니다.");
+      toast.error("관리자만 공지사항을 작성할 수 있습니다.");
       router.push("/notices");
       return;
     }
@@ -137,7 +138,7 @@ export default function CreateNoticePage() {
 
       console.log("공지사항 등록 성공:", data);
 
-      alert("공지사항이 등록되었습니다.");
+      toast.success("공지사항이 등록되었습니다.");
 
       // 성공 시 목록으로 이동 (약간의 딜레이 후)
       setTimeout(() => {
@@ -150,7 +151,7 @@ export default function CreateNoticePage() {
           ? error.message
           : "공지사항 등록에 실패했습니다.";
       setError(errorMessage);
-      alert(errorMessage);
+      toast.error("공지사항 등록에 실패했습니다.");
     } finally {
       setSubmitting(false);
     }

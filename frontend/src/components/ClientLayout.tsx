@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
+import { Toaster } from "react-hot-toast";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 

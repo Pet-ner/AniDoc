@@ -13,6 +13,7 @@ import {
   User,
   Calendar,
 } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 interface Reservation {
   id: number;
@@ -56,7 +57,7 @@ export default function ReservationDetailPage() {
         setReservation(data);
       } catch (error) {
         console.error("예약 정보 로드 오류:", error);
-        alert("예약 정보를 불러오는데 오류가 발생했습니다.");
+        toast.error("예약 정보를 불러오는데 오류가 발생했습니다.");
       } finally {
         setLoading(false);
       }

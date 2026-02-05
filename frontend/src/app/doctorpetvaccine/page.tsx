@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import PetVaccineRegist from "@/components/doctorpetvaccine/PetVaccineRegist";
 import VaccineChange from "@/components/doctorpetvaccine/change/VaccineChange";
 import { useUser } from "@/contexts/UserContext";
+import { toast } from "react-hot-toast";
 
 // Gender enum 추가
 enum Gender {
@@ -418,7 +419,7 @@ const DoctorPetVaccineManagement = () => {
       const petVaccines = getAllVaccinesForPet(petId);
 
       if (petVaccines.length === 0) {
-        alert(`${petName}의 백신 기록이 없습니다.`);
+        toast.error(`${petName}의 백신 기록이 없습니다.`);
         return;
       }
 
@@ -426,7 +427,7 @@ const DoctorPetVaccineManagement = () => {
       setIsHistoryModalOpen(true);
     } catch (error) {
       console.error("백신 기록 조회 중 오류:", error);
-      alert(`${petName}의 백신 기록을 불러오는데 실패했습니다.`);
+      toast.error(`${petName}의 백신 기록을 불러오는데 실패했습니다.`);
     } finally {
       setHistoryLoading(false);
     }
@@ -470,7 +471,7 @@ const DoctorPetVaccineManagement = () => {
 
       // 403 에러 처리 추가
       if (response.status === 403) {
-        alert("본인이 등록한 예방접종만 삭제할 수 있습니다.");
+        toast.error("본인이 등록한 예방접종만 삭제할 수 있습니다.");
         return;
       }
 
@@ -486,10 +487,10 @@ const DoctorPetVaccineManagement = () => {
       );
       setSelectedPetHistory(updatedVaccines);
 
-      alert("백신 정보가 성공적으로 삭제되었습니다.");
+      toast.success("백신 정보가 성공적으로 삭제되었습니다.");
     } catch (error) {
       console.error("Error deleting vaccine:", error);
-      alert("백신 정보 삭제에 실패했습니다");
+      toast.error("백신 정보 삭제에 실패했습니다");
     }
   };
 
@@ -593,14 +594,10 @@ const DoctorPetVaccineManagement = () => {
       await fetchPets();
 
       setIsVaccineModalOpen(false);
-      alert("백신이 성공적으로 등록되었습니다.");
+      toast.success("백신이 성공적으로 등록되었습니다.");
     } catch (error) {
       console.error("Error registering vaccine:", error);
-      alert(
-        `접종 등록에 실패했습니다: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
+      toast.error("접종 등록에 실패했습니다");
     }
   };
 
@@ -637,20 +634,20 @@ const DoctorPetVaccineManagement = () => {
       setIsVaccineModalOpen(true);
     } else {
       console.error("Pet not found");
-      alert("반려동물 정보를 찾을 수 없습니다.");
+      toast.error("반려동물 정보를 찾을 수 없습니다.");
     }
   };
 
   // 백신 등록 처리 함수 - 날짜 형식 처리 추가
   const handleVaccineSubmit = async (data: any): Promise<void> => {
     if (!selectedPet?.id) {
-      alert("반려동물 정보를 찾을 수 없습니다.");
+      toast.error("반려동물 정보를 찾을 수 없습니다.");
       return;
     }
 
     // 데이터 검증
     if (!data.vaccinationDate) {
-      alert("접종일을 입력해주세요.");
+      toast.error("접종일을 입력해주세요.");
       return;
     }
 

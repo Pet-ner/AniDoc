@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { MedicineModalProps } from "@/types/medicine";
+import { toast } from "react-hot-toast";
 
 export default function MedicineModal({
   isOpen,
@@ -19,12 +20,12 @@ export default function MedicineModal({
     e.preventDefault();
 
     if (!formData.medicationName.trim()) {
-      alert("약품명을 입력해주세요.");
+      toast.error("약품명을 입력해주세요.");
       return;
     }
 
     if (formData.stock < 0) {
-      alert("재고 수량은 0 이상이어야 합니다.");
+      toast.error("재고 수량은 0 이상이어야 합니다.");
       return;
     }
 
@@ -51,11 +52,13 @@ export default function MedicineModal({
         );
       }
 
-      alert(medicine ? "약품이 수정되었습니다." : "약품이 추가되었습니다.");
+      toast.success(
+        medicine ? "약품이 수정되었습니다." : "약품이 추가되었습니다."
+      );
       onSave();
     } catch (error) {
       console.error("약품 저장 오류:", error);
-      alert(
+      toast.error(
         medicine ? "약품 수정에 실패했습니다." : "약품 추가에 실패했습니다."
       );
     } finally {

@@ -4,10 +4,12 @@ import com.petner.anidoc.domain.vet.vet.entity.VetInfo;
 import com.petner.anidoc.domain.vet.vet.repository.VetInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
+@Order(1)
 @Component
 @RequiredArgsConstructor
 public class VetInfoInitializer implements CommandLineRunner {

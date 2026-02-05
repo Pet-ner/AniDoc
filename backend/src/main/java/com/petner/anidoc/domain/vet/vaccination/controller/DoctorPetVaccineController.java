@@ -105,7 +105,7 @@ public class DoctorPetVaccineController {
             @AuthenticationPrincipal UserDetails currentUser
     ) {
         User currentDoctor = userRepository.findByEmail(currentUser.getUsername())
-                        .orElseThrow(()-> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
+                .orElseThrow(()-> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
 
         doctorPetVaccineService.deleteVaccination(vaccinationId, currentDoctor);
         return ResponseEntity.ok().body("예방접종 기록이 삭제되었습니다.");

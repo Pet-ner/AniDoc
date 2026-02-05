@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import HospitalCombobox from "@/components/HospitalCombobox";
 import { debounce } from "lodash";
+import { toast } from "react-hot-toast";
 
 export default function StaffRegisterPage() {
   const router = useRouter();
@@ -289,7 +290,7 @@ export default function StaffRegisterPage() {
       }
 
       // 회원가입 성공
-      alert(
+      toast.success(
         "회원가입이 완료되었습니다. 관리자 승인 후 이용 가능합니다. 로그인 페이지로 이동합니다."
       );
       router.push("/login");

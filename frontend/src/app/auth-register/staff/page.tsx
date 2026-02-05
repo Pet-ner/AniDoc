@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import HospitalCombobox from "@/components/HospitalCombobox";
 import { debounce } from "lodash";
+import { toast } from "react-hot-toast";
 
 export default function UserRegisterPage() {
   const router = useRouter();
@@ -188,9 +189,11 @@ export default function UserRegisterPage() {
 
       const data = await response.json();
       // 회원가입 성공
+      toast.success("회원가입에 성공했습니다.");
       router.push("/"); // 대시보드로 이동
     } catch (error) {
       console.error("회원가입 정보 업데이트 오류:", error);
+      toast.error("회원가입 정보 업데이트에 실패했습니다.");
       setError(
         error instanceof Error
           ? error.message

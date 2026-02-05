@@ -1,25 +1,19 @@
 package com.petner.anidoc.domain.user.notification.service;
 
 import com.petner.anidoc.domain.user.notification.dto.PetInfoDto;
-import com.petner.anidoc.domain.user.notification.dto.ReservationNotificationDto;
 import com.petner.anidoc.domain.user.notification.dto.VaccinationNotificationDto;
 import com.petner.anidoc.domain.user.notification.entity.Notification;
 import com.petner.anidoc.domain.user.notification.entity.NotificationType;
 import com.petner.anidoc.domain.user.notification.repository.NotificationRepository;
-import com.petner.anidoc.domain.user.notification.util.NotificationMessageUtil;
 import com.petner.anidoc.domain.user.notification.util.VaccinationNotificationHelper;
 import com.petner.anidoc.domain.user.user.entity.User;
-import com.petner.anidoc.domain.user.user.entity.UserRole;
 import com.petner.anidoc.domain.user.user.repository.UserRepository;
-import com.petner.anidoc.domain.vet.reservation.entity.Reservation;
-import com.petner.anidoc.domain.vet.reservation.entity.ReservationStatus;
 import com.petner.anidoc.domain.vet.reservation.repository.ReservationRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -196,3 +190,6 @@ public class NotificationService {
         return notificationRepository.countByUserIdAndIsReadFalse(userId);
     }
 }
+
+
+

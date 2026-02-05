@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 interface MedicalRecord {
   id: number;
@@ -60,7 +61,7 @@ export default function VaccinationModal({
     e.preventDefault();
 
     if (!formData.vaccineName.trim()) {
-      alert("백신 종류를 선택해주세요.");
+      toast.error("백신 종류를 선택해주세요.");
       return;
     }
 
@@ -93,16 +94,12 @@ export default function VaccinationModal({
         throw new Error(errorData.message || "백신 기록 등록에 실패했습니다");
       }
 
-      alert("백신 기록이 성공적으로 등록되었습니다.");
+      toast.success("백신 기록이 성공적으로 등록되었습니다.");
       onSaved();
       onClose();
     } catch (error) {
       console.error("백신 기록 등록 오류:", error);
-      alert(
-        `백신 기록 등록에 실패했습니다: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
+      toast.error(`백신 기록 등록에 실패했습니다`);
     } finally {
       setLoading(false);
     }

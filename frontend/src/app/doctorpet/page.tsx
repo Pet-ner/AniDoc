@@ -3,6 +3,7 @@
 import { Search, Eye, Trash2, Edit, Mars, Venus } from "lucide-react";
 import { useState, useEffect } from "react";
 import PetDetailModal from "@/components/doctorpetchange/DoctorChange";
+import { toast } from "react-hot-toast";
 
 // Gender enum 추가
 export enum Gender {
@@ -485,10 +486,10 @@ const DoctorPetManagement = () => {
       );
       setSelectedItems([]);
       setSelectAll(false);
-      alert("선택한 항목이 삭제되었습니다.");
+      toast.success("선택한 항목이 삭제되었습니다.");
     } catch (error) {
       console.error("Delete error:", error);
-      alert("삭제 중 오류가 발생했습니다.");
+      toast.error("삭제 중 오류가 발생했습니다.");
     }
   };
 

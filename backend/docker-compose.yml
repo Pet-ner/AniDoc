@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  mysql:
+  mysql-anidoc: # 서비스명을 DB 전용으로 명시
     image: mysql:8.0
     restart: always
     environment:
@@ -9,25 +9,9 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-
     command:
       --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     networks:
       - common
     ports:
-      - "3306:3306"
-
-  app1:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    depends_on:
-      - mysql
-    ports:
-      - "8080:8080"
-    networks:
-      - common
-
-networks:
-  common:
-    driver: bridge
+      - "3307:3306" # 타 프로젝트 DB와 충돌 방지

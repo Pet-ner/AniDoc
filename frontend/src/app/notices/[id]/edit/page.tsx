@@ -4,6 +4,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import { toast } from "react-hot-toast";
 
 interface NoticeForm {
   title: string;
@@ -54,7 +55,7 @@ export default function EditNoticePage() {
   useEffect(() => {
     // 관리자 권한 체크
     if (!user || user.userRole !== "ROLE_ADMIN") {
-      alert("관리자만 접근할 수 있습니다.");
+      toast.error("관리자만 접근할 수 있습니다.");
       router.push("/notices");
       return;
     }
@@ -76,7 +77,7 @@ export default function EditNoticePage() {
         });
       } catch (error) {
         console.error("공지사항 로드 오류:", error);
-        alert("공지사항을 불러오는데 실패했습니다.");
+        toast.error("공지사항을 불러오는데 실패했습니다.");
         router.push("/notices");
       }
     };
@@ -102,11 +103,11 @@ export default function EditNoticePage() {
         throw new Error("공지사항 수정에 실패했습니다.");
       }
 
-      alert("공지사항이 수정되었습니다.");
+      toast.success("공지사항이 수정되었습니다.");
       router.push(`/notices/${params.id}`);
     } catch (error) {
       console.error("공지사항 수정 오류:", error);
-      alert("공지사항 수정에 실패했습니다.");
+      toast.error("공지사항 수정에 실패했습니다.");
     } finally {
       setSubmitting(false);
     }

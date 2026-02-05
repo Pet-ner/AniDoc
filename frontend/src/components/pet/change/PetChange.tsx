@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 
 interface PetChangeProps {
   petId: number;
@@ -81,7 +82,7 @@ const PetChange = ({ petId, onClose }: PetChangeProps) => {
         setPreviewUrl(data.profileUrl || "");
       } catch (error) {
         console.error("데이터 로딩 실패:", error);
-        alert("반려동물 정보를 불러오는데 실패했습니다.");
+        toast.error("반려동물 정보를 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
@@ -157,7 +158,7 @@ const PetChange = ({ petId, onClose }: PetChangeProps) => {
       setPreviewUrl(URL.createObjectURL(file));
     } catch (err) {
       console.error("이미지 업로드 실패:", err);
-      alert("이미지 업로드 중 오류가 발생했습니다.");
+      toast.error("이미지 업로드 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
@@ -210,13 +211,11 @@ const PetChange = ({ petId, onClose }: PetChangeProps) => {
         );
       }
 
-      alert("반려동물 정보가 성공적으로 수정되었습니다.");
+      toast.success("반려동물 정보가 성공적으로 수정되었습니다.");
       onClose();
     } catch (error) {
       console.error("수정 실패:", error);
-      alert(
-        error instanceof Error ? error.message : "수정 중 오류가 발생했습니다."
-      );
+      toast.error("수정 중 오류가 발생했습니다.");
     }
   };
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { MedicalRecord } from "../../types/medicalRecordTypes";
+import { toast } from "react-hot-toast";
 
 interface TestRecord {
   id?: number;
@@ -267,7 +268,7 @@ export default function ChartModal({
         )
       );
     } catch (err) {
-      alert("검사 파일 업로드 실패");
+      toast.error("검사 파일 업로드 실패");
     }
   };
 
@@ -308,7 +309,7 @@ export default function ChartModal({
       // Update imageUrl in hospitalizationRecord state
       setHospitalizationRecord((prev) => ({ ...prev, imageUrl: finalUrl }));
     } catch (err) {
-      alert("입원 사진 업로드 실패");
+      toast.error("입원 사진 업로드 실패");
     }
   };
 
@@ -331,7 +332,7 @@ export default function ChartModal({
       typeof reservationDetails.doctorId !== "number" ||
       typeof reservationDetails.userId !== "number"
     ) {
-      alert(
+      toast.error(
         "진료 기록을 저장할 수 없습니다. 필요한 예약 정보가 누락되었습니다."
       );
       return;
@@ -390,12 +391,12 @@ export default function ChartModal({
 
         if (res.status === 403 || res.status === 401) {
           const backendErrorMessage = errorBody || "권한이 없습니다.";
-          alert(`진료 기록 저장 실패: ${backendErrorMessage}`);
+          toast.error("진료 기록 저장 실패");
           return;
         }
 
         if (res.status === 400) {
-          alert("잘못된 요청입니다. 필요한 정보가 누락되었습니다.");
+          toast.error("잘못된 요청입니다. 필요한 정보가 누락되었습니다.");
           return;
         }
 
@@ -403,7 +404,7 @@ export default function ChartModal({
           try {
             const errorData = JSON.parse(errorBody);
             if (errorData.message === "진료 기록을 작성할 권한이 없습니다.") {
-              alert(
+              toast.error(
                 "진료 기록을 작성할 권한이 없습니다. 의사 계정으로 로그인해주세요."
               );
               console.error("Permission denied. Full error details:", {
@@ -419,11 +420,13 @@ export default function ChartModal({
                 },
               });
             } else {
-              alert("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+              toast.error(
+                "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+              );
               console.error("Server error:", { errorData });
             }
           } catch (parseError) {
-            alert("서버 응답을 처리하는데 실패했습니다.");
+            toast.error("서버 응답을 처리하는데 실패했습니다.");
             console.error("Failed to parse server error response:", {
               status: res.status,
               errorBody,
@@ -444,7 +447,7 @@ export default function ChartModal({
           "진료기록 저장 응답에서 medicalRecord ID를 찾을 수 없음:",
           result
         );
-        alert(
+        toast.error(
           "진료 기록 저장은 성공했지만, 상세 기록 저장에 필요한 정보가 부족합니다."
         );
         onClose();
@@ -494,7 +497,7 @@ export default function ChartModal({
         if (!surgeryRes.ok) {
           const errorBody = await surgeryRes.text();
           console.error("수술 기록 저장 실패:", surgeryRes.status, errorBody);
-          alert(`수술 기록 저장 실패: ${surgeryRes.status}`);
+          toast.error("수술 기록 저장 실패");
         }
       }
 
@@ -532,7 +535,7 @@ export default function ChartModal({
             hospitalizationRes.status,
             errorBody
           );
-          alert(`입원 기록 저장 실패: ${hospitalizationRes.status}`);
+          toast.error("입원 기록 저장 실패");
         }
       }
 
@@ -574,20 +577,16 @@ export default function ChartModal({
               checkupRes.status,
               errorBody
             );
-            alert(`일부 검사 기록 저장 실패: ${checkupRes.status}`);
+            toast.error("일부 검사 기록 저장 실패");
           }
         }
       }
 
-      alert("진료기록 저장 완료!");
+      toast.success("진료기록 저장 완료!");
       onClose();
       return;
     } catch (error) {
-      alert(
-        `진료기록 저장 중 오류 발생: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
+      toast.error(`진료기록 저장 중 오류 발생`);
       console.error("진료기록 저장 최종 에러:", error);
     }
   };

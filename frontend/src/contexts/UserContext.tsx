@@ -8,6 +8,7 @@ import {
   useEffect,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 interface VetInfo {
   id: number;
@@ -85,8 +86,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
           const userData = await response.json();
           setUser(userData);
         } else {
-          console.error("Unexpected content type:", contentType);
-          throw new Error("Invalid response format");
+          setUser(null);
+          setIsLoggedIn(false);
+          localStorage.removeItem("isLoggedIn");
         }
       } else {
         // 인증 실패 - 로그인 상태 초기화
@@ -161,8 +163,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
         method: "POST",
         credentials: "include",
       });
+      toast.success("로그아웃에 성공했습니다.");
     } catch (error) {
       console.error("로그아웃 중 오류 발생:", error);
+      toast.error("로그아웃에 실패했습니다.");
     } finally {
       // 클라이언트 상태 초기화
       setUser(null);

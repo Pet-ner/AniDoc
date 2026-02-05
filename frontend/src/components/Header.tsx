@@ -700,7 +700,6 @@ export default function Header() {
             </div>
             <span className="text-gray-700">
               {user?.name || "사용자"}
-              {user?.userRole === "ROLE_ADMIN" && " 관리자"}
               {user?.userRole === "ROLE_STAFF" && " 의료진"}
               {user?.userRole === "ROLE_USER" && " 보호자"}
             </span>

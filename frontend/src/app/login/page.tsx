@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
+import { toast } from "react-hot-toast";
 
 // 로그인 컨텐츠 컴포넌트
 function LoginContent() {
@@ -43,12 +44,26 @@ function LoginContent() {
           const userData = await response.json();
           // 실제 유저 데이터가 있을 때만 로그인 처리
           if (userData && userData.id) {
+            toast.success("로그인에 성공했습니다.");
             login();
             router.push("/");
           }
+        } else {
+          // 에러 응답 처리
+          const errorData = await response.json();
+          throw new Error(errorData.message || "소셜 로그인에 실패했습니다.");
         }
       } catch (error) {
         console.error("로그인 상태 확인 실패:", error);
+        toast.error("로그인에 실패했습니다.");
+
+        setError(
+          error instanceof Error
+            ? error.message
+            : "소셜 로그인에 실패했습니다. 관리자 승인 후 로그인이 가능합니다."
+        );
+        // 에러 발생 시 로그인 페이지에 머무르기
+        return;
       }
     };
 
@@ -79,6 +94,7 @@ function LoginContent() {
 
       const data = await response.json();
 
+      toast.success("로그인에 성공했습니다.");
       // 로그인 성공 시 UserContext 업데이트
       login();
 
@@ -86,9 +102,7 @@ function LoginContent() {
       router.push("/");
     } catch (error) {
       console.error("로그인 오류:", error);
-      setError(
-        error instanceof Error ? error.message : "로그인에 실패했습니다."
-      );
+      toast.error("로그인에 실패했습니다.");
     } finally {
       setIsLoading(false);
     }

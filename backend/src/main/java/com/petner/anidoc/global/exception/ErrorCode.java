@@ -21,6 +21,11 @@ public enum ErrorCode {
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT,"이미 존재하는 이메일입니다."),
 
+    // 사용자 승인 관련 오류
+    APPROVAL_PENDING(HttpStatus.UNAUTHORIZED, "승인 대기 중입니다. 관리자 승인 후 로그인 가능합니다."),
+    APPROVAL_REJECTED(HttpStatus.UNAUTHORIZED, "가입 승인이 거부되었습니다. 관리자에게 문의하세요."),
+    INVALID_USER_ROLE(HttpStatus.BAD_REQUEST, "승인 대상이 아닌 사용자입니다."),
+
     // 로그인 중 오류
     LOGIN_FAILED(HttpStatus.CONFLICT,"로그인에 실패했습니다."),
 
