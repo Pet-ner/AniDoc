@@ -10,6 +10,7 @@ on:
     branches:
       - main
   workflow_dispatch:
+
 jobs:
   makeTagAndRelease:
     runs-on: ubuntu-latest
@@ -73,7 +74,7 @@ jobs:
             ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:${{ needs.makeTagAndRelease.outputs.tag_name }},
             ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
 
-  deploy:
+  deploy:  
     runs-on: ubuntu-latest
     needs: [buildImageAndPush]
     env:
@@ -87,7 +88,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       
-      - name: "인스턴스 ID 가져오기 (Target: dev-ec2-yogiss)"
+      - name: "인스턴스 ID 가져오기 (Target: dev-ec2-yogiss)"  
         id: get_instance_id
         run: |
           INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=dev-ec2-yogiss" "Name=instance-state-name,Values=running" --query "Reservations[].Instances[].InstanceId" --output text)
