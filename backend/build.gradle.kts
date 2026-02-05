@@ -67,6 +67,11 @@ dependencies {
 
 }
 
+// JAR 생성 시 중복 파일 처리 전략 설정
+tasks.withType<Jar> {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
