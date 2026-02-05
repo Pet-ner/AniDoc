@@ -8,7 +8,7 @@ on:
       - "backend/settings.gradle.kts"
       - "backend/Dockerfile"
     branches:
-      - dev
+      - main
   workflow_dispatch:
 jobs:
   makeTagAndRelease:
