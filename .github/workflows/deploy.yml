@@ -38,7 +38,7 @@ jobs:
     needs: makeTagAndRelease
     runs-on: ubuntu-latest
     env:
-      DOCKER_IMAGE_NAME: anidoc ###!!!팀 프로젝트 이미지 네임!!!###
+      DOCKER_IMAGE_NAME: anidoc
     outputs:
       DOCKER_IMAGE_NAME: ${{ env.DOCKER_IMAGE_NAME }}
       OWNER_LC: ${{ env.OWNER_LC }}
@@ -79,29 +79,21 @@ jobs:
       DOCKER_IMAGE_NAME: ${{ needs.buildImageAndPush.outputs.DOCKER_IMAGE_NAME }}
       OWNER_LC: ${{ needs.buildImageAndPush.outputs.OWNER_LC }}
     steps:
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: AWS 자격 증명 설정
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ secrets.AWS_REGION }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       
-      # 🔍 디버깅 로그 추가
-      - name: Debug 환경변수 출력
-        run: |
-          echo "=== 환경변수 디버깅 ==="
-          echo "DOCKER_IMAGE_NAME: ${{ env.DOCKER_IMAGE_NAME }}"
-          echo "OWNER_LC: ${{ env.OWNER_LC }}"
-          echo "완전한 이미지 이름: ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
-          echo "======================="
-      
-      - name: 인스턴스 ID 가져오기
+      - name: 인스턴스 ID 가져오기 (Target: dev-ec2-yogiss)
         id: get_instance_id
         run: |
-          INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=dev-ec2-1" "Name=instance-state-name,Values=running" --query "Reservations[].Instances[].InstanceId" --output text)
+          # Values 부분을 dev-ec2-yogiss로 수정하여 통합 서버로 배포합니다.
+          INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=dev-ec2-yogiss" "Name=instance-state-name,Values=running" --query "Reservations[].Instances[].InstanceId" --output text)
           echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
           echo "찾은 인스턴스 ID: $INSTANCE_ID"
           
-          # 인스턴스가 실제로 찾아졌는지 확인
           if [ -z "$INSTANCE_ID" ]; then
             echo "❌ ERROR: 인스턴스를 찾을 수 없습니다!"
             exit 1
@@ -116,74 +108,51 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           instance-ids: ${{ env.INSTANCE_ID }}
           working-directory: /
-          comment: Deploy
+          comment: Deploy Anidoc to Unified Server
           command: |
-            echo "=== 배포 시작 ==="
+            echo "=== 통합 서버 배포 시작 ==="
             echo "현재 시간: $(date)"
-            echo "현재 유저: $(whoami)"
-            echo "Docker 버전: $(docker --version)"
             
-            echo "=== GHCR 로그인 시도 ==="
+            echo "=== GHCR 로그인 ==="
             echo "${{ secrets.ANIDOC_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
-            echo "=== 이미지 풀링 시작 ==="
-            echo "풀링할 이미지: ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
+            echo "=== 최신 이미지 풀링 ==="
+            docker pull ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
             
-            if docker pull ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest; then
-              echo "✅ 이미지 풀링 성공"
-            else
-              echo "❌ 이미지 풀링 실패"
-              echo "사용 가능한 이미지들:"
-              docker images
-              exit 1
+            echo "=== 기존 Anidoc 컨테이너 정리 ==="
+            # app1 대신 anidoc-app 이름을 사용하여 여기쓰(app1)와 충돌을 방지합니다.
+            if docker stop anidoc-app 2>/dev/null; then
+              echo "✅ 기존 anidoc-app 중지됨"
             fi
-            
-            echo "=== 기존 컨테이너 정리 ==="
-            if docker stop app1 2>/dev/null; then
-              echo "✅ app1 컨테이너 중지됨"
-            else
-              echo "ℹ️ app1 컨테이너가 실행중이 아님"
-            fi
-            
-            if docker rm app1 2>/dev/null; then
-              echo "✅ app1 컨테이너 제거됨"
-            else
-              echo "ℹ️ app1 컨테이너가 존재하지 않음"
+            if docker rm anidoc-app 2>/dev/null; then
+              echo "✅ 기존 anidoc-app 제거됨"
             fi
             
             echo "=== 네트워크 확인 ==="
-            if docker network ls | grep common; then
-              echo "✅ common 네트워크 존재"
-            else
-              echo "⚠️ common 네트워크가 없습니다. 생성합니다..."
-              docker network create common
-            fi
+            docker network ls | grep common || docker network create common
             
-            echo "=== 새 컨테이너 실행 ==="
-            if docker run -d --network common --name app1 -p 8080:8080 ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest; then
-              echo "✅ 컨테이너 실행 성공"
+            echo "=== 새 컨테이너 실행 (Port: 8082) ==="
+            # 포트를 8082로 할당하여 여기쓰(8080/8081)와 독립적으로 운영합니다.
+            if docker run -d --network common --name anidoc-app -p 8082:8080 ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest; then
+              echo "✅ anidoc-app 실행 성공"
               
-              echo "=== 컨테이너 상태 확인 ==="
-              docker ps -a | grep app1
+              echo "=== 배포 상태 확인 ==="
+              docker ps -a | grep anidoc-app
               
-              echo "=== 컨테이너 로그 확인 (최근 50줄) ==="
-              docker logs --tail 50 app1
+              echo "=== 실행 로그 확인 (최근 50줄) ==="
+              docker logs --tail 50 anidoc-app
               
-              echo "=== 포트 확인 ==="
-              netstat -tlnp | grep 8080 || echo "8080 포트가 열리지 않았습니다"
-              
+              echo "=== 포트 리스닝 확인 ==="
+              netstat -tlnp | grep 8082 || echo "⚠️ 8082 포트 확인 필요"
             else
               echo "❌ 컨테이너 실행 실패"
               exit 1
             fi
             
-            echo "=== dangling 이미지 정리 ==="
-            docker rmi $(docker images -f "dangling=true" -q) 2>/dev/null || echo "정리할 dangling 이미지가 없습니다"
-            
-            echo "=== 배포 완료 ==="
-            echo "최종 이미지 이름: ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
-      
-      # SSM 명령 결과 확인
+            echo "=== 불필요한 이미지 정리 ==="
+            docker rmi $(docker images -f "dangling=true" -q) 2>/dev/null || true
+            echo "=== 모든 배포 공정 완료 ==="
+
       - name: SSM 명령 결과 확인
         run: |
           echo "SSM 명령 ID: ${{ steps.ssm.outputs.command-id }}"
